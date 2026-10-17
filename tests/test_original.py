@@ -134,12 +134,49 @@ class OriginalTests(unittest.TestCase):
         self.assertEqual(len(self.p["runes"]), len({r["name"] for r in data.RUNES}))
         self.assertEqual(set(self.p["metals"]), set(data.METALS))
         self.assertEqual(self.p["chapter"], 1)
-        self.assertEqual(self.p["unlocked_regions"], {data.REGIONS[0]})
+        self.assertEqual(self.p["unlocked_regions"], set(data.REGIONS + [data.SECRET_REGION]))
         self.assertTrue(all(isinstance(x, dict) for x in self.p["inventory"]))
         sizes = {k: len(v) for k, v in self.p.items() if isinstance(v, list)}
         with patch.object(builtins, "print"):
             grant_collectibles(self.p)
         self.assertEqual(sizes, {k: len(v) for k, v in self.p.items() if isinstance(v, list)})
+
+    def test_beta_unlocks_all_structures_and_can_be_disabled(self):
+        from beta_testing import disable_beta
+        from season_two import available
+
+        with patch("builtins.print"):
+            grant_collectibles(self.p)
+        for region, structures in data.REGION_STRUCTURES.items():
+            self.assertTrue(
+                {x["name"] for x in structures}.issubset(self.p["discovered_structures"][region])
+            )
+        for region, village in data.ELEMENTAL_VILLAGES.items():
+            self.assertIn(village["name"], self.p["discovered_structures"][region])
+        self.assertTrue(available(self.p))
+        gold = self.p["gold"]
+        weapons = deepcopy(self.p["weapons"])
+        with patch("builtins.print"):
+            disable_beta(self.p)
+        self.assertFalse(available(self.p))
+        self.assertEqual(self.p["gold"], gold)
+        self.assertEqual(self.p["weapons"], weapons)
+        self.assertEqual(self.p["chapter"], 1)
+
+    def test_hidden_off_code_in_main_menu(self):
+        session = OriginalSession({"name": "Codes", "cls": "warrior"})
+        try:
+            session.send("DAMAR", session.poll(0)["prompt_id"])
+            state = session.poll(0)
+            self.assertTrue(state["snapshot"]["player"]["beta_mode"])
+            session.send("SAMAR", state["prompt_id"])
+            state = session.poll(0)
+            self.assertFalse(state["snapshot"]["player"]["beta_mode"])
+            self.assertEqual(
+                len(state["snapshot"]["player"]["unlocked_regions"]), len(data.REGIONS) + 1
+            )
+        finally:
+            session.close()
 
     def test_weapon_binding_permanent(self):
         self.p["runes"] = deepcopy(data.RUNES[:2])

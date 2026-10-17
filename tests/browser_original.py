@@ -78,6 +78,46 @@ with sync_playwright() as p:
         )
         == "Sable"
     )
+    page.locator('[data-group="inventory"]').click()
+    page.wait_for_selector('#action-buttons [data-response="3"]:enabled')
+    page.locator('#action-buttons [data-response="3"]').click()
+    page.wait_for_function("packet.prompt.includes('Inventory option')")
+    page.evaluate("async () => { await respond('4'); await respond('2'); await respond('6'); }")
+    page.wait_for_function(
+        "packet.snapshot.player.inventory_sort === 'element' && packet.snapshot.player.auto_sell_duplicates === true"
+    )
+    assert page.evaluate("packet.snapshot.player.inventory_sort_secondary") == "atk"
+    page.evaluate("async () => { await respond('0'); }")
+    page.wait_for_function("packet.snapshot.phase === 'category'")
+    page.locator("#terminal").focus()
+    page.keyboard.press("/")
+    assert page.locator("#command").evaluate("(e)=>e===document.activeElement")
+    page.keyboard.press("ArrowUp")
+    assert page.locator("#command").input_value() == "0"
+    page.keyboard.press("ArrowDown")
+    assert page.locator("#command").input_value() == ""
+    page.locator("#recall-command").click()
+    assert page.locator("#command").input_value() == "0"
+    page.keyboard.press("Escape")
+    page.wait_for_function("packet.snapshot.phase === 'main'")
+    page.locator("#compact-status").click()
+    assert page.locator("body").evaluate("e=>e.classList.contains('compact-sidebar')")
+    assert page.evaluate("JSON.parse(localStorage.getItem('soules-appearance')).compact")
+    page.evaluate(
+        "Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedJournal=text;}}})"
+    )
+    page.locator("#copy-journal").click()
+    page.wait_for_function("window.copiedJournal?.includes('MAIN MENU')")
+    page.locator("#latest-output").click()
+    page.wait_for_function(
+        "(()=>{const e=document.querySelector('#terminal');return e.scrollHeight-e.scrollTop-e.clientHeight<5;})()"
+    )
+    page.locator("#clear-journal").click()
+    assert page.locator("#terminal p").count() == 0
+    page.evaluate("async()=>{const save=safeSave();save.player.hp=1;await start({save});}")
+    page.wait_for_function(
+        "document.querySelector('#health-warning').textContent.includes('LOW HEALTH')"
+    )
     assert not errors, errors
     print("Original UI: start, hidden code, groups, submenus, save slots, themes, mobile passed")
     browser.close()

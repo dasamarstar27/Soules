@@ -29,6 +29,8 @@ Automatic colours follow regions and structures; Customise also offers fixed the
 
 `original_game.py` contains the active original gameplay; `original_menus.py` groups its actions. `original_worker.py`, `original_sessions.py` and `original_ui.py` connect isolated game processes to the browser. `season_two.py` provides the elemental-village expansion. Untouched uploaded files remain under `legacy/`.
 
+Inventory offers sorting by name, attack/power, defence, element or sell value, with an optional secondary sort. Sorting changes the display order. Auto-sell duplicates is off initially; enable it in Inventory or sell duplicates once. It sells identical spare weapons, armour and staffs for souls, keeping an exact variant and protecting equipped or bound/imbued gear. Consumables and crafting materials stay in your bags. The setting and sort preferences persist in saves.
+
 ## Season Two and future plans
 
 Unlock all main regions and defeat The Dreaming God in The Dreamscape to complete Chapter 1. The Creator is optional. Chapter 2 opens expanded services in the four existing hidden elemental villages: finite-stock shops, keepers, training, exclusive libraries, side quests and mana-powered elemental arts. Discovery remains rare; discovered villages can be revisited through Structures. See PLANNED_CHAPTER_2.md and SEASON_THREE_PLAN.md.
@@ -44,3 +46,20 @@ The previous streamlined interface remains available at `/edition`, with its own
 ```
 
 Browser smoke checks under `tests/browser_*.py` use Playwright and Chromium. The default text interface is checked by `tests/browser_original.py`. These are development checks, not dependencies needed to play.
+
+## Everyday conveniences
+
+1. Press `/` outside an input to focus the command box.
+2. Up/Down recalls session command history and restores your draft.
+3. Escape uses Back when leaving the current prompt is allowed.
+4. Recall Last fills your previous command without sending it.
+5. Clear Journal clears the visible log without changing progress.
+6. Copy Journal copies the text for sharing or bug reports.
+7. Latest jumps to the newest journal output.
+8. Compact Sidebar reduces spacing and persists across reloads.
+9. A low-health warning appears at 25% HP or below.
+10. Inventory search filters names, elements and effects.
+11. Identical inventory entries show quantities in one line.
+12. Favourite item names receive a star and are protected from auto-sell.
+
+Inventory options 8 and 9 manage favourites and search. Blank search shows everything again. Scroll elements and attack/defence buffs are included when sorting.

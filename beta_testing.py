@@ -40,10 +40,28 @@ def grant_collectibles(player):
     for goods in GOODS.values():
         for key, item, _ in goods:
             add(key, item)
+    player["unlocked_regions"] = set(data.REGIONS + [data.SECRET_REGION])
+    found = player.setdefault("discovered_structures", {})
+    for region, structures in data.REGION_STRUCTURES.items():
+        names = found.setdefault(region, [])
+        for structure in structures:
+            if structure["name"] not in names:
+                names.append(structure["name"])
+    for region, village in data.ELEMENTAL_VILLAGES.items():
+        names = found.setdefault(region, [])
+        if village["name"] not in names:
+            names.append(village["name"])
     player["beta_mode"] = True
     print(
         "DAMAR activated! One of every catalogued weapon, armour, staff, rune, metal, wood, core, cloth, leather, scroll, loot, food, ingredient and stock potion is now in your bags."
     )
     print(
-        "Season Two village services are open for testing. Story progress is unchanged. Repeating DAMAR replaces missing types; it does not stack duplicates."
+        "All regions and structures are unlocked. Season Two services are open for testing. Boss victories and chapter completion are unchanged. Repeating DAMAR replaces missing types; it does not stack duplicates."
+    )
+
+
+def disable_beta(player):
+    player["beta_mode"] = False
+    print(
+        "Beta mode off. Your items and discovered places are kept. Postgame services now follow normal chapter requirements."
     )

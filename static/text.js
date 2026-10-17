@@ -1,5 +1,6 @@
 'use strict';
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let commandHistory=[], historyPosition=0, historyDraft='';
 let catalog, packet=null, view='home', cursor=0, busy=false, pollBusy=false, epoch=0, dictionaryTab='runes', dictionarySearch='';
 const STORE='soules-original-autosave',SLOTS='soules-original-slots',PREFS='soules-appearance';
 function stored(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}}
@@ -29,6 +30,8 @@ function theme(){
  const props={'--bg':bg,'--accent':accent,'--text':text,'--muted':mix(bg,text,.68),'--panel':mix(bg,text,.035),'--raised':mix(bg,text,.08),'--line':mix(bg,accent,.27),'--button-text':contrast(accent,'#101018')>contrast(accent,'#fffdf6')?'#101018':'#fffdf6','--font-size':Math.max(12,Math.min(22,Number(preferences.font)||15))+'px'};
  for(const [k,v]of Object.entries(props))document.documentElement.style.setProperty(k,v);
  document.body.classList.toggle('scene-structure',Boolean(location));
+ document.body.classList.toggle('compact-sidebar',Boolean(preferences.compact));
+ $('#compact-status').setAttribute('aria-pressed',String(Boolean(preferences.compact)));
  document.documentElement.dataset.themeMode=preferences.mode||'auto';
  document.documentElement.dataset.scene=location?.kind||p?.region||'title';
 }
@@ -54,12 +57,13 @@ function apply(result){
 function show(next){view=next;$('#game-screen').hidden=next!=='play';$('#page-screen').hidden=next==='play';if(next!=='play')renderPage();else {renderGameControls();$('#terminal').scrollTop=$('#terminal').scrollHeight;}renderSidebar();theme();}
 async function start(config){
  if(busy)return;busy=true;epoch++;
- try{const result=await api('start',config);cursor=0;$('#terminal').replaceChildren();apply(result);show('play');$('#command').focus();}
+ try{const result=await api('start',config);packet=null;cursor=0;$('#terminal').replaceChildren();apply(result);show('play');$('#command').focus();}
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();}
 }
 function play(){if(packet?.alive&&packet?.snapshot?.phase!=='dead'){show('play');return;}if(checkpoint?.player){start({save:checkpoint});return;}$('#new-dialog').showModal();}
 async function respond(text,group){
  if(busy||!packet?.waiting)return;
+ if(!group&&text&& !['DAMAR','SAMAR'].includes(text.toUpperCase())){if(commandHistory.at(-1)!==text)commandHistory.push(text);commandHistory=commandHistory.slice(-100);historyPosition=commandHistory.length;historyDraft='';}
  busy=true;epoch++;renderGameControls();
  try{if(!group)append('> '+(text||'(Enter)'),'player-response');const result=await api('input',{text,group,prompt_id:packet.prompt_id,since:cursor});apply(result);}
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();if(view==='play')$('#command').focus();}
@@ -74,6 +78,10 @@ function renderGameControls(){
  $('#connection').textContent=busy?'Sending…':packet?.alive?(packet.waiting?'● Awaiting your choice':'● The story continues…'):'● Ready to play';
  const location=packet?.snapshot?.location,region=packet?.snapshot?.player?.region;
  $('#scene-name').textContent=location?region+' / '+location.name:(region||'YOUR JOURNEY');
+ const p=packet?.snapshot?.player,low=p&&p.hp>0&&p.hp/p.max_hp<=.25;
+ $('#health-warning').textContent=low?'⚠ LOW HEALTH — '+Math.ceil(p.hp)+' HP':'';
+ document.body.classList.toggle('low-health',Boolean(low));
+ $('#recall-command').disabled=!enabled||!commandHistory.length;
  $('#quick-keys').querySelectorAll('button').forEach(b=>b.disabled=!enabled);
 }
 function bar(label,value,max,cls=''){return `<div class="bar-label"><span>${esc(label)}</span><span>${Math.max(0,Math.round(value))} / ${max}</span></div><div class="bar ${cls}"><i style="width:${Math.max(0,Math.min(100,value/max*100))}%"></i></div>`;}
@@ -137,3 +145,19 @@ document.addEventListener('change',event=>{if(event.target.id==='theme-mode'){pr
 setInterval(async()=>{if(view!=='play'||!packet?.alive||busy||pollBusy)return;pollBusy=true;const before=epoch;try{const data=await api('session?since='+cursor);if(before===epoch)apply(data);}catch(e){notice('Connection interrupted. Your saved checkpoint is kept.');}finally{pollBusy=false;}},650);
 api('catalog').then(async c=>{catalog=c;$('#class-choice').innerHTML=Object.entries(c.classes).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join('');const updateClass=()=>{$('#class-description').textContent=c.classes[$('#class-choice').value].desc;};$('#class-choice').value='warrior';$('#class-choice').onchange=updateClass;updateClass();const existing=await api('session');if(existing.snapshot)apply(existing);show('home');}).catch(e=>{$('#page-screen').textContent='Unable to open Soules. '+e.message;});
 theme();
+
+// Local conveniences: these do not spend turns or change game state.
+$('#latest-output').onclick=()=>{$('#terminal').scrollTop=$('#terminal').scrollHeight;};
+$('#clear-journal').onclick=()=>{$('#terminal').replaceChildren();notice('Journal display cleared. Your progress and saves are unchanged.');};
+$('#copy-journal').onclick=async()=>{try{await navigator.clipboard.writeText($('#terminal').innerText);notice('Journal copied.');}catch(_){notice('Clipboard unavailable. Select the journal text to copy it.');}};
+$('#compact-status').onclick=()=>{preferences.compact=!preferences.compact;savePreferences();};
+$('#recall-command').onclick=()=>{if(commandHistory.length){$('#command').value=commandHistory.at(-1);$('#command').focus();}};
+document.addEventListener('keydown',event=>{
+ if(view!=='play'||document.querySelector('dialog[open]')||event.ctrlKey||event.metaKey||event.altKey)return;
+ const input=$('#command'),editing=['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName);
+ if(event.key==='/'&&!editing&&!input.disabled){event.preventDefault();input.focus();return;}
+ if(event.key==='Escape'&&!$('#back').disabled){event.preventDefault();$('#back').click();return;}
+ if(event.target!==input||!commandHistory.length)return;
+ if(event.key==='ArrowUp'){event.preventDefault();if(historyPosition===commandHistory.length)historyDraft=input.value;historyPosition=Math.max(0,historyPosition-1);input.value=commandHistory[historyPosition];}
+ if(event.key==='ArrowDown'){event.preventDefault();historyPosition=Math.min(commandHistory.length,historyPosition+1);input.value=historyPosition===commandHistory.length?historyDraft:commandHistory[historyPosition];}
+});

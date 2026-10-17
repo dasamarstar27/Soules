@@ -1155,56 +1155,10 @@ def _check_level_up():
 
 
 def view_inventory():
-    print("\n===== INVENTORY =====")
+    import sys
+    from inventory_tools import inventory_menu
 
-    print("\n📦 Loot & Consumables")
-    loot = [item for item in player["inventory"] if "value" in item]
-    if loot:
-        for item in loot:
-            print("-", item["name"])
-    else:
-        print("Empty")
-
-    print("\n📜 Scrolls")
-    scrolls = [item for item in player["inventory"] if "turns" in item]
-    if scrolls:
-        for scroll in scrolls:
-            print("-", scroll["name"])
-    else:
-        print("Empty")
-
-    print("\n⚔ Weapons")
-    if player["weapons"]:
-        for weapon in player["weapons"]:
-            equipped = " [EQUIPPED]" if player["weapon"] == weapon else ""
-            print(f"- {weapon['name']} (ATK {weapon['atk']}){equipped}")
-    else:
-        print("None")
-
-    print("\n🛡 Armour")
-    if player["armours"]:
-        for armour in player["armours"]:
-            equipped = " [EQUIPPED]" if player["armour"] == armour else ""
-            elem = f" [{armour['element']}]" if armour.get("element") else ""
-            print(f"- {armour['name']} (DEF {armour['def']}){elem}{equipped}")
-    else:
-        print("None")
-
-    print("\n✨ Staffs")
-    if player["staffs"]:
-        for staff in player["staffs"]:
-            rune = staff.get("rune", None)
-            rune_name = rune["name"] if isinstance(rune, dict) else "None"
-            print(f"- {staff['name']} (Power {staff['power']}) Rune: {rune_name}")
-    else:
-        print("None")
-
-    print("\n🔮 Runes")
-    if player["runes"]:
-        for rune in player["runes"]:
-            print(f"- {rune['name']} ({rune['effect']})")
-    else:
-        print("None")
+    inventory_menu(sys.modules[__name__])
 
 
 # =========================
@@ -5471,7 +5425,10 @@ def perform_original_action(c):
     elif c == "2":
         travel()
     elif c == "3":
-        x = input("1 blacksmith, 2 scroll, 3 rune, 4 merge runes, 5 cast spell, 6 fusion > ")
+        print(
+            "\n--- BLACKSMITH & RUNES ---\n1. Blacksmith\n2. Use scroll\n3. Bind rune\n4. Fuse runes\n5. Cast spell\n6. Weapon fusion\n0. Back"
+        )
+        x = input("Choose a crafting option > ").strip()
         if x == "2":
             use_scroll()
         elif x == "1":
@@ -5590,6 +5547,10 @@ def game():
         _ui.location = None
         if _ui.get_ui():
             _ui.get_ui().clear_enemy()
+        if player.get("auto_sell_duplicates"):
+            from inventory_tools import sell_duplicates
+
+            sell_duplicates(player, quiet=True)
         _ui.context("category" if group else "main", group)
         if group:
             print("\n--- " + BY_ID[group]["name"].upper() + " ---")
@@ -5609,6 +5570,11 @@ def game():
             from beta_testing import grant_collectibles
 
             grant_collectibles(player)
+            continue
+        if choice.upper() == "SAMAR" and not group:
+            from beta_testing import disable_beta
+
+            disable_beta(player)
             continue
         category = next(
             (g["id"] for g in BY_ID.values() if choice.lower() in (g["id"], g["name"].lower())),
