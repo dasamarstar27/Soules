@@ -26,8 +26,23 @@ with sync_playwright() as p:
     assert top() > before
     assert at_bottom()
 
+    # Normal menus and multi-line attacks follow, even beyond the old six-line cap.
     before = top()
-    output('\n'.join('A long story passage, line '+str(i) for i in range(25)))
+    output('\n'.join(f'{i}. Village option' for i in range(1, 22)))
+    assert top() > before
+    assert at_bottom()
+    for menu in ('=== WORLD MAP ===\nWhispering Woods -> Ashen Wastes\n0. Back', '=== SELL ===\n1. Loot\n2. Weapons\n3. Armour\n7. Back'):
+        before = top()
+        output(menu)
+        assert top() > before
+        assert at_bottom()
+    before = top()
+    output('Attack!\nYou deal 12 damage.\nYour companion assists.\nThe enemy hits for 4.\nBurn fades.\nChoose your next move.')
+    assert top() > before
+    assert at_bottom()
+
+    before = top()
+    output('\n'.join('A long story passage, line '+str(i) for i in range(100)))
     assert abs(top()-before) < 2
     assert not at_bottom()
 
@@ -38,15 +53,19 @@ with sync_playwright() as p:
     page.locator('#latest-output').click()
     assert at_bottom()
 
-    # A response containing many short lines is still a long response.
+    # A huge response containing many short options still stays put.
     before = top()
-    page.evaluate("apply({...packet,output:Array.from({length:20},(_,i)=>({id:cursor+i,text:'Menu option '+i}))})")
+    page.evaluate("apply({...packet,output:Array.from({length:100},(_,i)=>({id:cursor+i,text:'Menu option '+i}))})")
     assert abs(top()-before) < 2
 
     page.set_viewport_size({'width': 390, 'height': 844})
     page.locator('#latest-output').click()
     before = top()
-    output('This is one long printed line that wraps into many visible lines on a phone. '*30)
+    output('\n'.join(f'{i}. Village option' for i in range(1, 22)))
+    assert top() > before
+    assert at_bottom()
+    before = top()
+    output('This is one long printed line that wraps into many visible lines on a phone. '*60)
     assert abs(top()-before) < 2
     page.locator('#latest-output').click()
     before = top()
@@ -81,5 +100,5 @@ with sync_playwright() as p:
     page.wait_for_function('!busy')
     assert abs(top()-100) < 2
     assert not errors, errors
-    print('PASS: short replies follow, long text stays, reading history stays, response batches and mobile wrapping count, Latest works, command echoes and in-flight reading respected')
+    print('PASS: normal menus and attacks follow, very long text stays, reading history stays, response batches and mobile wrapping count, Latest works, command echoes and in-flight reading respected')
     browser.close()

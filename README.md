@@ -95,7 +95,7 @@ The full history is recorded in STORY_CANON.md: the Riftlands once separated the
 
 ## Village buildings and season timing
 
-Short journal updates follow automatically when you are near the bottom. Long passages and reading older text preserve your position; use Latest to jump down. Crimson Forge appears in the travel menu without a preliminary popup. Imbuing temples are available only in elemental villages. The Sacred Temple in Riftlands remains the story location and contains the stabiliser, not the four surviving cores.
+Attacks, village menus and other options follow automatically when you are near the bottom. Very long blocks and reading older text preserve your position; use Latest to jump down. Crimson Forge appears in the travel menu without a preliminary popup. Imbuing temples are available only in elemental villages. The Sacred Temple in Riftlands remains the story location and contains the stabiliser, not the four surviving cores.
 
 Building level is separate from service quality. Better facilities start at Level 2; others start at Level 1. Village option 17 upgrades existing buildings to Level 5 using Timber, Stone, Iron fittings and souls. Wandering has a separate 25% chance to find a building supply, and the upgrade menu converts carried wood or metal. Levels improve local service results and future restaurant stock capacity. These upgrades belong to each village and persist in saves.
 
@@ -136,8 +136,8 @@ Character → Companions now includes feeding and a regional food guide. Compani
 
 Each successful meal grants one evolution XP. Three meals unlock an Awakened form at stage 1; six unlock an element-themed final form at stage 2, such as Sunfire Ember Fox. Final forms strengthen passive combat support. Peaceful species also evolve and remain peaceful. Battle-level XP remains separate. Old saves gain the correct home region and full hunger on migration; subsequent care progress persists normally. Earth support now provides a temporary defence buff instead of permanently increasing base defence, and crystal companions have a working special move.
 
-The current question is displayed at full adventure text size in the main story panel, above the action buttons. The answer box describes that question for assistive technology. Short updates follow automatically near the bottom; long passages and reading older entries preserve your position.
+The current question is displayed at full adventure text size in the main story panel, above the action buttons. The answer box describes that question for assistive technology. Attacks and ordinary menus follow automatically near the bottom; very long blocks and reading older entries preserve your position.
 
 Tutorial now covers starting, controls, survival, exploration, combat, equipment, runes and fusions, crafting/professions, alchemy, local economies, construction, companion evolution, ruins, temples, the chapter storyline, side quests, saves, appearance and all 47 original actions. It identifies original preview menus honestly. Secret testing commands are omitted from player-facing help. Turning off testing access works at any pending game prompt and is saved at the next safe checkpoint; an already-open postgame shop also rechecks access before purchase.
 
-Short-update following measures the rendered height of each new response, so wrapped paragraphs on a phone count as long text. It follows only batches up to roughly six lines and 40% of the visible journal. It never jumps down while you are reading earlier entries.
+Automatic following measures the rendered height of each new response, so wrapped paragraphs on a phone count as long text. It follows ordinary responses and option menus, including attacks and villages. Only very long batches—more than roughly 60 rendered lines or three journal screens, whichever is larger—stay put. It never jumps down while you are reading earlier entries.

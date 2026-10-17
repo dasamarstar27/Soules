@@ -48,7 +48,7 @@ function followShortJournalUpdate(terminal,lines,follow){
  const revision=++journalScrollRevision;
  if(!follow||terminal.clientHeight<=0)return;
  const lineHeight=parseFloat(getComputedStyle(terminal).lineHeight)||26;
- const limit=Math.min(6*(lineHeight+4),terminal.clientHeight*.4);
+ const limit=Math.max(60*(lineHeight+4),terminal.clientHeight*3);
  const height=lines.reduce((total,line)=>{const style=getComputedStyle(line);return total+line.getBoundingClientRect().height+parseFloat(style.marginTop)+parseFloat(style.marginBottom);},0);
  if(height<=limit){
   terminal.scrollTop=terminal.scrollHeight;
