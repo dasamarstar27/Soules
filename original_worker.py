@@ -26,6 +26,8 @@ def output(*args, sep=" ", end="\n", file=None, flush=False):
 
 
 def input_line(prompt=""):
+    if game.player.get("hp", 1) <= 0:
+        raise ui.RunEnded()
     emit("prompt", prompt=prompt, snapshot=ui.snapshot())
     line = sys.stdin.readline()
     if not line:
@@ -150,6 +152,12 @@ def main():
             "Choose a category, then click an action or type its number. During a submenu, answer the prompt below. Back to category safely leaves a submenu."
         )
         game.game()
+    except ui.RunEnded:
+        game.player["hp"] = 0
+        ui.context("dead")
+        print(
+            "Your character has died. This journey is over. Create a new character to begin again."
+        )
     except (EOFError, BrokenPipeError):
         pass
     except Exception as error:

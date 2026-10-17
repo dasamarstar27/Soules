@@ -57,6 +57,20 @@ with sync_playwright() as p:
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     Path("/tmp/soules-checks").mkdir(exist_ok=True)
     page.screenshot(path="/tmp/soules-checks/original-mobile.png", full_page=True)
+    await_death = """async () => {
+        const save = JSON.parse(localStorage.getItem('soules-original-autosave'));
+        save.player.hp = 0;
+        await start({save});
+    }"""
+    page.evaluate(await_death)
+    page.wait_for_selector('#new-dialog[open]')
+    assert page.evaluate("localStorage.getItem('soules-original-autosave')") is None
+    page.locator('input[name="name"]').fill('New Soul')
+    page.get_by_role('button', name='Begin adventure').click()
+    page.wait_for_function("packet.snapshot?.player?.name === 'New Soul' && packet.snapshot.phase === 'main'")
+    assert page.evaluate('packet.snapshot.player.runes.length') == 0
+    assert page.evaluate('packet.snapshot.player.weapons.length') == 1
+    assert page.evaluate("JSON.parse(localStorage.getItem('soules-original-slots'))[0].save.player.name") == 'Sable'
     assert not errors, errors
     print("Original UI: start, hidden code, groups, submenus, save slots, themes, mobile passed")
     browser.close()

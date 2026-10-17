@@ -2911,7 +2911,8 @@ def fight(enemy, boss=False):
             drop_loot()
     # FIX: death message moved to outer else so it actually triggers when player dies
     else:
-        print("you died LOL")
+        print("Your character has fallen.")
+        raise _ui.RunEnded()
 
     ui = _ui.get_ui()
     if ui:
@@ -3217,7 +3218,9 @@ def explore():
     h = player["hunger"]
     if h <= 0:
         dmg = 10
-        player["hp"] = max(1, player["hp"] - dmg)
+        player["hp"] = max(0, player["hp"] - dmg)
+        if player["hp"] <= 0:
+            raise _ui.RunEnded()
         print(f"🍖 You are STARVING! You take {dmg} damage. Find a village and eat!")
     elif h < 30:
         print(f"🍖 You are hungry ({h}/100). Find a village before you weaken further.")
@@ -3282,46 +3285,44 @@ def explore():
         return
 
     roll = random.randint(1, 100)
-
-    if roll < 2:
+    if roll == 1:
         candidates = get_region_companion_candidates(r)
         if candidates:
             companion = random.choice(candidates)
             print(f"\n🐾 You encounter {companion['name']}!")
-            choice = input("Recruit? (y/n) > ").lower()
-            if choice == "y":
+            if input("Recruit? (y/n) > ").lower() == "y":
                 recruit_companion(companion)
-    elif roll < 10:
-        merchant()
-    elif roll > 20:
-        night_mod = 1.15 if night else 1.0
-
-        region = player["region"]
-
-        if player["level"] > 10:
-
-            enemy_pool = EVOLVED_MONSTERS.get(region, []) + MINI_BOSSES.get(region, [])
-
-        elif player["level"] < 10:
-            enemy_pool = NORMAL_MONSTERS.get(region, [])
         else:
-            return
+            print("No new companion answers your call here.")
+        return
+    if roll < 10:
+        merchant()
+        return
+    if roll <= 20:
+        print("Peaceful wandering...")
+        return
 
-    night_mod = 1.15 if night else 1.0
-    if night_mod > 1.0:
-        enemy["hp"] = int(enemy["hp"] * night_mod)
-        enemy["atk"] = int(enemy["atk"] * night_mod)
+    if player["level"] >= 10:
+        enemy_pool = EVOLVED_MONSTERS.get(r, []) + MINI_BOSSES.get(r, [])
+    else:
+        enemy_pool = NORMAL_MONSTERS.get(r, [])
+    enemy_pool = enemy_pool or NORMAL_MONSTERS.get(r, [])
+    if not enemy_pool:
+        print("No creatures inhabit this path.")
+        return
+    from copy import deepcopy
 
+    enemy = deepcopy(random.choice(enemy_pool))
+    if night:
+        enemy["hp"] = int(enemy["hp"] * 1.15)
+        enemy["atk"] = int(enemy["atk"] * 1.15)
         if random.random() < 0.05:
             enemy = make_elite(enemy)
             print(f"\n★ AN ELITE MONSTER APPEARS! {enemy['name']} — beware!")
-
         if r in _DARK_REGIONS:
             add_corruption(5)
-        fight(enemy)
-        _check_achievements()
-    else:
-        print("Peaceful wandering...")
+    fight(enemy)
+    _check_achievements()
 
 
 # =========================
@@ -4766,6 +4767,7 @@ def _fight_elemental_boss(boss_data):
         drop_loot()
     else:
         print(f"\n☠ {boss['name']} has destroyed you.")
+        raise _ui.RunEnded()
 
 
 # =========================
@@ -5650,7 +5652,10 @@ def game():
         print("\n--- " + BY_ID[group]["name"].upper() + " ---")
         for number, label in BY_ID[group]["options"]:
             print(f"{number}. {label}")
-        print("Type a number, or choose an option. /back returns from a submenu.")
+        print("Categories: " + " | ".join(g["name"] for g in BY_ID.values()))
+        print(
+            "Type any original action number (1–46), or a category name. /back returns from a submenu."
+        )
         try:
             choice = input("Your choice > ").strip()
         except _ui.ReturnToMenu:
@@ -5659,6 +5664,13 @@ def game():
             from beta_testing import grant_collectibles
 
             grant_collectibles(player)
+            continue
+        category = next(
+            (g["id"] for g in BY_ID.values() if choice.lower() in (g["id"], g["name"].lower())),
+            None,
+        )
+        if category:
+            group = category
             continue
         if choice.startswith("/group:"):
             requested = choice.split(":", 1)[1]
@@ -5671,11 +5683,18 @@ def game():
         _ui.context("action", group)
         before = deepcopy(player)
         try:
-            if not perform_original_action(choice):
+            result = perform_original_action(choice)
+            if player["hp"] <= 0:
+                raise _ui.RunEnded()
+            if not result:
                 save_game()
                 print("Journey saved. You can continue from the title screen.")
                 return
+        except _ui.RunEnded:
+            raise
         except _ui.ReturnToMenu:
+            if player["hp"] <= 0:
+                raise _ui.RunEnded()
             print("Returned to the category menu.")
         except Exception as error:
             player.clear()

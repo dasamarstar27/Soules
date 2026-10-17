@@ -8,6 +8,10 @@ _ui = None
 location = None
 
 
+class RunEnded(Exception):
+    """The current character has died."""
+
+
 class ReturnToMenu(Exception):
     pass
 

@@ -29,6 +29,62 @@ class OriginalTests(unittest.TestCase):
     def test_all_original_actions_grouped(self):
         self.assertEqual(sorted(n for g in GROUPS for n, _ in g["options"]), list(range(1, 47)))
 
+    def test_wander_encounters_day_night_and_level_ten(self):
+        from copy import deepcopy
+
+        for count, level in [(0, 1), (7, 1), (0, 10), (7, 11)]:
+            self.p["wander_count"] = count
+            self.p["level"] = level
+            with patch.object(game.random, "random", return_value=0.99), patch.object(
+                game.random, "randint", return_value=80
+            ), patch.object(game, "fight") as fight, patch("builtins.print"):
+                game.explore()
+                fight.assert_called_once()
+                enemy = fight.call_args.args[0]
+                self.assertGreater(enemy["hp"], 0)
+
+    def test_merchant_and_quiet_roll_do_not_start_fights(self):
+        for roll in [5, 15]:
+            with patch.object(game.random, "random", return_value=0.99), patch.object(
+                game.random, "randint", return_value=roll
+            ), patch.object(game, "fight") as fight, patch.object(
+                game, "merchant"
+            ) as merchant, patch(
+                "builtins.print"
+            ):
+                game.explore()
+                fight.assert_not_called()
+                self.assertEqual(merchant.call_count, int(roll == 5))
+
+    def test_death_ends_run_without_restoring_character(self):
+        import original_ui as ui
+
+        def lethal_action(choice):
+            self.p["hp"] = 0
+            return True
+
+        with patch.object(game, "load_game"), patch.object(
+            game, "perform_original_action", side_effect=lethal_action
+        ), patch("builtins.input", return_value="1"), patch("builtins.print"):
+            with self.assertRaises(ui.RunEnded):
+                game.game()
+        self.assertEqual(self.p["hp"], 0)
+
+    def test_dead_worker_exits_without_another_prompt(self):
+        import original_ui as ui
+
+        ui.init_ui(self.p)
+        self.p["hp"] = 0
+        saved = ui.snapshot()
+        session = OriginalSession({"save": saved})
+        try:
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["phase"], "dead")
+            self.assertFalse(state["waiting"])
+            self.assertEqual(state["snapshot"]["player"]["hp"], 0)
+        finally:
+            session.close()
+
     def test_starter_only_rusty_sword(self):
         self.assertEqual([w["name"] for w in self.p["weapons"]], ["Rusty Sword"])
         self.assertIs(self.p["weapon"], self.p["weapons"][0])

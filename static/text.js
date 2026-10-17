@@ -42,7 +42,9 @@ function apply(result){
  if(packet&&result.prompt_id&&result.prompt_id<packet.prompt_id)return;
  const terminal=$('#terminal'),nearBottom=terminal.scrollHeight-terminal.scrollTop-terminal.clientHeight<90;
  for(const line of result.output||[]){if(line.id<cursor)continue;append(line.text,line.text.includes('could not finish')?'error-line':line.text.trim().startsWith('---')?'menu-heading':'');cursor=line.id+1;}
+ const newlyDead=result.snapshot?.phase==='dead'&&packet?.snapshot?.phase!=='dead';
  packet=result;
+ if(newlyDead){checkpoint=null;localStorage.removeItem(STORE);notice("Your character has died. Begin a new journey.");$('#new-dialog').showModal();}
  if(canSave()){checkpoint=safeSave();writeStore(STORE,checkpoint);}
  if(result.snapshot?.player){renderSidebar();theme();}
  renderGameControls();
@@ -55,7 +57,7 @@ async function start(config){
  try{const result=await api('start',config);cursor=0;$('#terminal').replaceChildren();apply(result);show('play');$('#command').focus();}
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();}
 }
-function play(){if(packet?.alive){show('play');return;}if(checkpoint?.player){start({save:checkpoint});return;}$('#new-dialog').showModal();}
+function play(){if(packet?.alive&&packet?.snapshot?.phase!=='dead'){show('play');return;}if(checkpoint?.player){start({save:checkpoint});return;}$('#new-dialog').showModal();}
 async function respond(text,group){
  if(busy||!packet?.waiting)return;
  busy=true;epoch++;renderGameControls();
@@ -63,7 +65,7 @@ async function respond(text,group){
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();if(view==='play')$('#command').focus();}
 }
 function renderGameControls(){
- if(!catalog)return;const main=packet?.snapshot?.phase==='main',enabled=Boolean(packet?.waiting&&packet.alive&&!busy),group=packet?.snapshot?.group||'explore';
+ if(!catalog)return;const main=packet?.snapshot?.phase==='main',enabled=Boolean(packet?.waiting&&packet.alive&&packet?.snapshot?.phase!=='dead'&&!busy),group=packet?.snapshot?.group||'explore';
  $('#categories').innerHTML=catalog.groups.map(g=>`<button data-group="${g.id}" class="${g.id===group?'active':''}" ${!enabled||!main?'disabled':''}>${esc(g.name)}</button>`).join('');
  $('#action-buttons').innerHTML=main?(catalog.groups.find(g=>g.id===group)?.options||[]).map(([n,label])=>`<button data-response="${n}" ${!enabled?'disabled':''}><b>${n}</b>${esc(label)}</button>`).join(''):'<small style="color:var(--muted)">Answer the current prompt below. Categories unlock when you return.</small>';
  $('#prompt').textContent=packet?.alive?(packet.prompt||'Waiting for the game…'):'Press Play / Continue to resume your saved character.';
@@ -111,7 +113,7 @@ $('#command-form').onsubmit=event=>{event.preventDefault();const value=$('#comma
 $('#back').onclick=()=>respond('/back');$('#play').onclick=play;
 $('#font-down').onclick=()=>{preferences.font=Math.max(12,(preferences.font||15)-1);savePreferences();};$('#font-up').onclick=()=>{preferences.font=Math.min(22,(preferences.font||15)+1);savePreferences();};
 $('#cancel-new').onclick=()=>$('#new-dialog').close();
-$('#new-character').onsubmit=event=>{event.preventDefault();if(packet?.alive&&!confirm('Start a new character? Your stored slots will remain safe.'))return;const config=Object.fromEntries(new FormData(event.target));$('#new-dialog').close();start(config);};
+$('#new-character').onsubmit=event=>{event.preventDefault();if(packet?.alive&&packet?.snapshot?.phase!=='dead'&&!confirm('Start a new character? Your stored slots will remain safe.'))return;const config=Object.fromEntries(new FormData(event.target));$('#new-dialog').close();start(config);};
 $('#import-file').onchange=async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>2*1024*1024)throw new Error('Choose a save smaller than 2 MB.');const value=JSON.parse(await file.text());if(packet?.alive&&!confirm('Import this character? Your running adventure will be replaced.'))return;await start({save:value});}catch(e){notice(e.message);}event.target.value='';};
 document.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;
  if(b.dataset.view){show(b.dataset.view);return;}
