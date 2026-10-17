@@ -142,7 +142,33 @@ def original_catalog():
     ] = "25% chance of a free ranged shot: 5 damage at level 1, scaling to 15."
     classes["ranger"]["skill_desc"] = "Three arrows, 6 damage each at level 1, scaling to 15 each."
     classes["necromancer"]["skill_desc"] = "Drain 12 HP at level 1, scaling to 35."
-    return jsonify(groups=GROUPS, classes=classes, content=catalog())
+    content = catalog()
+    from rune_pairs import BASE
+
+    content["recipes"] = [
+        r
+        for r in content["recipes"]
+        if len(r["inputs"]) == 2
+        and all(name.replace("Fire Rune", "Flame Rune") in BASE for name in r["inputs"])
+    ]
+    return jsonify(groups=GROUPS, classes=classes, content=content)
+
+
+@app.get("/api/original/fusion")
+def original_fusion_preview():
+    from rune_pairs import BASE, fusion, PAIR_COUNT
+
+    try:
+        result = fusion(BASE[request.args.get("first", "")], BASE[request.args.get("second", "")])
+    except (KeyError, ValueError):
+        return jsonify(error="Choose two normal rune types."), 400
+    from effects import EFFECTS
+
+    return jsonify(
+        result=result,
+        pair_count=PAIR_COUNT,
+        components=[dict(key=key, **EFFECTS[key]) for key in result["components"]],
+    )
 
 
 @app.post("/api/original/start")

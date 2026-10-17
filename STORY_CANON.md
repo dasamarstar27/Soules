@@ -6,7 +6,7 @@ The Riftlands separated the main world from the Dreamscape. Monsters were much r
 
 The king of the Dreamscape entered the Sacred Temple in the Riftlands and corrupted core energy. The Dreamscape merged into the main world. Monsters rose, and the king himself became a monster and their king.
 
-The elemental civilisations fought the invasion. They were destroyed one after another until only the Ignar Clan, Glacien Tribe, Voltis Enclave and Sylvar Circle remained.
+Eleven cores were destroyed, wiping out their civilisations’ powers and leaving them vulnerable. The elemental civilisations fought the invasion and were destroyed one after another until only the Ignar Clan, Glacien Tribe, Voltis Enclave and Sylvar Circle remained.
 
 Warriors from those four civilisations entered the temple. They stabilised the power with their lives and banished the Dreamscape King. The surviving civilisations concealed themselves behind wards and preserved different traditions and accounts of the sacrifice.
 
@@ -16,11 +16,15 @@ The rift opens again and the Dreamscape falls back into the world. The corrupted
 
 The existing boss name, The Dreaming God, is retained as an alias for the corrupted Dreamscape King. The Sacred Temple is the location already called Source Temple in the original game data; these are the same place, not two temples.
 
-The reason the rift reopened is not revealed in Chapter One.
+The four surviving clans keep their cores at home. Only the stabiliser remains at the Sacred Temple in the Riftlands.
+
+The player meets an elderly mentor in the first village they visit. He is the grandson of one of the warriors. The current name Elian and his grandmother Miren are editable additions. After the king falls, the player says the world is saved. The mentor warns that someone or something must have reconnected the Dreamscape and must understand core energy; that threat still exists. The actual cause remains unrevealed until Season Three.
+
+The player helps rebuild by completing 20 side quests after this victory. Season Two begins five months later in lore, without a real-time waiting period.
 
 ## Season Two: The Broken Bridge
 
-After the king falls, a new villain tampers with the Core Stabiliser to open a bridge to the Creator's Realm. The attempt breaks it and unbalances Source energy. The player investigates the surviving villages' channels, stops the activation and repairs the stabiliser.
+Five months after the king falls, a new villain tampers with the Core Stabiliser to open a bridge to the Creator's Realm. The attempt breaks it and unbalances Source energy. The player investigates the surviving villages' channels, stops the activation and repairs the stabiliser.
 
 The current former-keeper villain name is Vael. The names of this new villain and the four ancestral warband leaders are additions that can be renamed without changing the user's history.
 

@@ -68,7 +68,7 @@ def validate_original_save(value):
     ):
         if not isinstance(p.get(key, {}), dict):
             raise ValueError("Invalid effects or structures in save.")
-    for key in ("status", "active_buffs"):
+    for key in ("status", "active_buffs", "rune_status"):
         if any(
             not isinstance(k, str) or type(n) not in (int, float) or not math.isfinite(n) or n < 0
             for k, n in p.get(key, {}).items()
@@ -106,21 +106,37 @@ def validate_original_save(value):
                 ):
                     raise ValueError("Invalid village tags in save.")
             else:
-                for number in ("reputation", "stock_cycle", "harvest_cycle", "errand_cycle"):
+                for number in (
+                    "reputation",
+                    "stock_cycle",
+                    "harvest_cycle",
+                    "errand_cycle",
+                    "errands_completed",
+                ):
                     if number in record and (
                         type(record[number]) is not int or not 0 <= record[number] <= 1000000000
                     ):
                         raise ValueError("Invalid village progress in save.")
+                levels = record.get("levels", {})
+                if not isinstance(levels, dict) or any(
+                    type(level) is not int or not 1 <= level <= 5 for level in levels.values()
+                ):
+                    raise ValueError("Invalid building levels in save.")
                 food_stock = record.get("food_stock", {})
                 if not isinstance(food_stock, dict) or any(
                     not isinstance(name, str) or type(count) is not int or not 0 <= count <= 10000
                     for name, count in food_stock.items()
                 ):
                     raise ValueError("Invalid village stock in save.")
+    materials = p.get("building_materials", {})
+    if not isinstance(materials, dict) or any(
+        type(count) is not int or not 0 <= count <= 1000000000 for count in materials.values()
+    ):
+        raise ValueError("Invalid building materials in save.")
     story = p.get("source_story", {})
     if not isinstance(story, dict):
         raise ValueError("Invalid story progress in save.")
-    for flag in ("opened", "vael_defeated", "complete"):
+    for flag in ("opened", "vael_defeated", "complete", "season_one_complete"):
         if flag in story and type(story[flag]) is not bool:
             raise ValueError("Invalid story flag in save.")
     for field in ("clues", "witnesses", "rumours", "anomaly_wanders"):
@@ -151,6 +167,15 @@ def validate_original_save(value):
         or not 0 <= story.get("fragments", 0) <= 1000000000
     ):
         raise ValueError("Invalid Source fragments in save.")
+    for key in ("sidequest_baseline", "months_since_season_one"):
+        if key in story and (type(story[key]) is not int or not 0 <= story[key] <= 1000000000):
+            raise ValueError("Invalid season timeline in save.")
+    mentor = story.get("mentor_village")
+    if mentor is not None and (
+        not isinstance(mentor, dict)
+        or any(not isinstance(mentor.get(k), str) for k in ("id", "name", "region"))
+    ):
+        raise ValueError("Invalid mentor record in save.")
     # Only character progress is restored. Input prompts and half-completed actions are not replayed.
     cleaned = deepcopy(p)
     for key in list(cleaned):

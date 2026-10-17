@@ -30,6 +30,8 @@ with sync_playwright() as p:
         "packet.prompt === 'Village > ' && packet.snapshot.village?.name === 'Old Village'"
     )
     assert "forge" not in page.evaluate("packet.snapshot.village.services")
+    assert "temple" not in page.evaluate("packet.snapshot.village.services")
+    assert "Lv. 2" in page.locator(".village-card").inner_text()
     assert page.evaluate("packet.snapshot.village.quality.farm") == 3
     page.locator('.village-card [data-response="note"]').click()
     page.wait_for_function("packet.prompt.includes('Village note')")
@@ -40,10 +42,10 @@ with sync_playwright() as p:
     assert "farming" in page.locator(".village-card .effect-chips").inner_text()
     before = page.evaluate("packet.snapshot.player.ingredients.length")
     send("10")
-    assert page.evaluate("packet.snapshot.player.ingredients.length") == before + 4
+    assert page.evaluate("packet.snapshot.player.ingredients.length") == before + 5
     assert "Farm regrowing" in page.locator(".village-card").inner_text()
     send("10")
-    assert page.evaluate("packet.snapshot.player.ingredients.length") == before + 4
+    assert page.evaluate("packet.snapshot.player.ingredients.length") == before + 5
     send("8")
     page.wait_for_function("packet.prompt === 'Workstation > '")
     assert "forge" not in page.evaluate("packet.snapshot.village.services")
@@ -57,7 +59,9 @@ with sync_playwright() as p:
     send("7")
     send("0")
     page.wait_for_function("packet.snapshot.phase === 'category'")
-    page.evaluate("async()=>{await start({save:safeSave()});}")
+    page.evaluate(
+        'async()=>{const save=safeSave();save.player.building_materials={Timber:20,Stone:20,"Iron fittings":20};save.player.gold=500;await start({save});}'
+    )
     page.wait_for_function("packet.snapshot.phase === 'main'")
     assert (
         page.evaluate("packet.snapshot.player.saved_villages['Whispering Woods::Old Village'].note")
@@ -68,6 +72,13 @@ with sync_playwright() as p:
     send("1")
     page.wait_for_function("packet.prompt === 'Village > '")
     assert page.evaluate("packet.snapshot.village.farm_ready") is False
+    send("17")
+    page.wait_for_function("packet.prompt === 'Building > '")
+    send("1")
+    send("y")
+    send("0")
+    assert page.evaluate("packet.snapshot.village.levels.restaurant") == 3
+    assert page.evaluate("packet.snapshot.player.gold") == 400
     page.set_viewport_size({"width": 390, "height": 844})
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     Path("/tmp/soules-checks").mkdir(exist_ok=True)

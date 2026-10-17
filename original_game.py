@@ -449,624 +449,9 @@ SPECIAL_FUSION_RECIPES = {
 
 
 def apply_rune_effect(rune, user, enemy):
-    user.setdefault("active_buffs", {})
-    enemy.setdefault("active_buffs", {})
-    effect = rune.get("effect")
+    from original_magic import apply
 
-    if effect == "fusion":
-        special = rune.get("special_effect")
-        if special:
-            print(f"✨ Special fusion effect activated: {special}")
-        for component in rune.get("components", []):
-            apply_rune_effect({"effect": component}, user, enemy)
-        return
-
-    if effect == "burn":
-        enemy.setdefault("status", {})["burn"] = 3
-    elif effect == "poison":
-        enemy.setdefault("status", {})["poison"] = 4
-    elif effect == "bleed":
-        enemy.setdefault("status", {})["bleed"] = 3
-    elif effect == "shock":
-        enemy.setdefault("status", {})["shock"] = 2
-    elif effect == "freeze":
-        enemy.setdefault("status", {})["freeze"] = 2
-    elif effect == "void":
-        enemy.setdefault("status", {})["void"] = 3
-    elif effect == "void_burn":
-        enemy.setdefault("status", {})["void"] = 2
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy["hp"] -= 4
-    elif effect == "curse":
-        enemy.setdefault("status", {})["curse"] = 3
-    elif effect == "fear":
-        enemy.setdefault("status", {})["fear"] = 2
-    elif effect == "sleep":
-        enemy.setdefault("status", {})["sleep"] = 1
-    elif effect == "stun":
-        enemy.setdefault("active_buffs", {})["stun"] = 1
-    elif effect == "hellfire":
-        enemy.setdefault("status", {})["burn"] = 3
-        enemy["hp"] -= 5
-    elif effect == "sun_blast":
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy["hp"] -= 8
-    elif effect == "magma":
-        enemy.setdefault("status", {})["magma"] = 3
-        enemy["hp"] -= 4
-    elif effect == "chain_shock":
-        enemy.setdefault("status", {})["shock"] = 3
-        enemy["hp"] -= 4
-    elif effect == "deadly_poison":
-        enemy.setdefault("status", {})["poison"] = 5
-        enemy["def"] = max(0, enemy.get("def", 0) - 1)
-    elif effect == "giant_strength":
-        user.setdefault("active_buffs", {})["giant_strength"] = 3
-    elif effect == "regen":
-        user["hp"] += 5
-    elif effect == "greater_regen":
-        user["hp"] += 10
-    elif effect == "heal_tick":
-        user["active_buffs"]["heal_tick"] = 3
-    elif effect == "armor_break":
-        enemy["def"] = max(0, enemy.get("def", 0) - 2)
-    elif effect == "defense_up":
-        user["def"] += 2
-    elif effect == "speed_up":
-        user["active_buffs"]["speed_up"] = 3
-    elif effect == "crit_up":
-        user["active_buffs"]["crit_up"] = 3
-    elif effect == "elemental_balance":
-        user["active_buffs"]["elemental_balance"] = 3
-    elif effect == "supercharge":
-        user["active_buffs"]["supercharge"] = 3
-    elif effect == "fusion_boost":
-        user["active_buffs"]["fusion_boost"] = 3
-    elif effect == "life_drain":
-        drain = 5
-        enemy["hp"] -= drain
-        user["hp"] += drain
-    elif effect == "dragon_fury":
-        enemy["hp"] -= 15
-    elif effect == "rebirth":
-        user["active_buffs"]["rebirth"] = 1
-    elif effect == "holy_barrier":
-        user["active_buffs"]["barrier"] = 2
-    elif effect == "nature_blessing":
-        user["hp"] += 8
-    elif effect == "time_lock":
-        enemy["active_buffs"]["stun"] = 1
-    elif effect == "reality_bend":
-        enemy["hp"] -= random.randint(5, 20)
-    elif effect == "soak":
-        enemy["def"] = max(0, enemy.get("def", 0) - 1)
-    elif effect == "blind":
-        enemy["active_buffs"]["blind"] = 2
-    elif effect == "mana_regen":
-        user["mana"] = min(user.get("mana", 0) + 5, 20)
-    elif effect == "burn_freeze":
-        enemy.setdefault("status", {})["burn"] = 3
-        enemy.setdefault("status", {})["freeze"] = 2
-    elif effect == "root":
-        enemy["active_buffs"]["root"] = 2
-    elif effect == "divine_luck":
-        user["active_buffs"]["divine_luck"] = 3
-    elif effect == "starfall":
-        enemy["hp"] -= 8
-    elif effect == "moon_guard":
-        user["active_buffs"]["moon_guard"] = 3
-    elif effect == "slow_time":
-        enemy["active_buffs"]["slow_time"] = 3
-    elif effect == "warp":
-        user["active_buffs"]["warp"] = 1
-    elif effect == "crush":
-        enemy["def"] = max(0, enemy.get("def", 0) - 4)
-    elif effect == "random_effect":
-        sub_effect = random.choice(
-            [
-                "burn",
-                "poison",
-                "freeze",
-                "shock",
-                "life_drain",
-                "greater_regen",
-                "armor_break",
-                "defense_up",
-                "speed_up",
-            ]
-        )
-        apply_rune_effect({"effect": sub_effect}, user, enemy)
-    elif effect == "stability":
-        user["active_buffs"]["stability"] = 3
-    elif effect == "soul_drain":
-        enemy["hp"] -= 10
-        user["hp"] += 10
-    elif effect == "execute":
-        if enemy["hp"] <= 15:
-            enemy["hp"] = 0
-        else:
-            enemy["hp"] -= 2
-    elif effect == "double_cast":
-        user["active_buffs"]["double_cast"] = 1
-    elif effect == "reflect":
-        user["active_buffs"]["reflect"] = 1
-    elif effect == "tidal_wave":
-        enemy["hp"] -= 5
-        enemy.setdefault("status", {})["shock"] = 2
-    elif effect == "fortress":
-        user["active_buffs"]["fortress"] = 3
-    elif effect == "dimension_break":
-        enemy["hp"] -= 10
-        if "status" in enemy:
-            enemy["status"].clear()
-    elif effect == "creation":
-        user.setdefault("status", {})["creation"] = 3
-    elif effect == "berserk":
-        user.setdefault("active_buffs", {})["berserk"] = 3
-        user["atk"] += 10
-        user["def"] = max(0, user.get("def", 0) - 3)
-        print("💢 Berserk! ATK +10, DEF -3")
-    elif effect == "sacrifice":
-        sacrifice_dmg = min(user["hp"] - 1, 20)
-        user["hp"] -= sacrifice_dmg
-        enemy["hp"] -= sacrifice_dmg * 2
-        print(f"💀 Sacrifice! Lost {sacrifice_dmg} HP, dealt {sacrifice_dmg * 2} to enemy!")
-    elif effect == "shatter":
-        enemy["def"] = 0
-        print("💥 Shatter! Enemy defense destroyed!")
-    elif effect == "overload":
-        burst = 10 + user.get("mana", 0) * 2
-        enemy["hp"] -= burst
-        user["mana"] = 0
-        print(f"⚡ Overload! Spent all mana for {burst} damage!")
-    elif effect == "thorns":
-        user.setdefault("active_buffs", {})["thorns"] = 4
-        print("🌵 Thorns! Attackers will take reflected damage!")
-    elif effect == "banish":
-        enemy.setdefault("status", {}).clear()
-        enemy.setdefault("active_buffs", {}).clear()
-        enemy["hp"] -= 12
-        print("✨ Banish! Stripped all enemy status effects + 12 damage!")
-    elif effect == "lightning_storm":
-        enemy.setdefault("status", {})["shock"] = 4
-        enemy["hp"] -= 10
-        enemy["def"] = max(0, enemy.get("def", 0) - 2)
-        print("⚡ Lightning Storm! Shock x4, 10 damage, DEF -2!")
-    elif effect == "blood_moon":
-        user.setdefault("active_buffs", {})["blood_moon"] = 3
-        print("🌑 Blood Moon rises! All damage effects intensified!")
-    elif effect == "ancient_power":
-        user["atk"] += 5
-        user["def"] += 3
-        user["max_hp"] += 10
-        user["hp"] = min(user["hp"] + 10, user["max_hp"])
-        print("🏛 Ancient Power! ATK +5, DEF +3, Max HP +10!")
-    elif effect == "wraith_form":
-        user.setdefault("active_buffs", {})["wraith_form"] = 2
-        print("👻 Wraith Form! You become ethereal for 2 turns!")
-    elif effect == "bloodlust":
-        user["atk"] += 8
-        enemy.setdefault("status", {})["bleed"] = 4
-        enemy["hp"] -= 8
-        print("🩸 Bloodlust! ATK +8, enemy bleeds!")
-    elif effect == "earthquake":
-        enemy["hp"] -= 12
-        enemy["def"] = max(0, enemy.get("def", 0) - 3)
-        enemy.setdefault("active_buffs", {})["root"] = 2
-        print("🌋 Earthquake! 12 damage, DEF -3, enemy rooted!")
-    elif effect == "frostshade":
-        enemy.setdefault("status", {})["freeze"] = 2
-        enemy.setdefault("active_buffs", {})["blind"] = 2
-        enemy.setdefault("status", {})["fear"] = 2
-        print("🌑 Frostshade! Freeze + blind + fear applied!")
-    elif effect == "abyssal_soul":
-        drain = 15
-        enemy["hp"] -= drain
-        user["hp"] += drain
-        enemy.setdefault("status", {})["void"] = 3
-        enemy.setdefault("status", {})["curse"] = 2
-        print(f"🌀 Abyssal Soul! Drained {drain} HP, applied void + curse!")
-    elif effect == "dragon_flame":
-        enemy["hp"] -= 20
-        enemy.setdefault("status", {})["burn"] = 3
-        print("🐉 Dragon Flame! 20 damage + burn!")
-    elif effect == "dawn_rebirth":
-        user.setdefault("active_buffs", {})["rebirth"] = 1
-        user.setdefault("active_buffs", {})["heal_tick"] = 3
-        enemy.setdefault("status", {})["burn"] = 2
-        print("🌅 Dawn Rebirth! Rebirth ready, healing active, enemy burned!")
-    elif effect == "colossus":
-        user["atk"] += 12
-        user.setdefault("active_buffs", {})["fortress"] = 3
-        enemy["def"] = max(0, enemy.get("def", 0) - 4)
-        print("🗿 Colossus! ATK +12, fortress up, enemy DEF crushed!")
-    elif effect == "entropy":
-        enemy["hp"] -= 10
-        enemy.setdefault("status", {}).clear()
-        for _ in range(3):
-            sub = random.choice(["burn", "poison", "void", "shock", "freeze"])
-            enemy.setdefault("status", {})[sub] = 2
-        print("🌌 Entropy! 10 damage + 3 random chaos effects!")
-    elif effect == "tide_of_life":
-        user["hp"] = min(user["max_hp"], user["hp"] + 15)
-        enemy["hp"] -= 8
-        enemy.setdefault("status", {})["shock"] = 2
-        print("🌊 Tide of Life! Healed 15, enemy takes 8 damage + shock!")
-    elif effect == "phantom":
-        user.setdefault("active_buffs", {})["reflect"] = 2
-        user.setdefault("active_buffs", {})["double_cast"] = 1
-        user.setdefault("active_buffs", {})["warp"] = 1
-        print("👻 Phantom! Reflect + double cast + warp active!")
-
-    # ---- basic rune effects (previously unhandled) ----
-    elif effect == "enhance_fusion":
-        user.setdefault("active_buffs", {})["fusion_boost"] = 3
-        print("✨ Enhance Fusion! Next fusion rune hits harder!")
-    elif effect == "plasma_surge":
-        enemy["hp"] -= 9
-        enemy.setdefault("status", {})["shock"] = 2
-        print("⚡ Plasma Surge! 9 damage + shock!")
-    elif effect == "sonic_shock":
-        enemy["hp"] -= 8
-        enemy.setdefault("active_buffs", {})["stun"] = 1
-        print("🔊 Sonic Shock! 8 damage + stun!")
-    elif effect == "ember_blade":
-        enemy["hp"] -= 7
-        enemy.setdefault("status", {})["burn"] = 3
-        print("🔥 Ember Blade! 7 damage + burn!")
-    elif effect == "glacial_chill":
-        enemy.setdefault("status", {})["freeze"] = 2
-        enemy.setdefault("active_buffs", {})["slow_time"] = 2
-        print("🧊 Glacial Chill! Freeze + slow!")
-    elif effect == "steel_guard":
-        user["def"] += 6
-        user.setdefault("active_buffs", {})["defense_up"] = 3
-        print("🛡 Steel Guard! DEF +6!")
-    elif effect == "radiant_glow":
-        user["hp"] = min(user["max_hp"], user["hp"] + 12)
-        user.setdefault("active_buffs", {})["heal_tick"] = 2
-        print("🌟 Radiant Glow! Healed 12 + healing aura!")
-    elif effect == "ethereal_wisp":
-        user.setdefault("active_buffs", {})["warp"] = 2
-        user.setdefault("active_buffs", {})["defense_up"] = 1
-        print("👻 Ethereal Wisp! Evasion + shield for 2 turns!")
-    elif effect == "necrotic_decay":
-        decay = max(5, enemy.get("max_hp", enemy["hp"]) // 10)
-        enemy["hp"] -= decay
-        enemy["max_hp"] = max(1, enemy.get("max_hp", enemy["hp"]) - decay // 2)
-        print(f"☠ Necrotic Decay! {decay} damage + enemy max HP reduced!")
-    elif effect == "primal_roar":
-        enemy.setdefault("active_buffs", {})["fear"] = 2
-        user["atk"] += 5
-        print("🦁 Primal Roar! ATK +5, enemy feared!")
-    elif effect == "vortex_pull":
-        enemy["def"] = max(0, enemy.get("def", 0) - 5)
-        enemy.setdefault("active_buffs", {})["root"] = 1
-        print("🌀 Vortex Pull! Enemy DEF -5 + rooted!")
-    elif effect == "quartz_barrier":
-        user.setdefault("active_buffs", {})["fortress"] = 3
-        user.setdefault("active_buffs", {})["stability"] = 2
-        print("💎 Quartz Barrier! Fortress + stability shield!")
-    elif effect == "arcane_burn":
-        dmg = 8 + user.get("mana", 0) // 5
-        enemy["hp"] -= dmg
-        enemy.setdefault("status", {})["burn"] = 2
-        print(f"🔮 Arcane Burn! {dmg} arcane damage + burn!")
-    elif effect == "plasma_chain":
-        enemy["hp"] -= 6
-        enemy.setdefault("status", {})["shock"] = 3
-        enemy["def"] = max(0, enemy.get("def", 0) - 2)
-        print("⚡ Plasma Chain! 6 damage + chain shock + DEF -2!")
-    elif effect == "sonic_echo":
-        enemy["hp"] -= 5
-        user.setdefault("active_buffs", {})["double_cast"] = 1
-        print("🔊 Sonic Echo! 5 damage + next hit echoes!")
-    elif effect == "ember_crystal":
-        enemy["hp"] -= 8
-        enemy.setdefault("status", {})["burn"] = 2
-        user.setdefault("active_buffs", {})["crit_up"] = 2
-        print("💎🔥 Ember Crystal! 8 damage + burn + crit up!")
-    elif effect == "glacial_tide":
-        enemy.setdefault("status", {})["freeze"] = 2
-        user["hp"] = min(user["max_hp"], user["hp"] + 8)
-        print("🌊🧊 Glacial Tide! Enemy frozen + healed 8!")
-    elif effect == "steel_root":
-        enemy.setdefault("active_buffs", {})["root"] = 3
-        user["def"] += 4
-        print("🌿🛡 Steel Root! Enemy rooted + DEF +4!")
-    elif effect == "radiant_aura":
-        user["hp"] = min(user["max_hp"], user["hp"] + 10)
-        user.setdefault("active_buffs", {})["heal_tick"] = 3
-        user.setdefault("active_buffs", {})["moon_guard"] = 2
-        print("✨ Radiant Aura! Heal 10 + healing aura + guard!")
-    elif effect == "phase_shift":
-        user.setdefault("active_buffs", {})["warp"] = 3
-        user.setdefault("active_buffs", {})["reflect"] = 1
-        print("👻 Phase Shift! Phased for 3 turns + reflect!")
-    elif effect == "blood_decay":
-        drain = 10
-        enemy["hp"] -= drain
-        enemy.setdefault("status", {})["bleed"] = 3
-        user["hp"] = min(user["max_hp"], user["hp"] + drain // 2)
-        print(f"🩸☠ Blood Decay! {drain} drain + bleed, healed {drain // 2}!")
-    elif effect == "primal_force":
-        dmg = 16
-        enemy["hp"] -= dmg
-        print(f"🦁 Primal Force! Raw {dmg} damage!")
-    elif effect == "vortex_storm":
-        enemy["hp"] -= 12
-        enemy.setdefault("status", {})["shock"] = 3
-        enemy["def"] = max(0, enemy.get("def", 0) - 3)
-        print("🌀⚡ Vortex Storm! 12 damage + shock + DEF -3!")
-    elif effect == "quartz_shine":
-        user.setdefault("active_buffs", {})["fortress"] = 2
-        enemy.setdefault("active_buffs", {})["blind"] = 2
-        print("💎 Quartz Shine! Your barrier blinds the enemy!")
-    elif effect == "spectral_lash":
-        raw = 14
-        enemy["hp"] -= raw
-        print(f"👻 Spectral Lash! {raw} ghost damage (ignores armour)!")
-    elif effect == "inferno_wave":
-        enemy["hp"] -= 15
-        enemy.setdefault("status", {})["burn"] = 4
-        print("��� Inferno Wave! 15 damage + burn x4!")
-    elif effect == "frost_nova":
-        enemy["hp"] -= 10
-        enemy.setdefault("status", {})["freeze"] = 3
-        print("❄ Frost Nova! 10 damage + freeze x3!")
-    elif effect == "thunder_clap":
-        enemy["hp"] -= 12
-        enemy.setdefault("active_buffs", {})["stun"] = 1
-        enemy.setdefault("status", {})["shock"] = 2
-        print("⚡ Thunder Clap! 12 damage + stun + shock!")
-    elif effect == "tide_blast":
-        enemy["hp"] -= 11
-        enemy.setdefault("status", {})["shock"] = 2
-        user["hp"] = min(user["max_hp"], user["hp"] + 5)
-        print("🌊 Tide Blast! 11 damage + shock, healed 5!")
-    elif effect == "iron_skin":
-        user["def"] += 8
-        print("🛡 Iron Skin! DEF +8!")
-    elif effect == "aurora_surge":
-        user["hp"] = min(user["max_hp"], user["hp"] + 15)
-        enemy["hp"] -= 8
-        print("🌅 Aurora Surge! Healed 15 + 8 light damage!")
-    elif effect == "lunar_flame":
-        enemy.setdefault("status", {})["burn"] = 3
-        user.setdefault("active_buffs", {})["moon_guard"] = 2
-        print("🌙🔥 Lunar Flame! Burn + moon guard!")
-    elif effect == "shadow_flame":
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy.setdefault("active_buffs", {})["blind"] = 2
-        enemy["hp"] -= 7
-        print("🌑🔥 Shadow Flame! 7 damage + burn + blind!")
-    elif effect == "prism_shard":
-        hits = random.randint(2, 4)
-        total = 0
-        for _ in range(hits):
-            h = random.randint(3, 7)
-            enemy["hp"] -= h
-            total += h
-        print(f"💎 Prism Shard! {hits} hits for {total} total damage!")
-    elif effect == "magnetic_pull":
-        enemy["def"] = max(0, enemy.get("def", 0) - 6)
-        enemy.setdefault("active_buffs", {})["root"] = 2
-        print("🧲 Magnetic Pull! Enemy DEF -6 + locked in place!")
-    elif effect == "tempest_charge":
-        user.setdefault("active_buffs", {})["supercharge"] = 2
-        user.setdefault("active_buffs", {})["speed_up"] = 2
-        print("🌪 Tempest Charge! Supercharged + speed up!")
-    elif effect == "void_fire":
-        enemy["hp"] -= 8
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy.setdefault("status", {})["void"] = 2
-        print("🌑🔥 Void Fire! 8 damage + burn + void!")
-    elif effect == "eternal_light":
-        user["hp"] = min(user["max_hp"], user["hp"] + 8)
-        user.setdefault("active_buffs", {})["heal_tick"] = 4
-        print("✨ Eternal Light! Healed 8 + long healing aura!")
-    elif effect == "fate_seal":
-        user.setdefault("active_buffs", {})["fate_seal"] = 5
-        print("🔮 Fate Seal! Enemy will be executed if below 20% HP!")
-    elif effect == "harmony_wave":
-        heal = 6
-        user["hp"] = min(user["max_hp"], user["hp"] + heal)
-        user["atk"] += 3
-        user["def"] += 3
-        print(f"🌊 Harmony Wave! Healed {heal}, ATK +3, DEF +3!")
-    elif effect == "ruin_blast":
-        dmg = 18
-        enemy["hp"] -= dmg
-        print(f"💥 Ruin Blast! {dmg} raw damage!")
-    elif effect == "glimmer_shield":
-        user.setdefault("active_buffs", {})["moon_guard"] = 3
-        user.setdefault("active_buffs", {})["heal_tick"] = 2
-        print("✨ Glimmer Shield! Guarded + healing for 3 turns!")
-    elif effect == "ember_wing":
-        enemy.setdefault("status", {})["burn"] = 2
-        user.setdefault("active_buffs", {})["speed_up"] = 3
-        print("🔥🦅 Ember Wing! Burn + speed up x3!")
-    elif effect == "seismic_tremor":
-        enemy["hp"] -= 10
-        enemy["def"] = max(0, enemy.get("def", 0) - 4)
-        enemy.setdefault("active_buffs", {})["stun"] = 1
-        print("🌋 Seismic Tremor! 10 damage + DEF -4 + stun!")
-    elif effect == "stormheart":
-        enemy.setdefault("status", {})["shock"] = 3
-        user["hp"] = min(user["max_hp"], user["hp"] + 8)
-        print("⛈ Stormheart! Shock x3 + healed 8!")
-    elif effect == "soulflare":
-        drain = 10
-        enemy["hp"] -= drain
-        user["hp"] = min(user["max_hp"], user["hp"] + drain // 2)
-        enemy.setdefault("status", {})["burn"] = 2
-        print(f"🔥👻 Soulflare! {drain} drain + burn, healed {drain // 2}!")
-    elif effect == "frostbrand":
-        enemy.setdefault("status", {})["freeze"] = 2
-        user.setdefault("active_buffs", {})["crit_up"] = 3
-        print("❄🔥 Frostbrand! Freeze + crit up x3!")
-    elif effect == "radiant_dawn":
-        user["hp"] = min(user["max_hp"], user["hp"] + 20)
-        enemy.setdefault("status", {})["burn"] = 2
-        print("🌅 Radiant Dawn! Healed 20 + burned enemy!")
-    elif effect == "silence_field":
-        enemy.setdefault("active_buffs", {})["silenced"] = 3
-        enemy.setdefault("active_buffs", {})["blind"] = 2
-        print("🤫 Silence Field! Enemy silenced for 3 turns + blinded!")
-
-    # ---- fusion rune effects (previously unhandled) ----
-    elif effect == "infernal_nightmare":
-        enemy["hp"] -= 18
-        enemy.setdefault("status", {})["burn"] = 3
-        enemy.setdefault("active_buffs", {})["fear"] = 2
-        print("😈🔥 Infernal Nightmare! 18 damage + burn + fear!")
-    elif effect == "abyssal_dream":
-        enemy.setdefault("status", {})["void"] = 3
-        enemy.setdefault("active_buffs", {})["sleep"] = 2
-        enemy["hp"] -= 10
-        print("🌑💤 Abyssal Dream! 10 damage + void + sleep!")
-    elif effect == "eclipse":
-        enemy.setdefault("active_buffs", {})["blind"] = 3
-        enemy["hp"] -= 14
-        user.setdefault("active_buffs", {})["moon_guard"] = 2
-        print("🌑☀ Eclipse! 14 damage + blind + moon guard!")
-    elif effect == "rebirth_flame":
-        user.setdefault("active_buffs", {})["rebirth"] = 1
-        enemy.setdefault("status", {})["burn"] = 4
-        enemy["hp"] -= 10
-        print("🐉🔥 Rebirth Flame! Rebirth ready + 10 damage + burn x4!")
-    elif effect == "cosmic_eternity":
-        user["atk"] += 8
-        user["def"] += 5
-        user["max_hp"] += 20
-        user["hp"] = min(user["hp"] + 20, user["max_hp"])
-        user.setdefault("active_buffs", {})["divine_luck"] = 4
-        print("🌌 Cosmic Eternity! All stats up + divine luck!")
-    elif effect == "element_synthesis":
-        for st in ["burn", "shock", "freeze", "poison"]:
-            enemy.setdefault("status", {})[st] = 2
-        print("🌍 Element Synthesis! All four elements applied!")
-    elif effect == "steam_burst":
-        enemy["hp"] -= 13
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy.setdefault("status", {})["shock"] = 2
-        print("💨🔥 Steam Burst! 13 damage + burn + shock!")
-    elif effect == "volcanic_freeze":
-        enemy["hp"] -= 12
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy.setdefault("status", {})["freeze"] = 2
-        print("🌋❄ Volcanic Freeze! 12 damage + burn + freeze!")
-    elif effect == "mud_titan":
-        user["def"] += 7
-        enemy.setdefault("active_buffs", {})["root"] = 3
-        enemy["def"] = max(0, enemy.get("def", 0) - 4)
-        print("🪨💧 Mud Titan! DEF +7, enemy rooted + DEF -4!")
-    elif effect == "doomflame":
-        enemy["hp"] -= 16
-        enemy.setdefault("status", {})["burn"] = 3
-        enemy.setdefault("status", {})["void"] = 2
-        print("💀🔥 Doomflame! 16 damage + burn + void!")
-    elif effect == "solar_judgment":
-        dmg = 20
-        enemy["hp"] -= dmg
-        enemy.setdefault("status", {})["burn"] = 2
-        print(f"☀ Solar Judgment! {dmg} holy damage + burn!")
-    elif effect == "null_radiance":
-        enemy.setdefault("status", {}).clear()
-        enemy.setdefault("active_buffs", {}).clear()
-        enemy["hp"] -= 12
-        print("✨ Null Radiance! 12 damage + all enemy effects wiped!")
-    elif effect == "voidflame":
-        enemy["hp"] -= 14
-        enemy.setdefault("status", {})["burn"] = 3
-        enemy.setdefault("status", {})["void"] = 3
-        print("🌑🔥 Voidflame! 14 damage + burn x3 + void x3!")
-    elif effect == "world_tree":
-        user["hp"] = min(user["max_hp"], user["hp"] + 18)
-        user.setdefault("active_buffs", {})["regen"] = 4
-        print("🌳 World Tree! Healed 18 + regen x4!")
-    elif effect == "grave_whisper":
-        drain = 12
-        enemy["hp"] -= drain
-        user["hp"] = min(user["max_hp"], user["hp"] + drain)
-        enemy.setdefault("status", {})["curse"] = 3
-        print(f"💀 Grave Whisper! Drained {drain} HP + curse x3!")
-    elif effect == "ascended_spirit":
-        user["hp"] = min(user["max_hp"], user["hp"] + 15)
-        user["mana"] = min(20, user.get("mana", 0) + 8)
-        user.setdefault("active_buffs", {})["divine_luck"] = 2
-        print("👼 Ascended Spirit! Healed 15, mana +8, divine luck!")
-    elif effect == "chrono_void":
-        enemy.setdefault("active_buffs", {})["slow_time"] = 4
-        enemy.setdefault("status", {})["void"] = 3
-        enemy["hp"] -= 10
-        print("⏳🌑 Chrono Void! 10 damage + slow x4 + void x3!")
-    elif effect == "temporal_flame":
-        enemy["hp"] -= 14
-        enemy.setdefault("status", {})["burn"] = 2
-        enemy.setdefault("active_buffs", {})["slow_time"] = 3
-        print("⏳🔥 Temporal Flame! 14 damage + burn + slow x3!")
-    elif effect == "dark_universe":
-        dmg = 22
-        enemy["hp"] -= dmg
-        enemy.setdefault("status", {})["void"] = 4
-        enemy.setdefault("status", {})["curse"] = 2
-        print(f"🌌 Dark Universe! {dmg} darkness damage + void x4 + curse!")
-    elif effect == "big_bang":
-        dmg = 25
-        enemy["hp"] -= dmg
-        enemy.setdefault("status", {}).clear()
-        print(f"💥 Big Bang! {dmg} cosmic explosion damage!")
-    elif effect == "void_dragon":
-        enemy["hp"] -= 20
-        enemy.setdefault("status", {})["void"] = 4
-        enemy["def"] = max(0, enemy.get("def", 0) - 6)
-        print("🐉🌑 Void Dragon! 20 damage + void x4 + DEF -6!")
-    elif effect == "eternal_ash":
-        user.setdefault("active_buffs", {})["rebirth"] = 1
-        enemy.setdefault("status", {})["burn"] = 4
-        user["atk"] += 6
-        print("🔥🐦 Eternal Ash! Rebirth + burn x4 + ATK +6!")
-    elif effect == "infinite_loop":
-        user.setdefault("active_buffs", {})["double_cast"] = 3
-        user.setdefault("active_buffs", {})["stability"] = 3
-        print("🔄 Infinite Loop! Double cast x3 + stability x3!")
-    elif effect == "broken_reality":
-        enemy["hp"] -= 15
-        enemy.setdefault("status", {}).clear()
-        for _ in range(4):
-            sub = random.choice(["burn", "poison", "void", "shock", "freeze", "curse"])
-            enemy.setdefault("status", {})[sub] = 2
-        print("💥 Broken Reality! 15 damage + 4 random chaos effects!")
-    elif effect == "spectre":
-        user.setdefault("active_buffs", {})["wraith_form"] = 3
-        drain = 10
-        enemy["hp"] -= drain
-        user["hp"] = min(user["max_hp"], user["hp"] + drain // 2)
-        enemy.setdefault("active_buffs", {})["blind"] = 3
-        print("👻 Spectre! Wraith form x3 + soul drain + blind x3!")
-    elif effect == "martyr":
-        sacrifice_dmg = min(user["hp"] - 1, 30)
-        user["hp"] -= sacrifice_dmg
-        enemy["hp"] -= sacrifice_dmg * 3
-        user.setdefault("active_buffs", {})["rebirth"] = 1
-        print(
-            f"✝ Martyr! Sacrificed {sacrifice_dmg} HP → dealt {sacrifice_dmg * 3} + rebirth ready!"
-        )
-    elif effect == "obliteration":
-        enemy["def"] = 0
-        enemy["hp"] -= 18
-        enemy.setdefault("status", {})["shock"] = 4
-        print("💥⚡ Obliteration! Defense destroyed + 18 damage + shock x4!")
-    elif effect == "eclipse_of_souls":
-        for st in list(enemy.get("status", {}).keys()):
-            enemy["status"][st] = min(6, enemy["status"][st] + 2)
-        enemy.setdefault("status", {})["curse"] = 4
-        enemy.setdefault("status", {})["void"] = 3
-        drain = 14
-        enemy["hp"] -= drain
-        user["hp"] = min(user["max_hp"], user["hp"] + drain // 2)
-        print(f"🌑🌙 Eclipse of Souls! All DoTs amplified + {drain} soul drain!")
+    return apply(rune, user, enemy)
 
 
 # =========================
@@ -1645,7 +1030,9 @@ def calculate_damage(player_obj, enemy, mode="weapon"):
     damage = (base_atk + flat_bonus + element_bonus) * crit
     damage -= enemy.get("def", 0)
 
-    return max(1, int(damage))
+    from original_magic import damage as rune_damage
+
+    return rune_damage(player_obj, enemy, max(1, int(damage)))
 
 
 FORGE_DATABASE = {}
@@ -1772,7 +1159,9 @@ def use_staff(enemy):
     dmg = staff.get("power", 5 + len(staff.get("effects", [])) * 3)
     print(f"\n✨ You use {staff['name']}")
 
-    enemy["hp"] -= dmg
+    from original_magic import strike, damage
+
+    strike(player, enemy, damage(player, enemy, dmg), magical=True)
     bound = staff.pop("rune", None)
     if bound:
         apply_rune_effect(bound, player, enemy)
@@ -1933,42 +1322,28 @@ def merge_runes():
     rune_one = player["runes"][first]
     rune_two = player["runes"][second]
 
-    components = []
-    for base in (rune_one, rune_two):
-        if base.get("effect") == "fusion":
-            components.extend(base.get("components", []))
-        else:
-            components.append(base.get("effect"))
+    from rune_pairs import fusion
 
-    recipe = SPECIAL_FUSION_RECIPES.get(frozenset({rune_one["name"], rune_two["name"]}))
-
-    if recipe:
-        fusion_name = recipe["name"]
-        fusion_rune = {
-            "name": fusion_name,
-            "effect": "fusion",
-            "components": recipe["components"],
-            "special_effect": recipe["effect"],
-        }
-    else:
-        components = list(dict.fromkeys(components))
-        fusion_name = f"Fusion Rune ({rune_one['name']} + {rune_two['name']})"
-        fusion_rune = {
-            "name": fusion_name,
-            "effect": "fusion",
-            "components": components,
-        }
-
+    try:
+        fusion_rune = fusion(rune_one, rune_two)
+    except ValueError as error:
+        print(str(error))
+        return
+    recipe = None
     player["runes"].pop(second)
     player["runes"].pop(first)
     player["runes"].append(fusion_rune)
 
     print(f"🔮 Created {fusion_rune['name']}!")
-    if recipe:
-        print(f"✨ New effect made: {recipe['effect']}")
+    print(f"✦ {fusion_rune['ability']['name']}: {fusion_rune['ability']['description']}")
 
 
 def use_combat_rune(enemy):
+    from original_magic import silenced
+
+    if silenced(player):
+        print("Silence prevents rune use this turn.")
+        return False
     """Choose and consume one rune. Ordinary attacks never consume your whole pouch."""
     if not player.get("runes"):
         print("No runes left. Find or buy more; your sword still works.")
@@ -2382,6 +1757,9 @@ def skill_tree():
 
 def fight(enemy, boss=False):
     enemy = enemy.copy()
+    enemy["boss"] = bool(boss)
+    player.pop("_rune_previous", None)
+    enemy.pop("_rune_previous", None)
     enemy.setdefault("status", {})
     enemy.setdefault("active_buffs", {})
     if not enemy.get("max_hp"):
@@ -2417,6 +1795,16 @@ def fight(enemy, boss=False):
         process_buffs()
         apply_status(player)
         apply_status(enemy)
+        from original_magic import turn as rune_turn
+
+        if not rune_turn(player, enemy):
+            player["active_buffs"]["stun"] = 1
+        if player["hp"] <= 0 or enemy["hp"] <= 0:
+            break
+        if not rune_turn(enemy, player):
+            enemy["active_buffs"]["stun"] = 1
+        if player["hp"] <= 0 or enemy["hp"] <= 0:
+            break
 
         # ── Setup (always done before stun check) ──
         cls = CLASSES.get(player.get("class_id") or "", {})
@@ -2453,7 +1841,12 @@ def fight(enemy, boss=False):
                 continue
 
         if c == "4" and not boss:
-            return
+            from original_magic import can_flee
+
+            if can_flee(player):
+                return
+            print("This effect prevents fleeing.")
+            continue
 
         if c == "7":
             potions = player.get("potions", [])
@@ -2556,8 +1949,9 @@ def fight(enemy, boss=False):
                 dmg = int(dmg * 1.5)
                 print("🔴 Berserk! Low HP fury — damage x1.5!")
 
-            print(f"You dealt {dmg} damage!")
-            enemy["hp"] -= dmg
+            from original_magic import strike
+
+            dmg = strike(player, enemy, dmg)
 
             # ── Lifesteal (necromancer passive or vampiric_strike skill) ──
             lifesteal_pct = 0.0
@@ -2650,7 +2044,10 @@ def fight(enemy, boss=False):
                 if random.random() < 0.35:
                     print("✨ Enemy misses due to blind!")
                     enemy_dmg = 0
-            dodge_chance = min(player.get("speed", 5) * 0.005, 0.40)
+            from original_magic import proxy
+            from effects import stat
+
+            dodge_chance = min(stat(proxy(player), "speed") * 0.005, 0.40)
             if enemy_dmg > 0 and random.random() < dodge_chance:
                 print(
                     f"💨 You dodge the attack! (speed {player.get('speed', 5)}, {int(dodge_chance * 100)}% chance)"
@@ -2689,7 +2086,9 @@ def fight(enemy, boss=False):
             enemy_dmg = max(0, enemy_dmg - reduction)
 
         if enemy_dmg > 0:
-            player["hp"] -= enemy_dmg
+            from original_magic import strike, damage as rune_damage
+
+            enemy_dmg = strike(enemy, player, rune_damage(enemy, player, enemy_dmg))
 
         # ── Feature 4: Update Soul Resonance streak ──
         update_resonance(enemy_dmg > 0)
@@ -2762,17 +2161,9 @@ def fight(enemy, boss=False):
                 if player["region"] == "The Dreamscape" and all(
                     r in player["unlocked_regions"] for r in REGIONS
                 ):
-                    player["chapter"] = 2
-                    from source_story import clue
+                    from source_story import season_one_ending
 
-                    clue(
-                        player,
-                        "invasion_ended",
-                        "The Dreamscape King has fallen and his invasion is stopped. Why the rift reopened remains unknown. After the victory, the elemental villages report a new Source imbalance.",
-                    )
-                    print(
-                        "CHAPTER 1 COMPLETE — The Dreaming God has fallen. Chapter 2: the postgame begins. The Creator is not required to beat the original game."
-                    )
+                    season_one_ending(player)
                 gain_xp(100)
                 player["gold"] += 100
                 drop_loot()
@@ -3098,6 +2489,9 @@ def explore():
 
     anomaly(__import__(__name__))
 
+    from village_life import gather_building_material
+
+    gather_building_material(player, random)
     if player["wander_count"] % 20 == 0:
         advance_world_event()
 
@@ -3233,30 +2627,38 @@ def explore():
 
 def travel():
     print("\n=== TRAVEL ===")
-    print("current region:", player["region"])
-    print(
-        "travel to CRIMSON FORGE to upgrade your gear with forge cores obtained from bosses, or explore other unlocked regions for new challenges and rewards."
-    )
-    wish = input("Do you want to travel to the Crimson Forge? (y/n) > ").lower()
-    if wish == "y":
-        if "Crimson Depths" not in player["unlocked_regions"]:
-            print("Crimson Depths is still locked. Defeat earlier region guardians first.")
-            return
-        player["region"] = "Crimson Depths"
-        print("Travelled to Crimson Forge")
-        return
-    else:
-        print("Where do you want to travel?")
-
+    print("Current region: " + player["region"])
     ordered = get_ordered_unlocked_regions()
-    print("\nUnlocked Regions:")
-    for i, region in enumerate(ordered):
+    for i, region in enumerate(ordered, 1):
         print(f"{i}. {region}")
-
-    choice = int(input("> "))
-    player["region"] = ordered[choice]
-    print(f"Travelled to {player['region']}")
-    advance_quest("reach_region", player["region"])
+    print(
+        "F. Crimson Forge" + ("" if "Crimson Depths" in player["unlocked_regions"] else " [locked]")
+    )
+    print("0. Back")
+    choice = input("Destination > ").strip().lower()
+    if choice == "0":
+        return
+    if choice == "f":
+        if "Crimson Depths" not in player["unlocked_regions"]:
+            print("Crimson Depths is still locked.")
+            return
+        region = "Crimson Depths"
+    else:
+        try:
+            index = int(choice) - 1
+        except ValueError:
+            print("Choose a listed destination.")
+            return
+        if not 0 <= index < len(ordered):
+            print("Choose a listed destination.")
+            return
+        region = ordered[index]
+    player["region"] = region
+    player["current_location"] = region
+    print("Travelled to " + region)
+    advance_quest("reach_region", region)
+    if choice == "f":
+        visit_village({"name": "Smiths' Quarter", "type": "village"}, region)
 
 
 # =========================
@@ -3366,6 +2768,7 @@ def _apply_potion_effect(effect, name):
         player["potion_atk_turns"] = 4
         print(f"  ⚔ +25 ATK for 4 fights!")
     elif effect == "cure_status":
+        player.setdefault("rune_status", {}).clear()
         player.setdefault("status", {}).clear()
         print(f"  💊 All status effects cured!")
     elif effect == "cure_void":
@@ -4432,12 +3835,19 @@ def visit_elemental_village():
     if village["name"] not in found:
         found.append(village["name"])
     icon = village["icon"]
+    from source_story import meet_mentor
+    from village_life import profile
+
+    meet_mentor(player, profile(region, village["name"], True))
     print(f"\n{icon * 5} SECRET ELEMENTAL VILLAGE {icon * 5}")
     print(f"You have stumbled upon the hidden home of the {village['name']}!")
     print(f"{village['desc']}")
     print(f"\nThey tell you about  you their sacred {village['core']}.")
-    print("1. Buy the core for 200000000 souls")
-    print("2. Challenge their guardian to claim it by force")
+    print(
+        "Their core remains guarded here. Destroyed cores once left eleven civilisations powerless."
+    )
+    print("1. Ask for the clan’s elemental blessing")
+    print("2. Test yourself against their guardian (the core stays here)")
     print("3. buy special loot from the elemental village")
     print("4. Leave quietly")
     print("5. Hear the history of the fallen warriors")
@@ -4445,10 +3855,6 @@ def visit_elemental_village():
     c = input("> ").strip()
 
     if c == "1":
-        if player["gold"] < 200000000:
-            print("You don't have enough souls (200000000 required).")
-            return
-        player["gold"] -= 200000000
         _give_elemental_core(village["core"])
 
     elif c == "2":
@@ -4473,20 +3879,20 @@ def visit_elemental_village():
 
 
 def _give_elemental_core(core_name):
-    player.setdefault("elemental_cores", [])
-    player["elemental_cores"].append(core_name)
-    data = ELEMENTAL_CORES[core_name]
-    icon = _ELEM_ICONS.get(data["element"], "✨")
-    print(f"\n{icon} Obtained {core_name}!")
-    print(f"  {data['desc']}")
+    """Grant a blessing, never remove a civilisation's surviving core."""
+    attuned = player.setdefault("core_attunements", [])
+    if core_name not in attuned:
+        attuned.append(core_name)
     print(
-        f"  Bonus ATK when infused: +{data['bonus_atk']}  |  On-hit effect: {data['on_hit_effect']}"
+        f"The keepers grant a blessing from {core_name}. The core remains guarded in its village; no core is added to your inventory."
     )
 
 
 def _fight_elemental_boss(boss_data):
     """Special boss fight that applies elemental status effects every N turns."""
     boss = boss_data.copy()
+    boss["boss"] = True
+    player.pop("_rune_previous", None)
     boss.setdefault("status", {})
     boss.setdefault("active_buffs", {})
     boss.setdefault("max_hp", boss["hp"])
@@ -4510,6 +3916,12 @@ def _fight_elemental_boss(boss_data):
         process_buffs()
         apply_status(player)
         apply_status(boss)
+        from original_magic import turn as rune_turn, strike
+
+        player_can_act = rune_turn(player, boss)
+        boss_can_act = rune_turn(boss, player)
+        if player["hp"] <= 0 or boss["hp"] <= 0:
+            break
 
         # Phase announcement
         max_hp = boss["max_hp"]
@@ -4521,15 +3933,19 @@ def _fight_elemental_boss(boss_data):
             print(f"{icon} PHASE 2 — {boss['name']} grows stronger!")
 
         print(f"\nYou: {player['hp']} HP  |  {boss['name']}: {boss['hp']} HP")
-        c = input("1 atk  2 scroll  3 staff > ").strip()
+        c = (
+            input("1 atk  2 scroll  3 staff  8 loose rune > ").strip()
+            if player_can_act and not player["active_buffs"].pop("stun", None)
+            else ""
+        )
 
         if c == "1":
             dmg = calculate_damage(player, boss, "weapon")
-            boss["hp"] -= dmg
+            strike(player, boss, dmg)
             print(f"You dealt {dmg} damage!")
             _apply_charged_weapon_effect(boss)
-            for rune in player.get("runes", []):
-                apply_rune_effect(rune, player, boss)
+            if player.get("weapon", {}).get("rune"):
+                apply_rune_effect(player["weapon"]["rune"], player, boss)
             apply_companion_support(boss)
 
         elif c == "2":
@@ -4537,12 +3953,17 @@ def _fight_elemental_boss(boss_data):
 
         elif c == "3":
             use_staff(boss)
-            for rune in player.get("runes", []):
-                apply_rune_effect(rune, player, boss)
+
             apply_companion_support(boss)
+
+        elif c == "8":
+            use_combat_rune(boss)
 
         if boss["hp"] <= 0:
             break
+
+        if not boss_can_act:
+            continue
 
         # Elemental boss status effect on player
         if turn % every == 0:
@@ -4571,7 +3992,7 @@ def _fight_elemental_boss(boss_data):
             if player["active_buffs"]["wraith_form"] <= 0:
                 player["active_buffs"].pop("wraith_form", None)
         if boss_dmg > 0:
-            player["hp"] -= boss_dmg
+            strike(boss, player, boss_dmg)
             print(f"{icon} {boss['name']} strikes you for {boss_dmg}!")
 
         if player["hp"] <= 0 and player["active_buffs"].get("rebirth"):
@@ -4600,45 +4021,21 @@ def _fight_elemental_boss(boss_data):
 
 
 def source_temple():
-    """The Source Temple — hidden in the Riftlands. Only place to get Core Stabilisers."""
     if player["region"] != "Riftlands":
-        print("The Source Temple can only be accessed from within the Riftlands.")
+        print("The Sacred Temple stands in the Riftlands.")
         return
-
-    print("\n🌌═══════════════════════════════🌌")
-    print("     THE SOURCE TEMPLE")
-    print("🌌═══════════════════════════════🌌")
-    print("A vast rift-stone edifice hums with elemental energy.")
-    print("Runes of all four elements spiral up its pillars.")
-    print("At its heart, a robed Keeper holds out a hand...\n")
-
-    stabilisers = sum(1 for i in player.get("inventory", []) if i.get("name") == "Core Stabiliser")
-    print(f"You carry: {stabilisers} Core Stabiliser(s)\n")
-
-    print("1. Purchase a Core Stabiliser  (300 souls)")
-    print("2. Infuse your gear here       (core + stabiliser required)")
-    print("3. Leave the temple")
-
-    c = input("> ").strip()
-
-    if c == "1":
-        if player["gold"] < 300:
-            print("The Keeper shakes their head — you lack the souls (300 required).")
-            return
-        player["gold"] -= 300
-        item = {
-            "name": "Core Stabiliser",
-            "value": 500,
-            "desc": "Anchors elemental cores into weapons and staffs.",
-        }
-        player.setdefault("inventory", []).append(item)
-        print("🌌 The Keeper hands you a Core Stabiliser, still warm from the rift.")
-
-    elif c == "2":
-        infuse_gear()
-
-    elif c == "3":
-        print("You step back through the rift-stone archway.")
+    print("\n--- SACRED TEMPLE · RIFTLANDS ---")
+    print(
+        "Only the ancient stabiliser stands here. The four surviving cores remain guarded in their villages."
+    )
+    print("1. Inspect the stabiliser\n2. Open story journal\n0. Leave")
+    choice = input("Temple > ").strip()
+    if choice == "1":
+        print(
+            "The warriors’ stabilising channels bind the core energy. The eleven destroyed cores are gone; these conduits lead to the four surviving civilisations."
+        )
+    elif choice == "2":
+        view_story()
 
 
 def infuse_gear():
@@ -6472,14 +5869,14 @@ def imbue_staff():
     global player
 
     player_staffs = player.get("staffs", [])
-    player_cores = player.get("elemental_cores", [])
+    player_cores = player.get("core_attunements", [])
 
     if not player_staffs:
         print("\nYou have no staffs to imbue.")
         return
 
     if not player_cores:
-        print("\nYou have no elemental cores to imbue with.")
+        print("\nAsk an elemental clan for its blessing first. Their core stays in the village.")
         return
 
     print("\n=== SOURCE TEMPLE - STAFF IMBUING ===")
@@ -6526,6 +5923,10 @@ def imbue_staff():
         print("Core not found!")
         return
 
+    if player["gold"] < 50:
+        print("Channeling the clan’s blessing costs 50 souls.")
+        return
+    player["gold"] -= 50
     # Charge the staff
     selected_staff["charged"] = True
     selected_staff["core_used"] = selected_core_name
@@ -6539,7 +5940,7 @@ def imbue_staff():
     )
 
     # Remove core from inventory
-    player["elemental_cores"].remove(selected_core_name)
+    # The clan core and its blessing stay with their owners; pay for channeling, not extraction.
 
     # Gain Source Temple XP
     player["structures"].setdefault("source_temple", {"level": 1, "xp": 0})

@@ -74,7 +74,9 @@ def profile(region, name, elemental=False):
     kind = KINDS.get(region, "market")
     p = deepcopy(ARCHETYPES[kind])
     if elemental:
-        p["services"] = list(dict.fromkeys(p["services"] + ["loom", "alchemy", "restaurant"]))
+        p["services"] = list(
+            dict.fromkeys(p["services"] + ["loom", "alchemy", "restaurant", "temple"])
+        )
     p["quality"] = {key: QUALITY[kind].get(key, 1) for key in p["services"]}
     if region == "Ashen Wastes":
         p["smith_tier"] = 1
@@ -87,13 +89,27 @@ def profile(region, name, elemental=False):
     if region == "Riftlands":
         p["services"] = list(dict.fromkeys(p["services"] + ["temple"]))
         p["quality"].update(temple=2, disenchantry=2)
+    if not elemental:
+        p["services"] = [key for key in p["services"] if key != "temple"]
+        p["quality"].pop("temple", None)
+    p["starting_levels"] = {key: (2 if p["quality"][key] >= 2 else 1) for key in p["services"]}
     p.update(id=village_id(region, name), name=name, region=region, kind=kind, elemental=elemental)
     p["smith_label"] = ["None", "Apprentice", "Skilled", "Master"][p["smith_tier"]]
     return p
 
 
 def state(player, village):
-    return player.setdefault("village_records", {}).setdefault(village["id"], {"reputation": 0})
+    record = player.setdefault("village_records", {}).setdefault(village["id"], {"reputation": 0})
+    record.setdefault("levels", deepcopy(village["starting_levels"]))
+    return record
+
+
+def building_level(player, village, key):
+    return state(player, village)["levels"].get(key, village["starting_levels"].get(key, 1))
+
+
+def service_quality(player, village, key):
+    return village["quality"].get(key, 1) + building_level(player, village, key) - 1
 
 
 def cycle(player):
@@ -104,7 +120,10 @@ def stock(player, village):
     record = state(player, village)
     if record.get("stock_cycle") != cycle(player):
         record["stock_cycle"] = cycle(player)
-        record["food_stock"] = {x["name"]: 3 for x in food_catalog(village)}
+        record["food_stock"] = {
+            x["name"]: 2 + building_level(player, village, "restaurant")
+            for x in food_catalog(village)
+        }
     return record["food_stock"]
 
 
@@ -123,7 +142,9 @@ def snapshot(player, village):
     saved = player.get("saved_villages", {}).get(village["id"], {})
     return dict(
         village,
-        service_details={key: service_detail(village, key) for key in village["services"]},
+        levels=dict(state(player, village)["levels"]),
+        materials=dict(player.get("building_materials", {})),
+        service_details={key: service_detail(village, key, player) for key in village["services"]},
         reputation=record.get("reputation", 0),
         discount=min(5, record.get("reputation", 0)) * 2,
         saved=bool(saved),
@@ -172,7 +193,7 @@ def has_service(game, key):
 
 def smith(game, village):
     p = game.player
-    tier = village["smith_tier"]
+    tier = service_quality(game.player, village, "forge") if "forge" in village["services"] else 0
     if tier < 1:
         print("There is no blacksmith here.")
         return
@@ -222,7 +243,7 @@ def restaurant(game, village, meal=False):
         print(
             f"{i}. {f['name']} — {price} souls, +{f['hunger']} hunger"
             + (
-                f', +{village["quality"]["restaurant"]*5} HP, +{(village["quality"]["restaurant"]-1)*5} extra hunger'
+                f', +{service_quality(p,village,"restaurant")*5} HP, +{(service_quality(p,village,"restaurant")-1)*5} extra hunger'
                 if meal
                 else ""
             )
@@ -245,7 +266,7 @@ def restaurant(game, village, meal=False):
     p["gold"] -= price
     remaining[food["name"]] -= 1
     if meal:
-        q = village["quality"]["restaurant"]
+        q = service_quality(p, village, "restaurant")
         p["hunger"] = min(100, p.get("hunger", 100) + food["hunger"] + (q - 1) * 5)
         p["hp"] = min(p["max_hp"], p["hp"] + q * 5)
         print("You enjoy a freshly cooked meal.")
@@ -266,7 +287,7 @@ def harvest(game, village):
     if not pool:
         print("Nothing grows here.")
         return
-    harvested = [pool[i % len(pool)] for i in range(village["quality"]["farm"] + 1)]
+    harvested = [pool[i % len(pool)] for i in range(service_quality(p, village, "farm") + 1)]
     for name in harvested:
         p.setdefault("ingredients", []).append(name)
     record["harvest_cycle"] = cycle(p)
@@ -294,6 +315,7 @@ def errand(game, village):
     p["gold"] += 80
     record["reputation"] = record.get("reputation", 0) + 1
     record["errand_cycle"] = cycle(p)
+    record["errands_completed"] = record.get("errands_completed", 0) + 1
     print("Village helped! Reputation increased.")
 
 
@@ -303,6 +325,9 @@ def visit(game, struct, region):
     previous = ui.village
     v = profile(region, struct["name"], struct.get("elemental", False))
     ui.village = v
+    from source_story import meet_mentor
+
+    meet_mentor(game.player, v)
     found = game.player.setdefault("discovered_structures", {}).setdefault(region, [])
     if v["name"] not in found:
         found.append(v["name"])
@@ -323,7 +348,7 @@ def visit(game, struct, region):
             if info["note"]:
                 print("Your note: " + info["note"])
             print(
-                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour"
+                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor"
             )
             c = input("Village > ").strip().lower()
             if c == "7":
@@ -332,6 +357,14 @@ def visit(game, struct, region):
                 restaurant(game, v)
             elif c == "13":
                 restaurant(game, v, meal=True)
+            elif c == "17":
+                upgrade_buildings(game, v)
+            elif c == "18":
+                from source_story import mentor_talk
+
+                mentor_talk(game, v)
+            elif c == "16":
+                game.quest_board(region)
             elif c == "14":
                 from source_story import talk
 
@@ -348,7 +381,7 @@ def visit(game, struct, region):
             elif c == "4":
                 if not has_service(game, "inn"):
                     continue
-                q = v["quality"]["inn"]
+                q = service_quality(game.player, v, "inn")
                 cost = 40 + q * 10
                 heal = 20 + q * 10
                 if game.player["gold"] < cost:
@@ -475,7 +508,7 @@ def directory(game):
 def quality(key):
     import original_ui as ui
 
-    return ui.village.get("quality", {}).get(key, 1) if ui.village else 1
+    return service_quality(ui.get_ui().player, ui.village, key) if ui.village and ui.get_ui() else 1
 
 
 def require_service(key):
@@ -492,8 +525,8 @@ def require_service(key):
     return True
 
 
-def service_detail(v, key):
-    q = v["quality"][key]
+def service_detail(v, key, player=None):
+    q = service_quality(player, v, key) if player is not None else v["quality"][key]
     details = {
         "forge": f"+{2+q} ATK / +{3+q} DEF upgrades; crafted weapons +{(q-1)*2} ATK",
         "loom": f"crafted armour +{(q-1)*2} DEF",
@@ -529,7 +562,9 @@ def crafting_hub(game):
         available = [row for row in actions if row[0] in v["services"]]
         print("\n--- " + v["name"].upper() + " · LOCAL WORKSTATIONS ---")
         for i, (key, label, fn) in enumerate(available, 1):
-            print(f'{i}. {label} [{QUALITY_NAMES[v["quality"][key]]}] — {service_detail(v,key)}')
+            print(
+                f'{i}. {label} · Level {building_level(game.player,v,key)} [{QUALITY_NAMES[v["quality"][key]]}] — {service_detail(v,key,game.player)}'
+            )
         missing = [SERVICE_NAMES[key] for key, _, _ in actions if key not in v["services"]]
         if missing:
             print("Unavailable here: " + ", ".join(missing))
@@ -608,3 +643,93 @@ def salvage(game):
 
     craft_xp(p, "salvaging")
     print("Equipment salvaged. Equipped, favourite and bound items were protected.")
+
+
+BUILDING_MATERIALS = ("Timber", "Stone", "Iron fittings")
+
+
+def gather_building_material(player, rng):
+    if rng.random() < 0.25:
+        name = rng.choice(BUILDING_MATERIALS)
+        bag = player.setdefault("building_materials", {})
+        bag[name] = bag.get(name, 0) + 1
+        print(f"Building supply found: 1 {name}.")
+
+
+def upgrade_buildings(game, village):
+    p = game.player
+    record = state(p, village)
+    while True:
+        bag = p.setdefault("building_materials", {})
+        print("\n--- VILLAGE BUILDINGS · " + village["name"] + " ---")
+        print(
+            "Materials: " + ", ".join(f"{name}: {bag.get(name,0)}" for name in BUILDING_MATERIALS)
+        )
+        for i, key in enumerate(village["services"], 1):
+            level = building_level(p, village, key)
+            print(
+                f"{i}. {SERVICE_NAMES[key]} · Level {level}/5 · "
+                + (
+                    "MAX"
+                    if level >= 5
+                    else f"next level: {level*2} Timber, {level*2} Stone, {level} Iron fittings, {level*50} souls"
+                )
+            )
+        print(
+            "W. Convert one carried wood into 2 Timber\nM. Convert one carried metal into 2 Iron fittings\n0. Back"
+        )
+        print(
+            "Find building supplies while wandering (25% per wander). Upgrades improve this village only; new shop capacity applies at the next restock."
+        )
+        c = input("Building > ").strip().lower()
+        if c == "0":
+            return
+        if c in ("w", "m"):
+            key = "woods" if c == "w" else "metals"
+            material = "Timber" if c == "w" else "Iron fittings"
+            if not p.get(key):
+                print("No carried material to convert.")
+                continue
+            names = list(dict.fromkeys(p[key]))
+            for i, name in enumerate(names, 1):
+                print(f"{i}. {name} ({p[key].count(name)} owned)")
+            try:
+                index = int(input("Material number (0 cancel) > ")) - 1
+            except ValueError:
+                continue
+            if not 0 <= index < len(names):
+                continue
+            p[key].remove(names[index])
+            bag[material] = bag.get(material, 0) + 2
+            print("Building materials prepared.")
+            continue
+        try:
+            index = int(c) - 1
+        except ValueError:
+            continue
+        if not 0 <= index < len(village["services"]):
+            continue
+        key = village["services"][index]
+        level = building_level(p, village, key)
+        if level >= 5:
+            print("Already at maximum level.")
+            continue
+        required = {"Timber": level * 2, "Stone": level * 2, "Iron fittings": level}
+        if (
+            any(bag.get(name, 0) < count for name, count in required.items())
+            or p["gold"] < level * 50
+        ):
+            print("Not enough materials or souls.")
+            continue
+        if (
+            input(f"Upgrade {SERVICE_NAMES[key]} to Level {level+1}? (y/n) > ").strip().lower()
+            != "y"
+        ):
+            continue
+        for name, count in required.items():
+            bag[name] -= count
+        p["gold"] -= level * 50
+        record["levels"][key] = level + 1
+        print(
+            f"{SERVICE_NAMES[key]} upgraded to Level {level+1}! Local service bonuses improve immediately."
+        )

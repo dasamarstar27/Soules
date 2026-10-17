@@ -48,11 +48,12 @@ def opening(player):
         "The Dreamscape King entered the Sacred Temple in the Riftlands and corrupted its core energy. The realms merged. New monsters rose, and the king himself became a monster and their ruler."
     )
     print(
-        "An elemental civilisation once stood in every region. They fought the invasion until only Ignar, Glacien, Voltis and Sylvar remained. Their warriors entered the temple and gave their lives to stabilise the power and banish the king."
+        "An elemental civilisation once stood in every region. Eleven cores were destroyed, stripping their civilisations of their powers and leaving them vulnerable. Only Ignar, Glacien, Voltis and Sylvar survived. Their warriors entered the temple and gave their lives to stabilise the power and banish the king."
     )
     print(
-        "For generations the surviving clans hid behind their wards. Now the rift has opened again. The Dreamscape has fallen back into the world, and the corrupted king's monsters are overrunning the roads."
+        "The four clans keep their surviving cores at home; the Riftlands temple holds only the stabiliser. For generations the clans hid behind their wards. Now the rift has opened again. The Dreamscape has fallen back into the world, and the corrupted king's monsters are overrunning the roads."
     )
+    print("Seek shelter in a village. Someone there may know how to help you face this invasion.")
     print(
         "You awaken in Whispering Woods with a Rusty Sword. Survive, find shelter, free the regions and confront the Dreamscape King—known in the old game as The Dreaming God."
     )
@@ -87,7 +88,9 @@ def objective(player):
     if s.get("complete"):
         return "Season Two complete: Source balance restored. The far side of the bridge has noticed you."
     if s.get("vael_defeated"):
-        return "Repair the broken bridge using one core from each elemental village."
+        return "Repair the stabiliser using the four clans’ harmonic knowledge. Their cores stay in their villages."
+    if s.get("season_one_complete") and player.get("chapter", 1) < 2:
+        return f"Rebuild the world: {min(20,interlude_progress(player))}/20 side quests after Season One. Season Two begins five months later in lore."
     if player.get("chapter", 1) < 2:
         if not any(c["id"] == "first_victory" for c in s["clues"]):
             return "Survive your first encounter; find shelter and ask villagers about the monster invasion."
@@ -250,11 +253,19 @@ def journal(game):
             print(
                 "4. Investigate the Source Temple / Broken Bridge\n5. Repair the bridge\n6. Use a Source fragment (up to 15 HP, +5 mana)"
             )
+        if s.get("season_one_complete") and p.get("chapter", 1) < 2:
+            print(
+                f"7. Side quest board · 8. Begin Season Two ({min(20,interlude_progress(p))}/20 side quests)"
+            )
         print("0. Back")
         c = input("Journal > ").strip()
         if c == "0":
             return
-        if c == "1":
+        if c == "8":
+            begin_season_two(game)
+        elif c == "7":
+            game.quest_board(p["region"])
+        elif c == "1":
             for entry in s["clues"]:
                 print("• " + entry["text"])
             print("Your approach: " + s.get("stance", "undecided"))
@@ -320,21 +331,18 @@ def journal(game):
             if s.get("complete"):
                 print("The Source is already balanced.")
                 continue
-            needed = [v["core"] for v in data.ELEMENTAL_VILLAGES.values()]
-            for core in needed:
-                print(f'{core}: {p.get("elemental_cores",[]).count(core)}/1')
-            if not all(core in p.get("elemental_cores", []) for core in needed):
-                print("Bring one core from each elemental village.")
+            if len(s["witnesses"]) < 4:
+                print(
+                    "Ask all four clans for their harmonic knowledge. The cores themselves stay in their villages."
+                )
                 continue
             if (
-                input("Bind these four cores into the repaired stabiliser? (y/n) > ")
+                input("Repair the stabiliser using the clans’ harmonic instructions? (y/n) > ")
                 .strip()
                 .lower()
                 != "y"
             ):
                 continue
-            for core in needed:
-                p["elemental_cores"].remove(core)
             s["complete"] = True
             p["chapter_2_complete"] = True
             clue(
@@ -360,7 +368,7 @@ def victory(player):
     clue(
         player,
         "vael_defeated",
-        "Vael falls before the second activation completes. The bridge is broken, but the Core Stabiliser can still be repaired with the four elemental cores.",
+        "Vael falls before the second activation completes. The bridge is broken, but the stabiliser can be repaired using the four clans’ harmonic knowledge. Their cores stay guarded in their villages.",
     )
 
 
@@ -399,3 +407,147 @@ def remember_warriors(player, village):
     print(
         "The four surviving villages stayed hidden to protect their people and the memory of that sacrifice. Their wards make them difficult to find."
     )
+
+
+def sidequest_total(player):
+    return (
+        sum(bool(q.get("completed")) for q in player.get("quests", []))
+        + sum(
+            record.get("errands_completed", 0)
+            for record in player.get("village_records", {}).values()
+        )
+        + sum(value == "complete" for value in player.get("elemental_quests", {}).values())
+    )
+
+
+def interlude_progress(player):
+    s = state(player)
+    return max(0, sidequest_total(player) - s.get("sidequest_baseline", sidequest_total(player)))
+
+
+def season_one_ending(player):
+    s = state(player)
+    if s.get("season_one_complete"):
+        return
+    s["season_one_complete"] = True
+    s["sidequest_baseline"] = sidequest_total(player)
+    player["season_one_complete"] = True
+    # The original ending is complete; the next season has not started yet.
+    player["chapter"] = 1
+    print("\n--- SEASON ONE COMPLETE · A WORLD SAVED? ---")
+    print(
+        "Elian, your elderly mentor and the grandson of a fallen warrior, joins you as the battle falls silent."
+    )
+    print('You: "The king is gone. The world is finally saved."')
+    print(
+        'Elian: "Not really. The Dreamscape did not connect itself back to our world. Someone—or something—made that happen."'
+    )
+    print(
+        'Elian: "Whoever did it understands core energy. The king is defeated, but that knowledge is still out there. We have to be ready for what comes next."'
+    )
+    clue(
+        player,
+        "elians_warning",
+        "Elian warned that someone or something must have reopened the rift, and that they understand core energy. The true cause remains unknown.",
+    )
+    print('1. "Then we find them."\n2. "What should we do now?"\n0. Leave with Elian')
+    answer = input("Elian > ").strip()
+    if answer == "1":
+        print(
+            'Elian: "We will. First, help the people rebuild. A world worth saving needs more than one victory."'
+        )
+    elif answer == "2":
+        print(
+            'Elian: "The villages need help. Repair their lives while I follow the traces left at the temple."'
+        )
+    print(
+        "INTERLUDE · Help rebuild the world: complete 20 side quests after this victory. Season Two opens five months later in the story; there is no real-time wait."
+    )
+
+
+def begin_season_two(game):
+    p = game.player
+    s = state(p)
+    if p.get("chapter", 1) >= 2:
+        print("Season Two has already begun.")
+        return
+    if not s.get("season_one_complete"):
+        print("Finish Season One by defeating the Dreamscape King first.")
+        return
+    progress = interlude_progress(p)
+    if progress < 20:
+        print(
+            f"Help rebuild the world first: {min(progress,20)}/20 side quests completed since the victory."
+        )
+        return
+    if input("Begin Season Two, five months after Season One? (y/n) > ").strip().lower() != "y":
+        return
+    p["chapter"] = 2
+    s["months_since_season_one"] = 5
+    clue(
+        p,
+        "five_months_later",
+        "Five months after the king's defeat, Elian returns with reports of a new imbalance at the Sacred Temple. The four surviving cores remain guarded in their villages; only the stabiliser stands at the temple.",
+    )
+    print(
+        'SEASON TWO · FIVE MONTHS LATER\nElian: "The stabiliser has been tampered with. This time we have a trail to follow."'
+    )
+
+
+def meet_mentor(player, village):
+    s = state(player)
+    if s.get("mentor_village"):
+        return
+    s["mentor_village"] = dict(id=village["id"], name=village["name"], region=village["region"])
+    print("\nAn old man named Elian welcomes you to the first village you find.")
+    print(
+        'Elian: "My grandmother Miren was one of the warriors who gave their lives at the Sacred Temple. I cannot swing a sword as I once did, but I can help you find your way."'
+    )
+    print(
+        "He becomes your mentor. Speak to him here for advice, and he will help you understand the old war."
+    )
+    clue(
+        player,
+        "mentor_met",
+        f'You met Elian in {village["name"]}. He is an old man and the grandson of Miren, one of the fallen warriors.',
+    )
+
+
+def mentor_talk(game, village):
+    p = game.player
+    s = state(p)
+    home = s.get("mentor_village")
+    if not home:
+        meet_mentor(p, village)
+        home = s["mentor_village"]
+    if home["id"] != village["id"]:
+        print(f'Elian is waiting in {home["name"]}, {home["region"]}.')
+        return
+    print(
+        "\n--- ELIAN · YOUR MENTOR ---\n1. Ask about his grandmother\n2. Ask for advice\n3. Discuss the next season\n0. Back"
+    )
+    c = input("Mentor > ").strip()
+    if c == "1":
+        print(
+            'Elian: "Miren of Sylvar anchored the seal to the living world. Her warband never came home. The four surviving clans kept their cores safe, because eleven destroyed cores had already left their people powerless."'
+        )
+        clue(
+            p,
+            "mentors_family",
+            "Elian is Miren of Sylvar’s grandson. The Sacred Temple contains the stabiliser, not the four surviving cores.",
+        )
+    elif c == "2":
+        print(
+            'Elian: "Keep food for the road. Learn which villages have good workshops. Free each region and stop the king. Courage is useful; preparation keeps you alive."'
+        )
+    elif c == "3":
+        if p.get("chapter", 1) >= 2:
+            print(
+                'Elian: "Someone tampered with the stabiliser. Listen to the four clans, and follow the evidence."'
+            )
+        elif s.get("season_one_complete"):
+            begin_season_two(game)
+        else:
+            print(
+                'Elian: "The invasion comes first. We cannot build a future while the king is taking our world."'
+            )

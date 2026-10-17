@@ -56,23 +56,23 @@ class VillageLifeTests(unittest.TestCase):
         self.p["gold"] = 500
         before = self.p["weapon"]["atk"]
         self.inputs(["1", "1", "y"], v.smith, game, self.forge)
-        self.assertEqual(self.p["weapon"]["atk"], before + 5)
-        self.assertEqual(self.p["gold"], 380)
+        self.assertEqual(self.p["weapon"]["atk"], before + 6)
+        self.assertEqual(self.p["gold"], 360)
 
     def test_restaurant_stock_is_finite_and_reload_safe(self):
         self.p["gold"] = 1000
         f = v.food_catalog(self.farm)[0]
         price = v.food_price(self.p, self.farm, f)
-        for _ in range(4):
+        for _ in range(5):
             self.inputs(["1"], v.restaurant, game, self.farm)
-        self.assertEqual(self.p["gold"], 1000 - price * 3)
-        self.assertEqual(len(self.p["inventory"]), 3)
+        self.assertEqual(self.p["gold"], 1000 - price * 4)
+        self.assertEqual(len(self.p["inventory"]), 4)
         restored = validate_original_save(ui.snapshot())
         self.assertEqual(
             restored["player"]["village_records"][self.farm["id"]]["food_stock"][f["name"]], 0
         )
         self.p["wander_count"] = 20
-        self.assertEqual(v.stock(self.p, self.farm)[f["name"]], 3)
+        self.assertEqual(v.stock(self.p, self.farm)[f["name"]], 4)
 
     def test_meal_quality_restores_hp_and_hunger(self):
         self.p["gold"] = 1000
@@ -80,19 +80,19 @@ class VillageLifeTests(unittest.TestCase):
         self.p["hunger"] = 0
         food = v.food_catalog(self.farm)[0]
         self.inputs(["1"], v.restaurant, game, self.farm, True)
-        self.assertEqual(self.p["hp"], 11)
-        self.assertEqual(self.p["hunger"], food["hunger"] + 5)
+        self.assertEqual(self.p["hp"], 16)
+        self.assertEqual(self.p["hunger"], food["hunger"] + 10)
         self.assertEqual(self.p["inventory"], [])
 
     def test_farm_quality_and_regrowth(self):
         with patch("builtins.print"):
             v.harvest(game, self.farm)
             v.harvest(game, self.farm)
-        self.assertEqual(len(self.p["ingredients"]), 4)
+        self.assertEqual(len(self.p["ingredients"]), 5)
         self.p["wander_count"] = 20
         with patch("builtins.print"):
             v.harvest(game, self.farm)
-        self.assertEqual(len(self.p["ingredients"]), 8)
+        self.assertEqual(len(self.p["ingredients"]), 10)
 
     def test_errand_reward_only_once_per_cycle_and_discount(self):
         name = data.REGION_INGREDIENTS[self.p["region"]][0]
@@ -144,26 +144,26 @@ class VillageLifeTests(unittest.TestCase):
             )
             self.p[key].extend([name] * count)
         self.inputs(["1", "1"], game.craft_armor)
-        self.assertEqual(self.p["armours"][-1]["def"], recipe["def"] + 4)
+        self.assertEqual(self.p["armours"][-1]["def"], recipe["def"] + 6)
         self.assertIs(self.p["armours"][-1], self.p["crafted_armor"][-1])
 
     def test_tower_quality_changes_staff_power(self):
         ui.village = self.forge
         self.p["runes"] = deepcopy(data.RUNES[:2])
         self.inputs(["1", "2"], game.craft_staff)
-        self.assertEqual(self.p["staffs"][-1]["power"], 14)
+        self.assertEqual(self.p["staffs"][-1]["power"], 17)
         self.assertEqual(self.p["runes"], [])
 
     def test_temple_consumes_elemental_core_and_adds_quality_power(self):
-        ui.village = v.profile("Frostbound Tundra", "Ice Hamlet")
+        ui.village = v.profile("Frostbound Tundra", "Glacien Tribe", True)
         self.p["staffs"] = [deepcopy(data.STAFFS[0])]
         core = next(iter(data.ELEMENTAL_CORES))
-        self.p["elemental_cores"] = [core]
+        self.p["core_attunements"] = [core]
         base = self.p["staffs"][0]["power"]
         self.inputs(["1", "1"], game.imbue_staff)
-        self.assertEqual(self.p["elemental_cores"], [])
+        self.assertEqual(self.p["core_attunements"], [core])
         self.assertEqual(
-            self.p["staffs"][0]["power"], base + data.ELEMENTAL_CORES[core]["bonus_atk"] + 4
+            self.p["staffs"][0]["power"], base + data.ELEMENTAL_CORES[core]["bonus_atk"] + 6
         )
         self.assertTrue(self.p["staffs"][0]["charged"])
 
@@ -173,7 +173,7 @@ class VillageLifeTests(unittest.TestCase):
         weapon = data.WEAPONS[0]
         with patch.dict(game.MERCHANT_ITEMS, {self.p["region"]: [weapon["name"]]}):
             self.inputs(["1", "y", "0"], game.merchant)
-        self.assertEqual(self.p["gold"], 1000 - round(weapon["atk"] * 10 * 0.9))
+        self.assertEqual(self.p["gold"], 1000 - round(weapon["atk"] * 10 * 0.85))
 
     def test_inn_quality_changes_actual_rest(self):
         self.p["gold"] = 100
@@ -181,16 +181,65 @@ class VillageLifeTests(unittest.TestCase):
         self.inputs(
             ["4", "y", "7"], game.visit_village, {"name": "Ice Hamlet"}, "Frostbound Tundra"
         )
-        self.assertEqual(self.p["gold"], 30)
-        self.assertEqual(self.p["hp"], 51)
+        self.assertEqual(self.p["gold"], 20)
+        self.assertEqual(self.p["hp"], 61)
 
     def test_salvage_quality_and_materials(self):
         ui.village = self.forge
         self.p["weapons"].append({"name": "Spare", "atk": 20, "materials": {"Iron": 4}})
         self.inputs(["1", "y"], game.salvage_equipment)
-        self.assertEqual(self.p["gold"], 95)
-        self.assertEqual(self.p["metals"], ["Iron"] * 3)
+        self.assertEqual(self.p["gold"], 105)
+        self.assertEqual(self.p["metals"], ["Iron"] * 4)
         self.assertEqual(len(self.p["weapons"]), 1)
+
+    def test_only_elemental_villages_have_imbuing_temples(self):
+        for region, structures in data.REGION_STRUCTURES.items():
+            for item in structures:
+                if item["type"] == "village":
+                    self.assertNotIn("temple", v.profile(region, item["name"])["services"])
+        for region, clan in data.ELEMENTAL_VILLAGES.items():
+            self.assertIn("temple", v.profile(region, clan["name"], True)["services"])
+
+    def test_buildings_start_varied_and_upgrade_with_materials(self):
+        record = v.state(self.p, self.farm)
+        self.assertEqual(record["levels"]["restaurant"], 2)
+        self.assertEqual(record["levels"]["loom"], 1)
+        self.p["building_materials"] = {"Timber": 20, "Stone": 20, "Iron fittings": 20}
+        self.p["gold"] = 500
+        before = v.service_quality(self.p, self.farm, "restaurant")
+        self.inputs(["1", "y", "0"], v.upgrade_buildings, game, self.farm)
+        self.assertEqual(record["levels"]["restaurant"], 3)
+        self.assertEqual(v.service_quality(self.p, self.farm, "restaurant"), before + 1)
+        self.assertEqual(
+            self.p["building_materials"], {"Timber": 16, "Stone": 16, "Iron fittings": 18}
+        )
+        self.assertEqual(self.p["gold"], 400)
+        restored = validate_original_save(ui.snapshot())
+        self.assertEqual(
+            restored["player"]["village_records"][self.farm["id"]]["levels"]["restaurant"], 3
+        )
+        self.assertEqual(v.state(self.p, self.forge)["levels"]["forge"], 2)
+
+    def test_building_resources_and_material_conversion(self):
+        with patch.object(game.random, "random", return_value=0), patch.object(
+            game.random, "choice", return_value="Stone"
+        ), patch("builtins.print"):
+            v.gather_building_material(self.p, game.random)
+        self.assertEqual(self.p["building_materials"], {"Stone": 1})
+        self.p["woods"] = [next(iter(data.WOODS))]
+        self.inputs(["w", "1", "0"], v.upgrade_buildings, game, self.farm)
+        self.assertEqual(self.p["woods"], [])
+        self.assertEqual(self.p["building_materials"]["Timber"], 2)
+
+    def test_travel_has_forge_entry_without_popup_and_enforces_locks(self):
+        with patch("builtins.input", side_effect=["f"]), patch("builtins.print"):
+            game.travel()
+        self.assertEqual(self.p["region"], "Whispering Woods")
+        self.p["unlocked_regions"].add("Crimson Depths")
+        with patch.object(game, "visit_village") as visit:
+            self.inputs(["f"], game.travel)
+            visit.assert_called_once()
+        self.assertEqual(self.p["region"], "Crimson Depths")
 
     def test_successful_alchemy_can_preserve_one_ingredient(self):
         combo, result = next(iter(data.INGREDIENT_COMBOS.items()))

@@ -85,10 +85,26 @@ Find the directory under Explore or in the sidebar. Village records, bookmarks, 
 
 ## Story and character progression
 
-The opening scene, early monster evidence, village conversations and sidebar objective begin Chapter One immediately. Story & Lore opens the journal. Chapter One stays focused on the Dreamscape invasion; Source sabotage is introduced after the Dreaming God's defeat. Season Two includes four keeper testimonies, a confrontation at the Broken Bridge and a repair ending using the four elemental cores. See PLANNED_CHAPTER_2.md.
+The opening scene, early monster evidence, village conversations and sidebar objective begin Chapter One immediately. Story & Lore opens the journal. Chapter One stays focused on the Dreamscape invasion; Source sabotage is introduced after the Dreaming God's defeat. Season Two includes four keeper testimonies, a confrontation at the Broken Bridge and a repair ending using the clans’ harmonic knowledge while the cores stay guarded in their villages. See PLANNED_CHAPTER_2.md.
 
 New characters start from 55 HP, 5 attack and 1 defence, with half-sized class starting bonuses and a Rusty Sword. A new Warrior has 70 HP, 7 base attack and 2 defence. Early Ranger and Necromancer damage skills scale with level. Existing saved character stats are preserved.
 
 Five expandable features are active: the story journal, keeper conversations, crafting professions, recorded rumours and postgame Source anomalies. Their follow-up plans are in EXPANDABLE_FEATURES_PLAN.md. Profession ranks come from successful paid/resource-consuming actions, cap at five, and add small forge/loom/tower bonuses or ingredient-preservation chances. Rumours do not automatically discover locations. Anomalies are available every ten postgame wanders; a collected fragment can restore up to 15 HP and 5 mana through the journal.
 
 The full history is recorded in STORY_CANON.md: the Riftlands once separated the realms; the Dreamscape King corrupted the Sacred Temple's core energy; the elemental civilisations fought until four remained; their warriors sacrificed themselves to stabilise the power and banish him. The current reopening begins Chapter One. Its underlying cause is reserved for the overarching-antagonist reveal in Season Three. The Dreaming God is the existing boss name for the corrupted Dreamscape King.
+
+## Village buildings and season timing
+
+The journal never scrolls automatically; use Latest to jump down. Crimson Forge appears in the travel menu without a preliminary popup. Imbuing temples are available only in elemental villages. The Sacred Temple in Riftlands remains the story location and contains the stabiliser, not the four surviving cores.
+
+Building level is separate from service quality. Better facilities start at Level 2; others start at Level 1. Village option 17 upgrades existing buildings to Level 5 using Timber, Stone, Iron fittings and souls. Wandering has a separate 25% chance to find a building supply, and the upgrade menu converts carried wood or metal. Levels improve local service results and future restaurant stock capacity. These upgrades belong to each village and persist in saves.
+
+Elian is an old man met in the first village visited and the grandson of one of the fallen warriors. At the Season One ending he warns that someone must have reopened the rift and understands core energy. Complete 20 side quests after the victory, then begin Season Two through the journal or mentor. Its opening is five months later in lore, without a real-time wait. Existing Season Two saves keep their progress. Blessings allow paid channeling at elemental villages without taking their protected cores.
+
+## Complete two-normal-rune fusions
+
+All 132 distinct normal rune types can be fused in unordered pairs, including two inventory copies of the same type: 8,778 combinations. A fused rune cannot be used as an ingredient. Each result retains its component abilities and gets a pair-specific named synergy. Synergies are generated from reusable mechanical families with deterministic strengths; they are not 8,778 individually hand-written combat systems. Compatible original named recipes are retained.
+
+Dictionary → Fusions includes a two-rune ability preview. The original combat loop now uses the complete effect registry through original_magic.py, including periodic effects, stat changes, shields, reflection, lifesteal, control effects and expiry. Rage/Berserk gives +50% attack and -30% defence for three turns. Loose runes remain single-use; weapon-bound runes remain permanent.
+
+ADDON_IDEAS_100.md contains exactly 100 future addon designs. None of those proposals has been implemented as part of that planning document.

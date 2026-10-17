@@ -100,6 +100,15 @@ with sync_playwright() as p:
     assert page.locator("#command").input_value() == "0"
     page.keyboard.press("Escape")
     page.wait_for_function("packet.snapshot.phase === 'main'")
+    page.evaluate(
+        "()=>{for(let i=0;i<30;i++)append('Scroll position check '+i);document.querySelector('#terminal').scrollTop=100;}"
+    )
+    scroll_before = page.locator("#terminal").evaluate("e=>e.scrollTop")
+    page.evaluate("async()=>{await respond('1');}")
+    page.wait_for_function("packet.snapshot.phase === 'category' && !busy")
+    assert abs(page.locator("#terminal").evaluate("e=>e.scrollTop") - scroll_before) < 2
+    page.evaluate("async()=>{await respond('0');}")
+    page.wait_for_function("packet.snapshot.phase === 'main' && !busy")
     page.locator("#compact-status").click()
     assert page.locator("body").evaluate("e=>e.classList.contains('compact-sidebar')")
     assert page.evaluate("JSON.parse(localStorage.getItem('soules-appearance')).compact")

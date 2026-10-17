@@ -49,7 +49,7 @@ class StoryTests(unittest.TestCase):
             "Riftlands",
             "Sacred Temple",
             "gave their lives",
-            "only Ignar",
+            "Only Ignar",
             "rift has opened again",
         ]:
             self.assertIn(phrase, text)
@@ -134,11 +134,11 @@ class StoryTests(unittest.TestCase):
         self.assertTrue(story.state(self.p)["vael_defeated"])
         self.assertTrue(story.state(self.p)["complete"])
         self.assertTrue(self.p["chapter_2_complete"])
-        self.assertEqual(self.p["elemental_cores"], [])
+        self.assertEqual(len(self.p["elemental_cores"]), 4)
         self.assertEqual(self.p["bosses_defeated"], before_bosses)
         self.assertEqual(self.p["chapter"], 2)
         self.inputs(["5", "0"], story.journal, game)
-        self.assertEqual(self.p["elemental_cores"], [])
+        self.assertEqual(len(self.p["elemental_cores"]), 4)
 
     def test_anomaly_fragments_are_finite_per_wander_and_consumable(self):
         self.p["chapter"] = 2
@@ -163,6 +163,41 @@ class StoryTests(unittest.TestCase):
         saved["player"]["source_story"]["fragments"] = "infinite"
         with self.assertRaises(ValueError):
             validate_original_save(saved)
+
+    def test_mentor_first_village_and_lineage(self):
+        first = villages.profile("Sunken Coast", "Dockside Village")
+        second = villages.profile("Whispering Woods", "Old Village")
+        with patch("builtins.print"):
+            story.meet_mentor(self.p, first)
+            story.meet_mentor(self.p, second)
+        self.assertEqual(story.state(self.p)["mentor_village"]["name"], "Dockside Village")
+        self.assertIn("grandson", story.state(self.p)["clues"][-1]["text"])
+        self.inputs(["1"], story.mentor_talk, game, first)
+        self.assertTrue(any(c["id"] == "mentors_family" for c in story.state(self.p)["clues"]))
+
+    def test_twenty_post_victory_sidequests_and_five_month_transition(self):
+        self.p["quests"] = [{"completed": True} for _ in range(7)]
+        self.inputs(["2"], story.season_one_ending, self.p)
+        self.assertEqual(self.p["chapter"], 1)
+        self.assertEqual(story.interlude_progress(self.p), 0)
+        self.p["quests"] += [{"completed": True} for _ in range(19)]
+        self.inputs([], story.begin_season_two, game)
+        self.assertEqual(self.p["chapter"], 1)
+        self.p["quests"].append({"completed": True})
+        self.inputs(["y"], story.begin_season_two, game)
+        self.assertEqual(self.p["chapter"], 2)
+        self.assertEqual(story.state(self.p)["months_since_season_one"], 5)
+
+    def test_ending_does_not_reset_interlude_and_core_stays_home(self):
+        self.inputs(["0"], story.season_one_ending, self.p)
+        self.p["quests"] = [{"completed": True}]
+        self.inputs([], story.season_one_ending, self.p)
+        self.assertEqual(story.interlude_progress(self.p), 1)
+        core = next(iter(data.ELEMENTAL_CORES))
+        with patch("builtins.print"):
+            game._give_elemental_core(core)
+        self.assertEqual(self.p["elemental_cores"], [])
+        self.assertIn(core, self.p["core_attunements"])
 
     def test_rumours_do_not_discover_structures(self):
         village = villages.profile("Whispering Woods", "Old Village")
