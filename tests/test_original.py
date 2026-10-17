@@ -85,6 +85,43 @@ class OriginalTests(unittest.TestCase):
         finally:
             session.close()
 
+    def test_numbered_category_then_secondary_action(self):
+        session = OriginalSession({"name": "Menus", "cls": "warrior"})
+        try:
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["phase"], "main")
+            self.assertEqual(state["snapshot"]["group"], "")
+            session.send("1", state["prompt_id"])
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["phase"], "category")
+            self.assertEqual(state["snapshot"]["group"], "explore")
+            session.send("0", state["prompt_id"])
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["phase"], "main")
+            session.send("2", state["prompt_id"])
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["group"], "inventory")
+            session.send("1", state["prompt_id"])
+            state = session.poll(0)
+            self.assertEqual(state["snapshot"]["phase"], "action")
+            self.assertIn("Rusty Sword", "".join(x["text"] for x in state["output"]))
+        finally:
+            session.close()
+
+    def test_merchant_lists_price_before_selection_and_charges_it(self):
+        region = self.p["region"]
+        weapon = data.WEAPONS[0]
+        price = weapon["atk"] * 10
+        self.p["gold"] = price + 10
+        with patch.dict(game.MERCHANT_ITEMS, {region: [weapon["name"]]}), patch(
+            "builtins.input", side_effect=["1", "y", "0"]
+        ), patch("builtins.print") as output:
+            game.merchant()
+        lines = [" ".join(str(arg) for arg in call.args) for call in output.call_args_list]
+        self.assertTrue(any(f"1. {weapon['name']} — {price} souls" in line for line in lines))
+        self.assertEqual(self.p["gold"], 10)
+        self.assertEqual(self.p["weapons"][-1]["name"], weapon["name"])
+
     def test_starter_only_rusty_sword(self):
         self.assertEqual([w["name"] for w in self.p["weapons"]], ["Rusty Sword"])
         self.assertIs(self.p["weapon"], self.p["weapons"][0])
@@ -125,7 +162,7 @@ class OriginalTests(unittest.TestCase):
             gold=0,
             status={},
             active_buffs={},
-            speed=1
+            speed=1,
         )
         with patch.object(game, "apply_rune_effect") as apply:
             self.run_inputs(["1", "1", "4"], game.fight, enemy)

@@ -21,7 +21,7 @@ The Flask development server uses port **5000**. Set `PORT` to choose another po
 
 ## Original text edition
 
-The default page preserves the original 46 actions, grouped into top categories. Click an action or type its original number. Category tabs wrap to remain visible; you can also type a category name such as `inventory` or `crafting`. A live sidebar shows character stats, region, weather, equipment, effects, enemies, companions, progress and six save slots. The title menu contains Dictionary, Tutorial, Customise and Saves, with a separate Play / Continue button.
+The default page preserves the original 46 actions, grouped into top categories. The first menu shows numbered categories: 1 Explore, 2 Inventory & Equip, and so on. Choose a category to open its secondary numbered action menu; 0 returns to the main category menu. Category tabs also remain available. A live sidebar shows character stats, region, weather, equipment, effects, enemies, companions, progress and six save slots. The title menu contains Dictionary, Tutorial, Customise and Saves, with a separate Play / Continue button.
 
 Start with only a Rusty Sword. Loose runes are one-use consumables. Binding a rune to a weapon consumes the loose rune and creates a permanent attachment: it cannot be removed, replaced or spent by attacking. Staff charges remain finite.
 

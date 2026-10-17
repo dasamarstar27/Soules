@@ -2112,119 +2112,61 @@ def cast_spell():
 
 
 def merchant():
+    from copy import deepcopy
+
     region = player["region"]
-    items = MERCHANT_ITEMS.get(region, [])
-
+    stock = []
+    for name in MERCHANT_ITEMS.get(region, []):
+        offer = None
+        for key, catalog, stat in [
+            ("weapons", WEAPONS, "atk"),
+            ("staffs", STAFFS, "power"),
+            ("runes", RUNES, None),
+            ("armours", ARMOURS, "def"),
+        ]:
+            item = next((x for x in catalog if x["name"] == name), None)
+            if item:
+                price = item.get(stat, 10) * 10 if stat else random.randint(100, 550)
+                offer = (key, deepcopy(item), price)
+                break
+        if offer is None:
+            for key, catalog, limits in [
+                ("woods", WOODS, (50, 150)),
+                ("metals", METALS, (70, 200)),
+                ("cores", CORES, (100, 300)),
+            ]:
+                if name in catalog:
+                    offer = (key, name, random.randint(*limits))
+                    break
+        if offer:
+            stock.append(offer)
     while True:
-        print(f"\n=== {region} MERCHANT ===")
-        print(f"Souls: {player['gold']}")
-
-        for i, item_name in enumerate(items):
-            print(f"{i}. {item_name}")
-
-        print("X. Leave")
-
-        choice = input("> ").lower()
-
-        if choice == "x":
+        print(f"\n=== {region} MERCHANT ===\nSouls: {player['gold']}")
+        for i, (key, item, price) in enumerate(stock, 1):
+            name = item["name"] if isinstance(item, dict) else item
+            print(f"{i}. {name} — {price} souls")
+        print("0. Leave")
+        choice = input("Buy item number > ").strip().lower()
+        if choice in ("0", "x"):
             return
-
         try:
-            idx = int(choice)
-            item_name = items[idx]
-        except:
-            print("Invalid choice.")
+            index = int(choice) - 1
+            if not 0 <= index < len(stock):
+                raise ValueError
+        except ValueError:
+            print("Choose a listed item number.")
             continue
-
-        item = None
-        item_type = None
-        price = 0
-
-        for weapon in WEAPONS:
-            if weapon["name"] == item_name:
-                item = weapon.copy()
-                item_type = "weapon"
-                price = weapon["atk"] * 10
-                break
-
-        if item is None:
-            for staff in STAFFS:
-                if staff["name"] == item_name:
-                    item = staff.copy()
-                    item_type = "staff"
-                    price = staff["power"] * 10
-                    break
-
-        if item is None:
-            for rune in RUNES:
-                if rune["name"] == item_name:
-                    item = rune.copy()
-                    item_type = "rune"
-                    price = random.randint(100, 550)
-                    break
-
-        if item is None:
-            for armour in ARMOURS:
-                if armour["name"] == item_name:
-                    item = armour.copy()
-                    item_type = "armour"
-                    price = armour["def"] * 10
-                    break
-        if item is None:
-            for wood in WOODS:
-                item = wood.copy()
-                item_type = "wood"
-                price = random.randint(50, 150)
-                break
-        if item is None:
-            for metal in METALS:
-                item = metal.copy()
-                item_type = "metal"
-                price = random.randint(70, 200)
-                break
-        if item is None:
-            for core in CORES:
-                item = core.copy()
-                item_type = "core"
-                price = random.randint(100, 300)
-                break
-
-        if item is None:
-            print("Item data missing.")
+        key, item, price = stock[index]
+        name = item["name"] if isinstance(item, dict) else item
+        if input(f"Buy {name} for {price} souls? (y/n) > ").lower() != "y":
             continue
-
-        print(f"Buy {item['name']} for {price} souls? (y/n)")
-
-        if input("> ").lower() != "y":
-            continue
-
         if player["gold"] < price:
             print("Not enough souls.")
             continue
-
         player["gold"] -= price
-
-        if item_type == "weapon":
-            player["weapons"].append(item)
-        elif item_type == "armour":
-            player["armours"].append(item)
-        elif item_type == "staff":
-            player["staffs"].append(item)
-        elif item_type == "rune":
-            player["runes"].append(item)
-        elif item_type == "wood":
-            player["woods"].append(item)
-        elif item_type == "metal":
-            player["metals"].append(item)
-        elif item_type == "core":
-            player["cores"].append(item)
-
-        print(f"Purchased {item['name']}!")
-
-
-# =========================
-# COMBAT
-# =========================
+        player.setdefault(key, []).append(deepcopy(item))
+        stock.pop(index)
+        print(f"Purchased {name}!")
 
 
 def _use_class_skill(cls, enemy):
@@ -5643,24 +5585,27 @@ def game():
 
     load_game()
     _ui.init_ui(player)
-    group = "explore"
+    group = ""
     while True:
         _ui.location = None
         if _ui.get_ui():
             _ui.get_ui().clear_enemy()
-        _ui.context("main", group)
-        print("\n--- " + BY_ID[group]["name"].upper() + " ---")
-        for number, label in BY_ID[group]["options"]:
-            print(f"{number}. {label}")
-        print("Categories: " + " | ".join(g["name"] for g in BY_ID.values()))
-        print(
-            "Type any original action number (1–46), or a category name. /back returns from a submenu."
-        )
+        _ui.context("category" if group else "main", group)
+        if group:
+            print("\n--- " + BY_ID[group]["name"].upper() + " ---")
+            for number, (_, label) in enumerate(BY_ID[group]["options"], 1):
+                print(f"{number}. {label}")
+            print("0. Back to main menu")
+        else:
+            print("\n--- MAIN MENU ---")
+            for number, category in enumerate(BY_ID.values(), 1):
+                print(f"{number}. {category['name']}")
         try:
-            choice = input("Your choice > ").strip()
+            choice = input("Choose an action > " if group else "Choose a category > ").strip()
         except _ui.ReturnToMenu:
+            group = ""
             continue
-        if choice.upper() == "DAMAR":
+        if choice.upper() == "DAMAR" and not group:
             from beta_testing import grant_collectibles
 
             grant_collectibles(player)
@@ -5669,17 +5614,26 @@ def game():
             (g["id"] for g in BY_ID.values() if choice.lower() in (g["id"], g["name"].lower())),
             None,
         )
-        if category:
+        if choice.startswith("/group:"):
+            category = choice.split(":", 1)[1]
+        if category in BY_ID:
             group = category
             continue
-        if choice.startswith("/group:"):
-            requested = choice.split(":", 1)[1]
-            if requested in BY_ID:
-                group = requested
+        if group and choice == "0":
+            group = ""
             continue
-        if not choice.isdigit() or not 1 <= int(choice) <= 46:
-            print("Choose one of the numbered actions, or a category at the top.")
+        try:
+            index = int(choice) - 1
+            options = BY_ID[group]["options"] if group else list(BY_ID)
+            if not 0 <= index < len(options):
+                raise ValueError
+        except ValueError:
+            print("Choose one of the numbers shown above.")
             continue
+        if not group:
+            group = options[index]
+            continue
+        choice = str(options[index][0])
         _ui.context("action", group)
         before = deepcopy(player)
         try:

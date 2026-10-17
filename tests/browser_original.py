@@ -37,11 +37,11 @@ with sync_playwright() as p:
         == 132
     )
     page.locator('[data-group="inventory"]').click()
-    page.wait_for_selector('#action-buttons [data-response="4"]')
-    page.locator('#action-buttons [data-response="4"]').click()
+    page.wait_for_selector('#action-buttons [data-response="1"]')
+    page.locator('#action-buttons [data-response="1"]').click()
     page.wait_for_function("packet.snapshot.phase === 'action' && packet.waiting")
     page.locator("#back").click()
-    page.wait_for_selector('#action-buttons [data-response="4"]:enabled')
+    page.wait_for_selector('#action-buttons [data-response="1"]:enabled')
     page.locator('[data-slot-action="save"]').first.click()
     page.wait_for_function(
         "JSON.parse(localStorage.getItem('soules-original-slots'))?.[0]?.save.player.name==='Sable'"
@@ -63,14 +63,21 @@ with sync_playwright() as p:
         await start({save});
     }"""
     page.evaluate(await_death)
-    page.wait_for_selector('#new-dialog[open]')
+    page.wait_for_selector("#new-dialog[open]")
     assert page.evaluate("localStorage.getItem('soules-original-autosave')") is None
-    page.locator('input[name="name"]').fill('New Soul')
-    page.get_by_role('button', name='Begin adventure').click()
-    page.wait_for_function("packet.snapshot?.player?.name === 'New Soul' && packet.snapshot.phase === 'main'")
-    assert page.evaluate('packet.snapshot.player.runes.length') == 0
-    assert page.evaluate('packet.snapshot.player.weapons.length') == 1
-    assert page.evaluate("JSON.parse(localStorage.getItem('soules-original-slots'))[0].save.player.name") == 'Sable'
+    page.locator('input[name="name"]').fill("New Soul")
+    page.get_by_role("button", name="Begin adventure").click()
+    page.wait_for_function(
+        "packet.snapshot?.player?.name === 'New Soul' && packet.snapshot.phase === 'main'"
+    )
+    assert page.evaluate("packet.snapshot.player.runes.length") == 0
+    assert page.evaluate("packet.snapshot.player.weapons.length") == 1
+    assert (
+        page.evaluate(
+            "JSON.parse(localStorage.getItem('soules-original-slots'))[0].save.player.name"
+        )
+        == "Sable"
+    )
     assert not errors, errors
     print("Original UI: start, hidden code, groups, submenus, save slots, themes, mobile passed")
     browser.close()

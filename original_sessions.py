@@ -180,7 +180,7 @@ class OriginalSession:
 
                 if group not in BY_ID:
                     raise ValueError("Choose a game category.")
-                if self.snapshot.get("phase") != "main":
+                if self.snapshot.get("phase") not in ("main", "category"):
                     raise ValueError("Finish the current prompt or use Back to category first.")
                 text = "/group:" + group
             if (
