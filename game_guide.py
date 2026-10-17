@@ -14,12 +14,12 @@ SECTIONS = [
     ]),
     ('survival', 'Health, hunger, mana and death', [
         'Health reaching zero ends this character’s run. The active autosave clears and new character creation opens. Separately named save slots are retained. Death does not restore your old character automatically.',
-        'Your hunger falls by 5 each wander, or 1 with the hunger resistance skill. Below 30 you receive a warning; at zero each further wander deals 10 damage. Eat carried food through Inventory & Equip, buy takeaway food, or use a village restaurant.',
+        'Starting a wander at full hunger (100/100) restores up to 3 HP before hunger is spent. Your hunger then falls by 5 each wander, or 1 with the hunger resistance skill. Below 30 you receive a warning; at zero each further wander deals 10 damage. Eat carried food through Inventory & Equip, buy takeaway food, or use a village restaurant.',
         'Food restores the amount printed beside it. A restaurant meal is eaten immediately and also heals; takeaway food goes into your inventory and can be saved for a companion. Inns exchange souls for local-quality healing. Check prices and stock before paying.',
         'Mana pays for elemental arts. Souls, also called gold in some older menus, buy goods, upgrades and services. Carrying an item does not automatically equip or consume it.',
     ]),
     ('exploration', 'Wandering, travelling and discovery', [
-        'Wander advances time, weather, hunger, companion hunger and local resource cycles. Regular encounters can be monsters, merchants, companions or peaceful paths. Night makes monsters tougher and affects some encounters; higher levels add evolved enemies and minibosses.',
+        'Wander advances time, weather, hunger, companion hunger and local resource cycles. Regular encounters can be monsters, merchants, companions or peaceful paths. Themed loot respects its home regions: Sea Pearls, for example, drop only at Sunken Coast, while common trinkets can be found anywhere. Night makes monsters tougher and affects some encounters; higher levels add evolved enemies and minibosses.',
         'Discovery rolls are separate from ordinary encounters: undiscovered structures have a 12% check, ingredients an 8% check and building supplies a 25% check per wander. Hidden elemental villages have a 1% check in their four home regions. These are checks in a sequence, not percentages that add to 100; earlier special encounters can end the wander.',
         'Travel lists unlocked regions. Defeating the current main-region guardian unlocks the next region. Structures lists discovered local places. A watch post can reveal an ordinary village route without revealing hidden elemental villages.',
         'The Village Directory lists discovered villages across regions and allows repeat visits. The world map shows unlocked progression. The optional Creator’s Realm has its own access conditions and is not necessary for the original ending.',

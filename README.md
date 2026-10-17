@@ -141,3 +141,8 @@ The current question is displayed at full adventure text size in the main story 
 Tutorial now covers starting, controls, survival, exploration, combat, equipment, runes and fusions, crafting/professions, alchemy, local economies, construction, companion evolution, ruins, temples, the chapter storyline, side quests, saves, appearance and all 47 original actions. It identifies original preview menus honestly. Secret testing commands are omitted from player-facing help. Turning off testing access works at any pending game prompt and is saved at the next safe checkpoint; an already-open postgame shop also rechecks access before purchase.
 
 Automatic following measures the rendered height of each new response, so wrapped paragraphs on a phone count as long text. It follows ordinary responses and option menus, including attacks and villages. Only very long batches—more than roughly 60 rendered lines or three journal screens, whichever is larger—stay put. It never jumps down while you are reading earlier entries.
+
+
+Full hunger recovery: starting a wander at 100/100 hunger restores up to 3 HP, capped at maximum health, before the normal hunger drain. It does not trigger from menus, elapsed real time or combat turns and cannot revive a dead character.
+
+Ordinary loot drops, arena prizes, cave caches and dungeon rewards now filter themed trinkets by region. Sea Pearls are native to Sunken Coast; common coins/relics remain global. Previously acquired items are retained. The tagged loot catalogue is the shared source for these original-game loot paths.

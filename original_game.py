@@ -2218,13 +2218,18 @@ def fight(enemy, boss=False):
 # =========================
 
 
+def regional_loot(region):
+    """Common trinkets plus finds native to this region; never the global rare pool."""
+    return [item for item in LOOT_ITEMS if not item.get("regions") or region in item["regions"]]
+
+
 def drop_loot():
     luck_bonus = 10 if player["active_buffs"].get("divine_luck") else 0
     roll = min(100, random.randint(1, 100) + luck_bonus)
     ui = _ui.get_ui()
 
     if roll <= 60:
-        item = random.choice(LOOT_ITEMS)
+        item = random.choice(regional_loot(player["region"])).copy()
         player["inventory"].append(item)
         print(f"\n📦 Loot Found: {item['name']}")
         if ui:
@@ -2464,6 +2469,17 @@ def _handle_wander_event(event_id, region):
             print("  You walk on, trying not to think about it.")
 
 
+def regenerate_from_full_hunger():
+    """One small recovery before a wander spends hunger; never revive a dead run."""
+    if player.get("hunger", 100) < 100 or player["hp"] <= 0:
+        return 0
+    recovered = max(0, min(3, player["max_hp"] - player["hp"]))
+    if recovered:
+        player["hp"] += recovered
+        print(f"🍎 Full hunger: you recover {recovered} HP before continuing your journey.")
+    return recovered
+
+
 def explore():
     r = player["region"]
 
@@ -2515,6 +2531,8 @@ def explore():
     # ── Luck boost decay ──
     if player.get("luck_boost_explores", 0) > 0:
         player["luck_boost_explores"] -= 1
+
+    regenerate_from_full_hunger()
 
     # ── Hunger decreases each wander ──
     drain = 1 if "hunger_resist" in player.get("skills", []) else 5
@@ -3023,7 +3041,7 @@ def visit_arena(struct, region):
     player["gold"] += bonus_gold
     print(f"  💰 +{bonus_gold} arena prize souls!")
     if LOOT_ITEMS and random.random() < 0.6:
-        loot = random.choice(LOOT_ITEMS).copy()
+        loot = random.choice(regional_loot(region)).copy()
         player.setdefault("inventory", []).append(loot)
         print(f"  🎁 Bonus prize: {loot['name']}!")
 
@@ -3156,9 +3174,9 @@ def visit_cave(struct, region):
             return
     print("\n  You reach the back of the cave.")
     if random.random() < 0.7 and LOOT_ITEMS:
-        loot = random.choice(LOOT_ITEMS).copy()
+        loot = random.choice(regional_loot(region)).copy()
         player.setdefault("inventory", []).append(loot)
-        ores = random.choice(METALS)
+        ores = random.choice(list(METALS))
         player.setdefault("metals", []).append(ores)
         print(f"  💎 You find: {loot['name']} gleaming in the dark!")
         print(f"  🪙 You find: {ores}!")
@@ -3448,7 +3466,7 @@ def visit_dungeon(struct, region):
         if not is_boss_floor:
             mid_loot_chance = 0.35
             if random.random() < mid_loot_chance and LOOT_ITEMS:
-                mid_loot = random.choice(LOOT_ITEMS).copy()
+                mid_loot = random.choice(regional_loot(region)).copy()
                 player.setdefault("inventory", []).append(mid_loot)
                 print(f"  💎 Floor {floor_num} loot: {mid_loot['name']}!")
             gold_mid = 20 + lvl * 8
@@ -3461,7 +3479,7 @@ def visit_dungeon(struct, region):
 
     print(f"\n  🏆 {struct['name']} CLEARED! You conquer the deepest floor!")
     if LOOT_ITEMS:
-        loot = random.choice(LOOT_ITEMS).copy()
+        loot = random.choice(regional_loot(region)).copy()
         player.setdefault("inventory", []).append(loot)
         print(f"  🎁 Boss drop: {loot['name']}!")
     souls_bonus = 80 + lvl * 25
@@ -3474,7 +3492,7 @@ def visit_dungeon(struct, region):
             player.setdefault("ingredients", []).append(ing)
             print(f"  🌿 Rare ingredient found in the vault: [{ing}]!")
     cat = random.choice([CORES, WOODS, METALS])
-    loot = random.choice(category)
+    loot = random.choice(list(cat))
     if loot in CORES:
         player["cores"].append(loot)
         print(f"You found a {loot} core")
@@ -3616,7 +3634,7 @@ def visit_tower(struct, region):
     player["gold"] += bonus_gold
     print(f"  💰 +{bonus_gold} souls looted from the tower chest!")
     cat = random.choice([CORES, WOODS, METALS])
-    loot = random.choice(category)
+    loot = random.choice(list(cat))
     if loot in CORES:
         player["cores"].append(loot)
         print(f"You found a {loot} core")
