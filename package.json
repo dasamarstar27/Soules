@@ -1,0 +1,10 @@
+{
+  "name": "soules",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Soules browser RPG — Python/Flask, no Node dependencies",
+  "scripts": {
+    "dev": ".venv/bin/python app.py",
+    "test": ".venv/bin/python -m unittest discover -s tests -v"
+  }
+}

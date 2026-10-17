@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101715"><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><title>Soules — Echoes of the World Tree</title><link rel="stylesheet" href="/static/style.css"><script src="/static/app.js" defer></script></head>
+<body>
+<aside class="sidebar">
+<a class="brand" href="/" aria-label="Soules home"><span class="brand-mark">♧</span><span>SOULES<small>ECHOES OF THE WORLD TREE</small></span></a>
+<div class="sidebar-label">YOUR JOURNEY</div>
+<nav aria-label="Main navigation">
+<button class="nav" data-page="menu"><span>⌂</span> Main menu</button>
+<button class="nav active" data-page="adventure"><span>♜</span> Adventure <i>01</i></button>
+<button class="nav" data-page="runes"><span>◇</span> Rune collection <i id="rune-count">06</i></button>
+<button class="nav" data-page="fusion"><span>⟡</span> Fusion altar</button>
+<button class="nav" data-page="village"><span>⌂</span> Village & crafting</button>
+<button class="nav" data-page="alchemy"><span>⚗</span> Alchemy & potions</button>
+<button class="nav" data-page="saves"><span>▣</span> Save slots</button>
+<button class="nav" data-page="world"><span>⌘</span> World map</button>
+<button class="nav" data-page="codex"><span>▤</span> The codex</button>
+</nav>
+<div class="sidebar-quest"><span class="eyebrow">THE GREAT RESTORATION</span><div class="quest-icon">♧</div><h3>A world losing its soul.</h3><p>Break the fifteen seals.<br>Defeat The Dreaming God.</p><div class="quest-track"><i id="quest-progress"></i></div><small id="seal-count">0 / 15 seals restored</small></div>
+<div class="sidebar-bottom"><button id="save-button">↧ Export save</button><button id="load-button">↥ Import save</button><input id="load-file" type="file" accept="application/json,.json" hidden><small>Browser edition · v1.0</small></div>
+</aside>
+<main>
+<header><div class="breadcrumb">THE WORLD TREE <span>/</span> <b id="page-title">Adventure</b></div><div class="header-right"><span class="live-dot"></span> Your journey, your pace <button id="character-button" title="Start a new character">♙</button></div></header>
+<div class="content">
+<div class="heading"><div><div class="eyebrow">A SOUL IS NEVER TRULY LOST</div><h1 id="heading">Into the whispering wilds.</h1><p id="subheading">Beyond the sanctuary, something ancient stirs.</p></div><div class="resources"><span title="Gold"><b class="gold">◈</b> <strong id="gold">65</strong> <small>GOLD</small></span><span title="Soul shards"><b>✧</b> <strong id="shards">0</strong> <small>SHARDS</small></span></div></div>
+<section id="tutorial-guide" aria-label="Tutorial"></section>
+<section id="view"></section>
+<footer><span>✧ Every rune holds a memory. Every fusion tells a story.</span><span>SOULES <b>•</b> THE WORLD TREE AWAITS</span></footer>
+</div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="character-dialog"><form id="character-form"><span class="eyebrow">A NEW SOUL AWAKENS</span><h2>Write your own legend.</h2><p>Starting a new journey replaces your autosave. Save your current journey in a slot first to keep it.</p><label>Your name<input name="name" maxlength="24" value="Wanderer" required></label><label>Your calling<select name="cls"><option>Runekeeper</option><option>Warden</option><option>Reaver</option></select></label><p class="muted">Runekeeper: more mana · Warden: health and armor · Reaver: stronger attacks</p><div class="button-row"><button type="button" id="cancel-character">Keep my journey</button><button class="primary" type="submit">Begin again ↗</button></div></form></dialog>
+</body></html>

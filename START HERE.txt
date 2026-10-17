@@ -1,0 +1,23 @@
+PLAY SOULES
+
+1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
+2. You need Python 3.11 or newer installed from python.org.
+   Windows: tick "Add Python to PATH" during installation.
+3. Windows: double-click "Play Soules.bat".
+   Mac: double-click "Play Soules.command".
+   If macOS blocks an unsigned launcher, open this folder in Terminal and run
+   python3 play.py instead.
+4. The game opens in your browser. Keep the launcher's window open while playing.
+   On the first launch, Internet access is needed to install the game's libraries.
+5. Choose Play / Continue or Start guided tutorial.
+
+This download runs on a computer, not directly on a phone. A phone needs a hosted
+version of the game; this ZIP is not a website or a public hosting service.
+
+Use Save slots for multiple characters and Export save for portable backups.
+The game stores progress in your browser, so keep the same browser and export a
+backup before closing. The launcher uses the same local address each time so your save slots remain
+available. Keep using the same browser profile; other browsers have separate saves.
+
+All original uploads are preserved in legacy/. The malformed old save cannot be
+imported into this browser edition.
