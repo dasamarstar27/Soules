@@ -110,6 +110,7 @@ def inventory_menu(game):
             ("Armour", "armours", p["armours"]),
             ("Staffs", "staffs", p["staffs"]),
             ("Runes", "runes", p["runes"]),
+            ("Ancient finds — protected for Season Three", "protected_relics",p.get("protected_relics",[])),
         ]
         for title, kind, items in sections:
             query = p.get("inventory_search", "").lower()
@@ -136,7 +137,7 @@ def inventory_menu(game):
                 print(
                     f"- {item['name']} ×{quantity}"
                     + (" ★" if item["name"] in p.get("inventory_favourites", []) else "")
-                    + f" | ATK {attack} | DEF {defense} | Element: {item_element(item)} | Sell: {sale_value(item, kind)} souls"
+                    + (f" | Element: {item_element(item)} | Protected · cannot sell / salvage" if kind=="protected_relics" else f" | ATK {attack} | DEF {defense} | Element: {item_element(item)} | Sell: {sale_value(item, kind)} souls")
                     + (" [EQUIPPED]" if equipped else "")
                 )
         print("\nSort: 1 Name · 2 Attack/power · 3 Defence · 4 Element · 5 Sell value")

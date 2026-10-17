@@ -2844,6 +2844,9 @@ def _ingredient_brew_menu():
 
     if a_idx == b_idx:
         # Check they have 2 of this ingredient
+        if not 0 <= a_idx < len(unique_ings):
+            print("Invalid selection.")
+            return
         ing_a = unique_ings[a_idx]
         if ings.count(ing_a) < 2:
             print(f"  You only have 1 {ing_a}. You need 2 to mix the same ingredient.")
@@ -3279,47 +3282,10 @@ def visit_village(struct, region):
 
 
 def visit_ruins(struct, region):
-    advance_quest("explore_structure", region)
-    print(f"\n🗿═══════════════════════════════🗿")
-    print(f"     {struct['name'].upper()}")
-    print(f"🗿═══════════════════════════════🗿")
-    print("Ancient script covers every stone wall...")
-    print("you notice rusted metals in the ruins. they may still be usable")
-    rust = random.randint(1, 3)
-    if rust == 1:
-        loot + random.choice(METALS)
-        print(f" the metal is a {loot}  and is still usable")
-        player["metals"].append(loot)
-    elif rust == 2:
-        print("the metal is too rusted to be used")
-    else:
-        print("there was nothing there")
-    roll = random.randint(1, 100)
-    if roll < 30:
-        souls = random.randint(40, 120)
-        player["gold"] += souls
-        print(f"  💀 You find a hidden cache — {souls} souls!")
-    elif roll < 55:
-        if RUNES:
-            rune = random.choice(RUNES).copy()
-            player.setdefault("runes", []).append(rune)
-            print(f"  ✨ You recover an ancient rune: {rune['name']}!")
-    elif roll < 75:
-        if SCROLLS:
-            scroll_name = random.choice(list(SCROLLS.keys()))
-            player.setdefault("scrolls", {})[scroll_name] = (
-                player["scrolls"].get(scroll_name, 0) + 1
-            )
-            print(f"  📜 You find a worn scroll: {scroll_name}!")
-    elif roll < 90:
-        bonus = random.randint(2, 5)
-        player["max_hp"] += bonus
-        player["hp"] = min(player["hp"] + bonus, player["max_hp"])
-        print(f"  🌟 A rune-inscribed altar pulses — max HP +{bonus}!")
-    else:
-        trap = random.randint(10, 25)
-        player["hp"] = max(1, player["hp"] - trap)
-        print(f"  ⚠ A trap sprung! You take {trap} damage.")
+    import sys
+    from ancient_ruins import visit
+
+    visit(sys.modules[__name__], struct, region)
 
 
 def visit_shrine(struct):
@@ -3712,6 +3678,11 @@ def visit_structures():
             visit_graveyard(struct, r)
         elif t == "camp":
             visit_camp(struct, r)
+        elif t in ("quarry", "lumberyard", "watchpost"):
+            from world_sites import visit
+            import sys
+
+            visit(sys.modules[__name__], struct, r)
 
 
 # =========================
@@ -4022,33 +3993,50 @@ def _fight_elemental_boss(boss_data):
 
 def source_temple():
     if player["region"] != "Riftlands":
-        print("The Sacred Temple stands in the Riftlands.")
+        print("The Source Temple stands in the Riftlands.")
         return
-    print("\n--- SACRED TEMPLE · RIFTLANDS ---")
+    print("\n--- SOURCE TEMPLE · RIFTLANDS ---")
     print(
-        "Only the ancient stabiliser stands here. The four surviving cores remain guarded in their villages."
+        "The ancient stabiliser stands here. The Keeper also prepares portable Core "
+        "Stabilisers for binding core energy into equipment."
     )
-    print("1. Inspect the stabiliser\n2. Open story journal\n0. Leave")
+    print(
+        "1. Buy a Core Stabiliser — 300 souls\n"
+        "2. Imbue a weapon or staff using core energy and a stabiliser\n"
+        "3. Inspect the ancient stabiliser\n4. Story journal\n0. Leave"
+    )
     choice = input("Temple > ").strip()
     if choice == "1":
-        print(
-            "The warriors’ stabilising channels bind the core energy. The eleven destroyed cores are gone; these conduits lead to the four surviving civilisations."
-        )
+        if player["gold"] < 300:
+            print("Not enough souls.")
+            return
+        player["gold"] -= 300
+        player["inventory"].append(dict(
+            name="Core Stabiliser", value=150,
+            desc="Portable anchor for imbuing core energy into equipment."
+        ))
+        print("Core Stabiliser added to your inventory.")
     elif choice == "2":
+        infuse_gear()
+    elif choice == "3":
+        print("The fixed stabiliser bears the ancient warriors’ seals. The four surviving cores remain in their civilisations.")
+    elif choice == "4":
         view_story()
 
 
 def infuse_gear():
     if player["region"] != "Riftlands":
         print("⚠  Elemental infusion can only be performed inside the Riftlands Source Temple.")
-        print("   Travel to the Riftlands and enter the Source Temple (option 16).")
+        print("   Travel to the Riftlands and enter the Source Temple through Structures.")
         return
 
-    cores = player.get("elemental_cores", [])
+    cores = list(dict.fromkeys(
+        player.get("elemental_cores", []) + player.get("core_attunements", [])
+    ))
     has_stabiliser = any(i.get("name") == "Core Stabiliser" for i in player.get("inventory", []))
 
     if not cores:
-        print("You have no elemental cores. Find secret elemental villages to obtain them.")
+        print("You have no core or clan blessing available for imbuing. Broken-core fragments cannot be used.")
         return
     if not has_stabiliser:
         print("You need a Core Stabiliser — purchase one from the Source Temple Keeper.")
@@ -4062,6 +4050,8 @@ def infuse_gear():
 
     try:
         core_idx = int(input("Select core > "))
+        if not 0 <= core_idx < len(cores):
+            raise IndexError
         core_name = cores[core_idx]
     except (ValueError, IndexError):
         print("Invalid choice.")
@@ -4114,7 +4104,9 @@ def infuse_gear():
         target["power"] = target.get("power", 0) + core_data["bonus_atk"]
 
     # Consume core + stabiliser
-    cores.pop(core_idx)
+    if core_name in player.get("elemental_cores", []):
+        player["elemental_cores"].remove(core_name)
+    # A clan blessing channels energy remotely; its protected core stays in the village.
     for item in player["inventory"]:
         if item.get("name") == "Core Stabiliser":
             player["inventory"].remove(item)

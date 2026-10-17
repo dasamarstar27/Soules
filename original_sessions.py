@@ -112,6 +112,9 @@ def validate_original_save(value):
                     "harvest_cycle",
                     "errand_cycle",
                     "errands_completed",
+                    "visits",
+                    "next_development",
+                    "material_cycle",
                 ):
                     if number in record and (
                         type(record[number]) is not int or not 0 <= record[number] <= 1000000000
@@ -122,6 +125,28 @@ def validate_original_save(value):
                     type(level) is not int or not 1 <= level <= 5 for level in levels.values()
                 ):
                     raise ValueError("Invalid building levels in save.")
+                projects = record.get("projects", [])
+                from village_projects import BY_ID
+                if (
+                    not isinstance(projects, list)
+                    or len(projects) > 100
+                    or any(not isinstance(x, str) or x not in BY_ID for x in projects)
+                    or len(set(projects)) != len(projects)
+                ):
+                    raise ValueError("Invalid village projects in save.")
+                history = record.get("development_log", [])
+                if (
+                    not isinstance(history, list)
+                    or len(history) > 30
+                    or any(not isinstance(x, str) or len(x) > 500 for x in history)
+                ):
+                    raise ValueError("Invalid village development history in save.")
+                material_stock = record.get("material_stock", {})
+                if not isinstance(material_stock, dict) or any(
+                    not isinstance(name, str) or type(n) is not int or not 0 <= n <= 10000
+                    for name, n in material_stock.items()
+                ):
+                    raise ValueError("Invalid village material stock in save.")
                 food_stock = record.get("food_stock", {})
                 if not isinstance(food_stock, dict) or any(
                     not isinstance(name, str) or type(count) is not int or not 0 <= count <= 10000
@@ -176,6 +201,20 @@ def validate_original_save(value):
         or any(not isinstance(mentor.get(k), str) for k in ("id", "name", "region"))
     ):
         raise ValueError("Invalid mentor record in save.")
+    relics = p.get("protected_relics", [])
+    if not isinstance(relics, list) or len(relics) > 1000 or any(
+        not isinstance(relic, dict)
+        or any(not isinstance(relic.get(key), str) for key in ("id", "name", "kind", "region", "element", "text"))
+        for relic in relics
+    ):
+        raise ValueError("Invalid protected ancient finds in save.")
+    for field in ("work_sites", "ruin_searches"):
+        sites = p.get(field, {})
+        if not isinstance(sites, dict) or len(sites) > 500 or any(
+            not isinstance(key, str) or type(value) is not int or value < 0
+            for key, value in sites.items()
+        ):
+            raise ValueError("Invalid exploration site progress in save.")
     # Only character progress is restored. Input prompts and half-completed actions are not replayed.
     cleaned = deepcopy(p)
     for key in list(cleaned):

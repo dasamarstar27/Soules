@@ -162,6 +162,14 @@ def main():
         from source_story import opening
 
         opening(game.player)
+        if not config.get("save"):
+            ui.init_ui(game.player)
+            ui.context("action", "explore")
+            print("You wake beneath the eaves of Old Village. Elian and the village keeper are here; speak to them before heading into the woods.")
+            try:
+                game.visit_village({"name": "Old Village", "type": "village"}, game.REGIONS[0])
+            except ui.ReturnToMenu:
+                pass
         game.game()
     except ui.RunEnded:
         game.player["hp"] = 0

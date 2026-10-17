@@ -17,3 +17,5 @@ Possible additions:
 The Creator's role and identity are still for the game's creator to decide. Do not make fighting the Creator a requirement for either previous ending.
 
 First milestone: one expedition area, one NPC questline and two paired-element recipes. Test these before expanding into a full campaign. Preserve saves, finite supplies and the text adventure with its live sidebar.
+
+Implemented preparation: ruins across all regions can yield protected tomes and fragments of the eleven destroyed cores. They have no sale or crafting path yet. Season Three should reveal their purpose without requiring players to have guessed which ordinary loot to keep. The four surviving clan cores remain intact.

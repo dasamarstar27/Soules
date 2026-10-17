@@ -88,6 +88,8 @@ class OriginalTests(unittest.TestCase):
     def test_numbered_category_then_secondary_action(self):
         session = OriginalSession({"name": "Menus", "cls": "warrior"})
         try:
+            self.assertEqual(session.poll(0)["prompt"], "Village > ")
+            session.send("7", session.poll(0)["prompt_id"])
             state = session.poll(0)
             self.assertEqual(state["snapshot"]["phase"], "main")
             self.assertEqual(state["snapshot"]["group"], "")
@@ -166,6 +168,7 @@ class OriginalTests(unittest.TestCase):
     def test_hidden_off_code_in_main_menu(self):
         session = OriginalSession({"name": "Codes", "cls": "warrior"})
         try:
+            session.send("7", session.poll(0)["prompt_id"])
             session.send("DAMAR", session.poll(0)["prompt_id"])
             state = session.poll(0)
             self.assertTrue(state["snapshot"]["player"]["beta_mode"])
@@ -242,6 +245,7 @@ class OriginalTests(unittest.TestCase):
     def test_session_cheat_save_and_stale_input(self):
         session = OriginalSession({"name": "Bridge", "cls": "warrior"})
         try:
+            session.send("7", session.poll(0)["prompt_id"])
             state = session.poll(0)
             session.send("DAMAR", state["prompt_id"], None)
             state = session.poll(0)

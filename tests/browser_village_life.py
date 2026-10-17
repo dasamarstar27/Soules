@@ -14,6 +14,9 @@ with sync_playwright() as p:
     page.wait_for_selector(".home-options")
     page.locator("[data-play]").click()
     page.get_by_role("button", name="Begin adventure").click()
+    page.wait_for_function("packet?.prompt === 'Village > ' && !busy")
+    assert page.evaluate("packet.snapshot.village.name") == "Old Village"
+    page.evaluate("async()=>{await respond('7');}")
     page.wait_for_function("packet?.snapshot?.phase === 'main'")
 
     def send(text):

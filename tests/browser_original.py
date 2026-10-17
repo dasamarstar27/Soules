@@ -22,6 +22,9 @@ with sync_playwright() as p:
     page.wait_for_selector("dialog[open]")
     page.locator('input[name="name"]').fill("Sable")
     page.get_by_role("button", name="Begin adventure").click()
+    page.wait_for_function("packet?.prompt === 'Village > ' && !busy")
+    assert page.evaluate("packet.snapshot.village.name") == "Old Village"
+    page.evaluate("async()=>{await respond('7');}")
     page.wait_for_selector('#action-buttons [data-response="1"]')
     assert "Rusty Sword" in page.locator("#status-sidebar").inner_text()
     assert page.locator("#categories button").count() == 7
@@ -67,6 +70,9 @@ with sync_playwright() as p:
     assert page.evaluate("localStorage.getItem('soules-original-autosave')") is None
     page.locator('input[name="name"]').fill("New Soul")
     page.get_by_role("button", name="Begin adventure").click()
+    page.wait_for_function("packet?.prompt === 'Village > ' && !busy")
+    assert page.evaluate("packet.snapshot.village.name") == "Old Village"
+    page.evaluate("async()=>{await respond('7');}")
     page.wait_for_function(
         "packet.snapshot?.player?.name === 'New Soul' && packet.snapshot.phase === 'main'"
     )

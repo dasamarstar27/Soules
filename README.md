@@ -108,3 +108,24 @@ All 132 distinct normal rune types can be fused in unordered pairs, including tw
 Dictionary → Fusions includes a two-rune ability preview. The original combat loop now uses the complete effect registry through original_magic.py, including periodic effects, stat changes, shields, reflection, lifesteal, control effects and expiry. Rage/Berserk gives +50% attack and -30% defence for three turns. Loose runes remain single-use; weapon-bound runes remain permanent.
 
 ADDON_IDEAS_100.md contains exactly 100 future addon designs. None of those proposals has been implemented as part of that planning document.
+
+
+## Village arrivals and development
+
+New characters begin inside Old Village with Elian, the elderly grandson of a fallen warrior, and keeper conversations. Leave with **7** to reach the main categories. Existing saves resume normally. Starting equipment remains only the Rusty Sword.
+
+There are **32 additional ordinary villages**, two in each region including the optional Creator's Realm. Villages have different service combinations, starting levels, food selections, prices and finite metal/wood/construction stocks. Ordinary villages never have an Imbuing Temple. Quarry, timber-yard and watch-post structure types are available throughout the world; watch posts reveal ordinary village routes, never hidden elemental villages.
+
+Use **11** inside a village or **Edit note** in the sidebar to save a note, and **12 / Tags** for labels such as `cheap food`, `farming` or `good smith`. Explore → Village Directory filters names, regions, services, tags and notes and revisits discovered villages.
+
+Each arrival counts once. A village independently improves a random existing building after **10–15 visits**, then chooses another interval. Levels stop at 5; fully developed settlements grant reputation instead. Reloading or browsing menus does not advance arrivals. Development history is village option **21**, also displayed in the sidebar.
+
+Village option **17** spends gathered building materials to upgrade workshops. Option **19** buys local materials with visible prices and quantities; stock refreshes every 20 wanders. Quarries and timber yards provide finite construction supplies at that same exploration cadence. Option **20** offers the locally compatible selection from **100 named community construction projects**. Projects cost supplies and souls, grant local reputation, and every three for one service grant +1 effective service quality, capped at +3. These are 100 projects using shared construction mechanics, not 100 independently implemented gameplay systems. See [VILLAGE_PROJECTS_100.md](VILLAGE_PROJECTS_100.md).
+
+## Protected ruins and the Riftlands temple
+
+Every region contains ancient civilisation ruins. Searches have a 35% broken-core fragment chance, 25% tome chance and 40% empty result; one search per site per 20-wander cycle, with each kind recoverable once at that site. Finds live in a protected collection: they cannot be sold, salvaged or used for crafting or imbuing. Their later purpose is reserved for Season Three. The four surviving cores remain protected by their clans.
+
+The Riftlands Source Temple sells portable Core Stabilisers for 300 souls and uses core energy to imbue a weapon or staff. A portable stabiliser is consumed. Old physical cores are consumed if used; a clan attunement channels energy while leaving the clan's core at home. Permanent bound runes survive imbuing.
+
+The separate [100-addon design backlog](ADDON_IDEAS_100.md) remains a broader expansion plan; it has not all been implemented by the village construction pack. Season Three's full campaign remains planned.
