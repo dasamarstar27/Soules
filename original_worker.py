@@ -26,17 +26,24 @@ def output(*args, sep=" ", end="\n", file=None, flush=False):
 
 
 def input_line(prompt=""):
-    if game.player.get("hp", 1) <= 0:
-        raise ui.RunEnded()
-    emit("prompt", prompt=prompt, snapshot=ui.snapshot())
-    line = sys.stdin.readline()
-    if not line:
-        raise EOFError("Browser session closed")
-    body = json.loads(line)
-    value = body["text"]
-    if value.strip() == "/back":
-        raise ui.ReturnToMenu()
-    return value
+    while True:
+        if game.player.get("hp", 1) <= 0:
+            raise ui.RunEnded()
+        emit("prompt", prompt=prompt, snapshot=ui.snapshot())
+        line = sys.stdin.readline()
+        if not line:
+            raise EOFError("Browser session closed")
+        body = json.loads(line)
+        value = body["text"]
+        # A mode switch never answers a pending purchase or consumes a turn.
+        if value.strip().upper() == "SAMAR":
+            from beta_testing import disable_beta
+
+            disable_beta(game.player)
+            continue
+        if value.strip() == "/back":
+            raise ui.ReturnToMenu()
+        return value
 
 
 def initial_player(config):
@@ -85,6 +92,10 @@ def initial_player(config):
             item = player.get(equipped)
             if item:
                 player[equipped] = next((v for v in player.get(owned, []) if v == item), item)
+    from companion_care import normalise
+
+    for companion in player.get("companions", []):
+        normalise(companion, player["region"])
     player.pop("password_hash", None)
     return player
 
@@ -157,7 +168,7 @@ def main():
             "SOULES — your original text adventure. Every original numbered action is available in the category tabs."
         )
         print(
-            "Choose a category, then click an action or type its number. During a submenu, answer the prompt below. Back to category safely leaves a submenu."
+            "Choose a category, then click an action or type its number. During a submenu, answer the question in the story panel. Back to category safely leaves a submenu."
         )
         from source_story import opening
 

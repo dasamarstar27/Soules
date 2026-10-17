@@ -80,6 +80,24 @@ def validate_original_save(value):
             for item in p.get(key, [])
         ):
             raise ValueError("Invalid equipment in save.")
+    if "beta_mode" in p and type(p["beta_mode"]) is not bool:
+        raise ValueError("Invalid testing mode in save.")
+    for companion in p.get("companions", []):
+        if "stage" in companion and (type(companion["stage"]) is not int or not 0 <= companion["stage"] <= 2):
+            raise ValueError("Invalid companion evolution stage in save.")
+        if "hunger" in companion and (
+            type(companion["hunger"]) is not int or not 0 <= companion["hunger"] <= 100
+        ):
+            raise ValueError("Invalid companion hunger in save.")
+        if "home_region" in companion and (
+            not isinstance(companion["home_region"], str) or companion["home_region"] not in regions
+        ):
+            raise ValueError("Invalid companion home region in save.")
+        for key in ("meals_eaten", "xp", "stage"):
+            if key in companion and (
+                type(companion[key]) is not int or not 0 <= companion[key] <= 1000000000
+            ):
+                raise ValueError("Invalid companion progress in save.")
     if p.get("class_id") not in CLASSES and p.get("class_id") is not None:
         raise ValueError("Unknown class in save.")
     for field in ("saved_villages", "village_records"):

@@ -157,47 +157,56 @@ def unlock_secret_region():
 
 
 def update_companion_evolution():
+    from companion_care import evolve
+
     for companion in player.get("companions", []):
-        if companion.get("stage", 0) >= 2:
-            continue
-        companion["xp"] += 1
-        if companion["stage"] == 0 and companion["xp"] >= 3:
-            companion["stage"] = 1
-            print(f"✨ {companion['name']} has advanced to stage 1!")
-        elif companion["stage"] == 1 and companion["xp"] >= 6:
-            companion["stage"] = 2
-            print(f"✨ {companion['name']} is now fully evolved!")
+        if evolve(companion):
+            print(f"✨ Evolved into {companion['form_name']}!")
 
 
 def apply_companion_support(enemy):
+    from companion_care import ready, form_name
+
     for companion in player.get("companions", []):
-        if not companion.get("can_battle") or companion.get("stage", 0) == 0:
+        if not ready(companion):
             continue
+        enemy.setdefault("status", {})
+        enemy.setdefault("active_buffs", {})
         elem = companion["element"]
-        print(f"✨ {companion['name']} assists in battle with {elem} power!")
+        strength = 2 if companion.get("stage", 0) >= 2 else 1
+        print(f"✨ {form_name(companion)} assists in battle with {elem} power!")
         if elem == "fire":
-            enemy["hp"] -= 3
-            enemy.setdefault("status", {})["burn"] = max(enemy["status"].get("burn", 0), 1)
+            enemy["hp"] -= 3 * strength
+            enemy.setdefault("status", {})["burn"] = max(enemy["status"].get("burn", 0), strength)
         elif elem == "ice":
-            enemy["hp"] -= 2
-            enemy.setdefault("status", {})["freeze"] = max(enemy["status"].get("freeze", 0), 1)
+            enemy["hp"] -= 2 * strength
+            enemy.setdefault("status", {})["freeze"] = max(enemy["status"].get("freeze", 0), strength)
         elif elem == "water":
-            enemy["def"] = max(0, enemy.get("def", 0) - 1)
+            enemy["def"] = max(0, enemy.get("def", 0) - strength)
         elif elem == "earth":
-            player["def"] += 1
+            buffs = player.setdefault("active_buffs", {})
+            buffs["fortress"] = max(buffs.get("fortress", 0), strength)
         elif elem == "poison":
-            enemy.setdefault("status", {})["poison"] = max(enemy["status"].get("poison", 0), 2)
+            enemy.setdefault("status", {})["poison"] = max(enemy["status"].get("poison", 0), 1 + strength)
         elif elem == "shadow":
-            enemy.setdefault("active_buffs", {})["blind"] = 1
+            enemy.setdefault("active_buffs", {})["blind"] = strength
         elif elem == "void":
-            enemy.setdefault("status", {})["void"] = max(enemy["status"].get("void", 0), 1)
+            enemy.setdefault("status", {})["void"] = max(enemy["status"].get("void", 0), strength)
         elif elem == "light":
-            player["hp"] = min(player["max_hp"], player["hp"] + 3)
+            player["hp"] = min(player["max_hp"], player["hp"] + 3 * strength)
         elif elem == "nature":
-            player["hp"] = min(player["max_hp"], player["hp"] + 2)
+            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength)
         elif elem == "soul":
-            enemy["hp"] -= 2
-            player["hp"] += 2
+            enemy["hp"] -= 2 * strength
+            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength)
+        elif elem == "arcane":
+            enemy["hp"] -= 3 * strength
+        elif elem == "crystal":
+            enemy["hp"] -= 2 * strength
+            enemy["def"] = max(0, enemy.get("def", 0) - strength)
+        elif elem == "storm":
+            enemy["hp"] -= 3 * strength
+            enemy.setdefault("status", {})["shock"] = strength
 
 
 def recruit_companion(companion):
@@ -207,33 +216,19 @@ def recruit_companion(companion):
     recruit = companion.copy()
     recruit["stage"] = 0
     recruit["xp"] = 0
+    from companion_care import normalise
+
+    normalise(recruit, player["region"])
     player.setdefault("companions", []).append(recruit)
     print(f"🐾 {recruit['name']} has joined your party!")
     return True
 
 
 def view_companion_status():
-    companions = player.get("companions", [])
+    import sys
+    from companion_care import menu
 
-    if not companions:
-        print("You have no companions.")
-        return
-
-    print("\n=== COMPANION STATUS ===")
-
-    for i, companion in enumerate(companions, 1):
-        print(f"\n{i}. {companion['name']}")
-        print(f"   Element: {companion['element'].title()}")
-        print(f"   Stage: {companion.get('stage', 0)}")
-        print(f"   XP: {companion.get('xp', 0)}")
-        print(f"   Battle Companion: {'Yes' if companion.get('can_battle') else 'No'}")
-
-        if companion.get("stage", 0) == 0:
-            print("   Evolution Progress: " f"{companion.get('xp', 0)}/3 XP")
-        elif companion.get("stage", 0) == 1:
-            print("   Evolution Progress: " f"{companion.get('xp', 0)}/6 XP")
-        else:
-            print("   Evolution Progress: Fully Evolved")
+    menu(sys.modules[__name__])
 
 
 # SPECIAL FUSION RECIPES
@@ -1504,25 +1499,27 @@ def _use_class_skill(cls, enemy):
 
 
 def _use_companion_move(companions, enemy):
-    battle_ready = [c for c in companions if c.get("can_battle") and c.get("stage", 0) > 0]
+    from companion_care import ready
+
+    battle_ready = [c for c in companions if ready(c)]
     if not battle_ready:
-        print("🐾 Your companions aren't battle-ready yet (need feeding first).")
-        return
+        print("🐾 Companions need stage 1 and at least 30 hunger to use battle moves. Feed them through Character → Companions.")
+        return False
     print("\n🐾 Companion moves:")
     for i, c in enumerate(battle_ready):
         elem = c.get("element", "?")
         move = COMPANION_MOVES.get(elem, {})
-        print(f"  {i}. {c['name']} [{elem}] — {move.get('name', '?')}: {move.get('desc', '?')}")
+        print(f"  {i}. {c.get('form_name', c['name'])} [{elem}] — {move.get('name', '?')}: {move.get('desc', '?')}")
     try:
         idx = int(input("  Use which? (-1 cancel) > "))
     except ValueError:
-        return
+        return False
     if not (0 <= idx < len(battle_ready)):
-        return
+        return False
     chosen = battle_ready[idx]
     elem = chosen.get("element", "")
     move = COMPANION_MOVES.get(elem, {})
-    print(f"\n💫 {chosen['name']} uses {move.get('name', '?')}!")
+    print(f"\n💫 {chosen.get('form_name', chosen['name'])} uses {move.get('name', '?')}!")
     bond = "companion_bond" in player.get("skills", [])
     mult = 2 if bond else 1
     if elem == "fire":
@@ -1580,6 +1577,14 @@ def _use_companion_move(companions, enemy):
         debuffs = ["burn", "freeze", "shock", "poison"]
         enemy.setdefault("status", {})[random.choice(debuffs)] = 2
         print(f"   🔮 Arcane Bolt: {dmg} damage + random debuff!")
+
+    elif elem == "crystal":
+        dmg = 24 * mult
+        enemy["hp"] -= dmg
+        enemy["def"] = max(0, enemy.get("def", 0) - 3)
+        print(f"   💎 Prism Lance: {dmg} damage + enemy DEF -3!")
+
+    return True
 
 
 # =========================
@@ -2014,7 +2019,8 @@ def fight(enemy, boss=False):
             if companion_move_used:
                 print("🐾 Companions already acted this fight.")
             else:
-                _use_companion_move(companions, enemy)
+                if not _use_companion_move(companions, enemy):
+                    continue
                 companion_move_used = True
 
         if enemy["hp"] <= 0:
@@ -2484,6 +2490,9 @@ def explore():
         print("   🌙 Night — enemies are +15% stronger, loot is better.")
 
     player["wander_count"] = player.get("wander_count", 0) + 1
+    from companion_care import wander as companion_hunger
+
+    companion_hunger(player)
 
     from source_story import anomaly
 
@@ -4622,6 +4631,8 @@ def award_companion_xp(amount):
     cxp = player.setdefault("companion_xp", {})
     clvl = player.setdefault("companion_levels", {})
     for c in companions:
+        if c.get("hunger", 100) < 30:
+            continue
         name = c["name"]
         cxp[name] = cxp.get(name, 0) + amount
         clvl[name] = clvl.get(name, 1)
@@ -4896,7 +4907,7 @@ def game():
 
             grant_collectibles(player)
             continue
-        if choice.upper() == "SAMAR" and not group:
+        if choice.upper() == "SAMAR":
             from beta_testing import disable_beta
 
             disable_beta(player)

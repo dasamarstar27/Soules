@@ -2330,6 +2330,7 @@ COMPANIONS = {
 }
 
 COMPANION_MOVES = {
+    "crystal": {"name": "Prism Lance", "desc": "24 damage + enemy DEF -3"},
     "fire": {"name": "Inferno Burst", "desc": "30 fire damage + burn 3 turns"},
     "ice": {"name": "Frost Nova", "desc": "25 ice damage + freeze 2 turns"},
     "water": {"name": "Tidal Wave", "desc": "20 damage + enemy DEF -4 for 3 turns"},

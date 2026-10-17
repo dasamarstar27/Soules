@@ -7,9 +7,10 @@
 <nav id="categories" aria-label="Game categories"></nav>
 <div class="scene-line"><span id="scene-name">YOUR JOURNEY</span><span id="connection" role="status">Ready</span></div>
 <div class="journal-tools" aria-label="Adventure conveniences"><button id="recall-command" title="Recall your last command without sending">Recall last</button><button id="latest-output">↓ Latest</button><button id="copy-journal">Copy journal</button><button id="clear-journal">Clear journal</button><button id="compact-status" aria-pressed="false">Compact sidebar</button><span id="health-warning" role="status"></span></div>
-<div id="terminal" tabindex="0" role="log" aria-label="Text adventure journal" aria-live="polite" aria-relevant="additions text"></div>
+<div class="story-panel"><div id="terminal" tabindex="0" role="log" aria-label="Text adventure journal" aria-live="polite" aria-relevant="additions text"></div>
+<div id="prompt" class="story-prompt" role="status">Your choice</div></div>
 <div id="action-buttons" aria-label="Category actions"></div>
-<div class="command-dock"><label id="prompt" for="command">Your choice</label><form id="command-form"><input id="command" autocomplete="off" maxlength="2000" placeholder="Type an answer… ↑↓ history · / focus" aria-label="Game command"><button type="submit" class="primary" id="send">Send ↵</button><button type="button" id="back">↶ Back to category</button></form><div id="quick-keys" aria-label="Quick responses"></div></div>
+<div class="command-dock"><label class="visually-hidden" for="command">Your response</label><form id="command-form"><input id="command" autocomplete="off" maxlength="2000" placeholder="Type an answer… ↑↓ history · / focus" aria-label="Game command" aria-describedby="prompt"><button type="submit" class="primary" id="send">Send ↵</button><button type="button" id="back">↶ Back to category</button></form><div id="quick-keys" aria-label="Quick responses"></div></div>
 </section>
 <section id="page-screen"></section>
 </main><aside id="status-sidebar" aria-label="Live character status"><div class="side-card"><h2>CHARACTER</h2><p>Press Play to begin or continue your journey.</p></div></aside></div>

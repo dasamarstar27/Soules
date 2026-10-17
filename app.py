@@ -151,7 +151,9 @@ def original_catalog():
         if len(r["inputs"]) == 2
         and all(name.replace("Fire Rune", "Flame Rune") in BASE for name in r["inputs"])
     ]
-    return jsonify(groups=GROUPS, classes=classes, content=content)
+    from game_guide import GUIDE
+
+    return jsonify(groups=GROUPS, classes=classes, content=content, guide=GUIDE)
 
 
 @app.get("/api/original/fusion")

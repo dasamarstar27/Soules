@@ -52,7 +52,7 @@ def village_services(game, village):
     game._FOOD_BY_NAME.update({goods[3][1]["name"]: goods[3][1] for goods in GOODS.values()})
     element = village["element"]
     clan, person, touch, mend, food, effect = PROFILES[element]
-    while True:
+    while available(p):
         print(f"\n--- {village['name']} · SEASON TWO ---")
         print("1. Elemental shop  2. Meet the keeper / training  3. Village library")
         print(
@@ -60,6 +60,8 @@ def village_services(game, village):
         )
         print("N. Save village / edit note · T. Tags · B. Bookmark")
         choice = input("Village > ").strip()
+        if not available(p):
+            return
         if choice.lower() in ("n", "note", "t", "tags", "b", "save"):
             import original_ui as ui
             from village_life import bookmark
@@ -82,6 +84,8 @@ def village_services(game, village):
                 print(f"{i}. {name} — {price} souls ({stock[i-1]} left)")
             try:
                 index = int(input("Buy number (0 cancel) > ")) - 1
+                if not available(p):
+                    return
             except ValueError:
                 continue
             if not 0 <= index < len(stock):
@@ -100,7 +104,7 @@ def village_services(game, village):
         elif choice == "2":
             print(f"{person}: Our element is a practice, not a possession. Spend mana with care.")
             print(f"I can teach {touch} for 75 souls. Enter 1 to learn, 0 to leave.")
-            if input("Training > ").strip() == "1":
+            if input("Training > ").strip() == "1" and available(p):
                 known = p.setdefault("elemental_arts", [])
                 if touch in known:
                     print("You already know this art.")
@@ -116,6 +120,8 @@ def village_services(game, village):
                 f"1. Touch of {element.title()} — teaches {touch}\n2. The Gentle {element.title()} — teaches {mend}\n0. Leave"
             )
             book = input("Read > ").strip()
+            if not available(p):
+                return
             if book in ("1", "2"):
                 art = touch if book == "1" else mend
                 known = p.setdefault("elemental_arts", [])
@@ -138,7 +144,7 @@ def village_services(game, village):
                 ingredient = ingredient["name"]
             print(f"{person}: Bring me 3 {ingredient}. Reward: 200 souls and one {food}.")
             quests[element] = "accepted"
-            if input("Hand in? (y/n) > ").strip().lower() == "y":
+            if input("Hand in? (y/n) > ").strip().lower() == "y" and available(p):
                 bag = p.setdefault("ingredients", [])
                 if bag.count(ingredient) < 3:
                     print("You have not gathered enough yet.")

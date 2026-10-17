@@ -129,3 +129,13 @@ Every region contains ancient civilisation ruins. Searches have a 35% broken-cor
 The Riftlands Source Temple sells portable Core Stabilisers for 300 souls and uses core energy to imbue a weapon or staff. A portable stabiliser is consumed. Old physical cores are consumed if used; a clan attunement channels energy while leaving the clan's core at home. Permanent bound runes survive imbuing.
 
 The separate [100-addon design backlog](ADDON_IDEAS_100.md) remains a broader expansion plan; it has not all been implemented by the village construction pack. Season Three's full campaign remains planned.
+
+## Companion care and the complete field guide
+
+Character → Companions now includes feeding and a regional food guide. Companions start at 100 hunger and lose 5 per wander. They eat food types stocked in their home region, even while travelling elsewhere. Feeding consumes one carried item and restores its normal hunger value; full companions, unsuitable food and cancellation keep your supplies. Below 30 hunger they rest from combat and stop earning battle XP, without leaving or dying.
+
+Each successful meal grants one evolution XP. Three meals unlock an Awakened form at stage 1; six unlock an element-themed final form at stage 2, such as Sunfire Ember Fox. Final forms strengthen passive combat support. Peaceful species also evolve and remain peaceful. Battle-level XP remains separate. Old saves gain the correct home region and full hunger on migration; subsequent care progress persists normally. Earth support now provides a temporary defence buff instead of permanently increasing base defence, and crystal companions have a working special move.
+
+The current question is displayed at full adventure text size in the main story panel, above the action buttons. The answer box describes that question for assistive technology. Automatic journal scrolling remains off.
+
+Tutorial now covers starting, controls, survival, exploration, combat, equipment, runes and fusions, crafting/professions, alchemy, local economies, construction, companion evolution, ruins, temples, the chapter storyline, side quests, saves, appearance and all 47 original actions. It identifies original preview menus honestly. Secret testing commands are omitted from player-facing help. Turning off testing access works at any pending game prompt and is saved at the next safe checkpoint; an already-open postgame shop also rechecks access before purchase.
