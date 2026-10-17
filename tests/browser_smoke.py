@@ -6,7 +6,7 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':1440,'height':1050},device_scale_factor=1)
     errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto('http://127.0.0.1:5000');page.wait_for_selector('.menu-hero')
+    page.goto('http://127.0.0.1:5000/edition');page.wait_for_selector('.menu-hero')
     page.get_by_role('button',name='Play / Continue').click();page.wait_for_selector('.hero')
     page.screenshot(path='/tmp/soules-checks/desktop.png',full_page=True)
     page.get_by_role('button',name='Rune collection',exact=False).click()

@@ -9,14 +9,14 @@ PLAY SOULES
    python3 play.py instead.
 4. The game opens in your browser. Keep the launcher's window open while playing.
    On the first launch, Internet access is needed to install the game's libraries.
-5. Choose Play / Continue or Start guided tutorial.
+5. Choose Play / Continue. Tutorial is on the main menu.
 
 This download runs on a computer, not directly on a phone. A phone needs a hosted
 version of the game; this ZIP is not a website or a public hosting service.
 
 Use Save slots for multiple characters and Export save for portable backups.
 The game stores progress in your browser, so keep the same browser and export a
-backup before closing. The launcher uses the same local address each time so your save slots remain
+backup regularly. Saving checkpoints happens at category menus, outside battles. The launcher uses the same local address each time so your save slots remain
 available. Keep using the same browser profile; other browsers have separate saves.
 
 All original uploads are preserved in legacy/. The malformed old save cannot be

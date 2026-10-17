@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#100d1c"><title>Soules · The original text adventure</title><link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/text.css"><script src="/static/text.js" defer></script></head>
+<body>
+<header class="topbar"><button class="wordmark" data-view="home" aria-label="Soules main menu"><i></i>SOULES <small>THE ORIGINAL JOURNEY</small></button><div class="top-tools"><button id="font-down" aria-label="Smaller text">A−</button><button id="font-up" aria-label="Larger text">A+</button><button data-view="customise">◈ Theme</button><button data-view="home">☰ Menu</button><button id="play" class="primary">▶ Play / Continue</button></div></header>
+<div class="layout"><main>
+<section id="game-screen" hidden>
+<nav id="categories" aria-label="Game categories"></nav>
+<div class="scene-line"><span id="scene-name">YOUR JOURNEY</span><span id="connection" role="status">Ready</span></div>
+<div id="terminal" tabindex="0" role="log" aria-label="Text adventure journal" aria-live="polite" aria-relevant="additions text"></div>
+<div id="action-buttons" aria-label="Category actions"></div>
+<div class="command-dock"><label id="prompt" for="command">Your choice</label><form id="command-form"><input id="command" autocomplete="off" maxlength="2000" placeholder="Type a number or answer…" aria-label="Game command"><button type="submit" class="primary" id="send">Send ↵</button><button type="button" id="back">↶ Back to category</button></form><div id="quick-keys" aria-label="Quick responses"></div></div>
+</section>
+<section id="page-screen"></section>
+</main><aside id="status-sidebar" aria-label="Live character status"><div class="side-card"><h2>CHARACTER</h2><p>Press Play to begin or continue your journey.</p></div></aside></div>
+<div id="notice" role="status" aria-live="polite"></div>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
+<dialog id="new-dialog"><form id="new-character"><span class="eyebrow">A SOUL AWAKENS</span><h1>Begin your journey.</h1><p>Use a save slot to keep an existing character before starting another.</p><label>Character name<input name="name" maxlength="24" required value="Wanderer"></label><label>Class<select name="cls" id="class-choice"></select></label><p id="class-description"></p><div class="buttons"><button type="button" id="cancel-new">Cancel</button><button class="primary" type="submit">Begin adventure</button></div></form></dialog>
+<noscript>Enable JavaScript to play the browser interface for the original text game.</noscript>
+</body></html>

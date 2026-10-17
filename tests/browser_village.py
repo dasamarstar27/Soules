@@ -9,7 +9,7 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
     page=browser.new_page(viewport={'width':1440,'height':1050})
     errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto('http://127.0.0.1:5000');page.wait_for_selector('.menu-hero')
+    page.goto('http://127.0.0.1:5000/edition');page.wait_for_selector('.menu-hero')
     game=new_game();game['player']['gold']=500;game['shards']=10
     page.evaluate("async g=>{await fetch('/api/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(g)});localStorage.setItem('soules-autosave',JSON.stringify(g));}",game)
     page.reload();page.wait_for_selector('.menu-hero')

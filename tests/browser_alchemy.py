@@ -6,7 +6,7 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
     page=browser.new_page(viewport={'width':1440,'height':1000})
     errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto('http://127.0.0.1:5000');page.wait_for_selector('.menu-hero')
+    page.goto('http://127.0.0.1:5000/edition');page.wait_for_selector('.menu-hero')
     page.screenshot(path='/tmp/soules-checks/main-menu.png',full_page=True)
     page.get_by_role('button',name='Start guided tutorial').click()
     page.wait_for_selector('.tutorial-banner')
