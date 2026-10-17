@@ -40,17 +40,33 @@ async function api(path,body){const response=await fetch('/api/original/'+path,{
 function writeStore(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(_){notice('Browser storage is unavailable or full. Export a save to keep your progress.');return false;}}
 function canSave(){return Boolean(packet?.snapshot?.player&&packet.waiting&&['main','category'].includes(packet.snapshot.phase));}
 function safeSave(){return canSave()?{format:'soules-original-v1',player:structuredClone(packet.snapshot.player)}:checkpoint;}
-function append(text,cls=''){const line=document.createElement('p');line.textContent=text;line.className=cls;$('#terminal').append(line);while($('#terminal').children.length>650)$('#terminal').firstChild.remove();}
-function apply(result){
+function append(text,cls=''){const line=document.createElement('p');line.textContent=text;line.className=cls;$('#terminal').append(line);while($('#terminal').children.length>650)$('#terminal').firstChild.remove();return line;}
+function journalNearBottom(terminal){return terminal.scrollHeight-terminal.scrollTop-terminal.clientHeight<=32;}
+let journalScrollRevision=0;
+function followShortJournalUpdate(terminal,lines,follow){
+ if(!lines.length)return;
+ const revision=++journalScrollRevision;
+ if(!follow||terminal.clientHeight<=0)return;
+ const lineHeight=parseFloat(getComputedStyle(terminal).lineHeight)||26;
+ const limit=Math.min(6*(lineHeight+4),terminal.clientHeight*.4);
+ const height=lines.reduce((total,line)=>{const style=getComputedStyle(line);return total+line.getBoundingClientRect().height+parseFloat(style.marginTop)+parseFloat(style.marginBottom);},0);
+ if(height<=limit){
+  terminal.scrollTop=terminal.scrollHeight;
+  const followedTop=terminal.scrollTop;
+  requestAnimationFrame(()=>{if(revision===journalScrollRevision&&Math.abs(terminal.scrollTop-followedTop)<2)terminal.scrollTop=terminal.scrollHeight;});
+ }
+}
+function apply(result,followShortUpdates){
  if(packet&&result.prompt_id&&result.prompt_id<packet.prompt_id)return;
- const terminal=$('#terminal');
- for(const line of result.output||[]){if(line.id<cursor)continue;append(line.text,line.text.includes('could not finish')?'error-line':line.text.trim().startsWith('---')?'menu-heading':'');cursor=line.id+1;}
+ const terminal=$('#terminal'),follow=followShortUpdates??journalNearBottom(terminal),added=[];
+ for(const line of result.output||[]){if(line.id<cursor)continue;added.push(append(line.text,line.text.includes('could not finish')?'error-line':line.text.trim().startsWith('---')?'menu-heading':''));cursor=line.id+1;}
  const newlyDead=result.snapshot?.phase==='dead'&&packet?.snapshot?.phase!=='dead';
  packet=result;
  if(newlyDead){checkpoint=null;localStorage.removeItem(STORE);notice("Your character has died. Begin a new journey.");$('#new-dialog').showModal();}
  if(canSave()){checkpoint=safeSave();writeStore(STORE,checkpoint);}
  if(result.snapshot?.player){renderSidebar();theme();}
  renderGameControls();
+ followShortJournalUpdate(terminal,added,follow);
 
  if(result.error)notice('The game reported an error: '+result.error+'. Your last saved checkpoint is kept.');
 }
@@ -64,8 +80,9 @@ function play(){if(packet?.alive&&packet?.snapshot?.phase!=='dead'){show('play')
 async function respond(text,group){
  if(busy||!packet?.waiting)return;
  if(!group&&text&& !['DAMAR','SAMAR'].includes(text.toUpperCase())){if(commandHistory.at(-1)!==text)commandHistory.push(text);commandHistory=commandHistory.slice(-100);historyPosition=commandHistory.length;historyDraft='';}
+ const journal=$('#terminal'),follow=journalNearBottom(journal),previousTop=journal.scrollTop;
  busy=true;epoch++;renderGameControls();
- try{if(!group)append('> '+(text||'(Enter)'),'player-response');const result=await api('input',{text,group,prompt_id:packet.prompt_id,since:cursor});apply(result);}
+ try{if(!group)append('> '+(text||'(Enter)'),'player-response');const result=await api('input',{text,group,prompt_id:packet.prompt_id,since:cursor});apply(result,follow&&Math.abs(journal.scrollTop-previousTop)<2);}
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();if(view==='play')$('#command').focus();}
 }
 function renderGameControls(){
