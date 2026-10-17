@@ -6,6 +6,7 @@ _phase = "main"
 _group = "explore"
 _ui = None
 location = None
+village = None
 
 
 class RunEnded(Exception):
@@ -71,8 +72,14 @@ def snapshot():
     return dict(
         format="soules-original-v1",
         location=clean(location),
+        village=(
+            clean(__import__("village_life").snapshot(_ui.player, village))
+            if _ui and village
+            else None
+        ),
         player=clean(_ui.player) if _ui else None,
         enemy=clean(_ui.current_enemy) if _ui else None,
+        objective=__import__("source_story").objective(_ui.player) if _ui else None,
         phase=_phase,
         group=_group,
     )

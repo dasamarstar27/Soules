@@ -1576,42 +1576,11 @@ def process_buffs():
 
 
 def blacksmith():
-    if not player["weapons"]:
-        print("No weapons available.")
-        return
+    import sys
+    from village_life import require_service, smith
 
-    print("\n🔧 === BLACKSMITH ===")
-
-    for i, w in enumerate(player["weapons"]):
-        cost = w["atk"] * 10
-        print(f"{i}. {w['name']} | ATK {w['atk']} | Upgrade Cost: {cost}")
-
-    try:
-        idx = int(input("Select weapon > "))
-        if idx < 0 or idx >= len(player["weapons"]):
-            print("Invalid selection.")
-            return
-
-        weapon = player["weapons"][idx]
-    except ValueError:
-        print("Invalid input.")
-        return
-
-    cost = weapon["atk"] * 10
-
-    if player["gold"] < cost:
-        print("Not enough gold.")
-        return
-
-    confirm = input(f"Upgrade {weapon['name']} for {cost} gold? (y/n) > ").lower()
-    if confirm != "y":
-        print("Cancelled.")
-        return
-
-    player["gold"] -= cost
-    weapon["atk"] += 3
-
-    print(f"🔧 {weapon['name']} upgraded to ATK {weapon['atk']}")
+    if require_service("forge"):
+        smith(sys.modules[__name__], _ui.village)
 
 
 # =========================
@@ -1685,12 +1654,10 @@ FORGE_DATABASE = {}
 
 
 def forge_weapon():
-    if player["region"] != "Crimson Depths" and not (
-        _ui.location and _ui.location.get("kind") == "forge"
-    ):
-        print("Visit the village Forge to craft weapons.")
-        return
+    from village_life import require_service, quality
 
+    if not require_service("forge"):
+        return
     cores = [i for i in player["cores"] if i in CORES]
     metals = [i for i in player["metals"] if i in METALS]
     woods = [i for i in player["woods"] if i in WOODS]
@@ -1743,11 +1710,18 @@ def forge_weapon():
     crafted = {
         "name": weapon_name,
         "tier": "crafted",
-        "atk": METALS[metal].get("atk", 0) + WOODS[wood].get("atk", 0) + 10,
+        "atk": METALS[metal].get("atk", 0)
+        + WOODS[wood].get("atk", 0)
+        + 10
+        + (quality("forge") - 1) * 2,
         "cores": {},
         "materials": {"core": core, "metal": metal, "wood": wood},
     }
+    from source_story import rank, craft_xp
+
+    crafted["atk"] += rank(player, "smithing") - 1
     player["weapons"].append(crafted)
+    craft_xp(player, "smithing")
     # STORE NEW COMBINATION
     FORGE_DATABASE[combo_key] = {
         "name": weapon_name,
@@ -2093,7 +2067,10 @@ def merchant():
                     offer = (key, name, random.randint(*limits))
                     break
         if offer:
-            stock.append(offer)
+            from village_life import quality
+
+            key, item, price = offer
+            stock.append((key, item, max(1, round(price * (1 - (quality("trade") - 1) * 0.05)))))
     while True:
         print(f"\n=== {region} MERCHANT ===\nSouls: {player['gold']}")
         for i, (key, item, price) in enumerate(stock, 1):
@@ -2140,12 +2117,12 @@ def _use_class_skill(cls, enemy):
     elif passive == "ranger_shot":  # Volley
         total = 0
         for _ in range(3):
-            dmg = 15
+            dmg = 5 + min(10, player.get("level", 1))
             enemy["hp"] -= dmg
             total += dmg
         print(f"   3-arrow volley! {total} total damage!")
     elif passive == "lifesteal":  # Soul Rip
-        drain = 35
+        drain = min(35, 10 + player.get("level", 1) * 2)
         enemy["hp"] -= drain
         player["hp"] = min(player["max_hp"], player["hp"] + drain)
         print(f"   Drained {drain} HP directly from the enemy!")
@@ -2427,6 +2404,10 @@ def fight(enemy, boss=False):
     if ui:
         ui.set_enemy(enemy)
 
+    if boss and not enemy.get("_story_boss") and enemy.get("name") == "The Dreaming God":
+        print(
+            'THE DREAMSCAPE KING · The corrupted ruler returns. "Their sacrifice held me outside this world. Now the rift is open, and your world will dream as I command."'
+        )
     print("⚔", enemy["name"])
 
     companion_move_used = False  # reset per fight
@@ -2603,7 +2584,7 @@ def fight(enemy, boss=False):
 
             # ── Ranger shot passive ──
             if passive == "ranger_shot" and random.random() < 0.25:
-                shot = 15
+                shot = 4 + min(11, player.get("level", 1))
                 enemy["hp"] -= shot
                 print(f"🏹 Ranger free shot! {shot} bonus damage!")
 
@@ -2650,7 +2631,11 @@ def fight(enemy, boss=False):
             enemy["active_buffs"].pop("stun", None)
             enemy_dmg = 0
         else:
-            base_enemy_dmg = random.randint(5, 15)
+            base_enemy_dmg = (
+                random.randint(5, 15)
+                if not enemy.get("_story_boss")
+                else random.randint(max(5, enemy["atk"] // 3), max(10, enemy["atk"] // 2))
+            )
             armour_def = (
                 player.get("armour", {}) and player["armour"].get("def", 0)
                 if player.get("armour")
@@ -2725,6 +2710,15 @@ def fight(enemy, boss=False):
         record_kill(enemy["name"])
         # ── Feature 10: Companion XP ──
         award_companion_xp(10 if boss else 5)
+        if enemy.get("_story_boss"):
+            from source_story import victory
+
+            victory(player)
+            gain_xp(150)
+            player["gold"] += 150
+            if _ui.get_ui():
+                _ui.get_ui().clear_enemy()
+            return
         if boss:
             advance_quest("boss_kill", player["region"])
             print(f"You defeated the boss of {player['region']}!")
@@ -2769,6 +2763,13 @@ def fight(enemy, boss=False):
                     r in player["unlocked_regions"] for r in REGIONS
                 ):
                     player["chapter"] = 2
+                    from source_story import clue
+
+                    clue(
+                        player,
+                        "invasion_ended",
+                        "The Dreamscape King has fallen and his invasion is stopped. Why the rift reopened remains unknown. After the victory, the elemental villages report a new Source imbalance.",
+                    )
                     print(
                         "CHAPTER 1 COMPLETE — The Dreaming God has fallen. Chapter 2: the postgame begins. The Creator is not required to beat the original game."
                     )
@@ -3093,6 +3094,10 @@ def explore():
 
     player["wander_count"] = player.get("wander_count", 0) + 1
 
+    from source_story import anomaly
+
+    anomaly(__import__(__name__))
+
     if player["wander_count"] % 20 == 0:
         advance_world_event()
 
@@ -3402,6 +3407,10 @@ def _apply_potion_effect(effect, name):
 
 
 def _ingredient_brew_menu():
+    from village_life import require_service, quality
+
+    if not require_service("alchemy"):
+        return
     print("\n🧪═══════════════════════════════🧪")
     print("   VILLAGE WORKBENCH — Ingredient Brewing")
     print("🧪═══════════════════════════════🧪")
@@ -3457,6 +3466,13 @@ def _ingredient_brew_menu():
 
     print(f"\n  ⚗ Mixing [{ing_a}] + [{ing_b}]...")
     if result:
+        from source_story import rank, craft_xp
+
+        chance = (quality("alchemy") - 1) * 0.10 + (rank(player, "alchemy") - 1) * 0.02
+        if random.random() < chance:
+            ings.append(ing_b)
+            print("The skilled lab preserved one ingredient!")
+        craft_xp(player, "alchemy")
         print(f"  ✨ You brew: {result['name']}!")
         print(f"     {result['desc']}")
         use_now = input("  Use now? (y/n) > ").strip().lower()
@@ -3853,104 +3869,10 @@ def visit_camp(struct, region):
 
 
 def visit_village(struct, region):
-    stock = VILLAGE_STOCK.get(region, {})
-    food_names = stock.get("food", [])
-    gear_names = stock.get("gear", [])
+    import sys
+    from village_life import visit
 
-    print(f"\n🏘═══════════════════════════════🏘")
-    print(f"     {struct['name'].upper()}")
-    print(f"🏘═══════════════════════════════🏘")
-    print(f"Souls: {player['gold']}   Hunger: {player.get('hunger', 100)}/100\n")
-
-    print("1. Buy food")
-    print("2. Buy gear")
-    print("3. Eat from inventory")
-    print("4. Rest here  (costs 50 souls, restores 30 HP)")
-    print("5. Quest board 📋")
-    print("6. Craft potions 🧪")
-    print("7. Leave")
-    print("8. Village crafting hub — all workstations")
-    c = input("> ").strip()
-
-    if c == "1":
-        if not food_names:
-            print("  Nothing for sale here.")
-            return
-        print("\n🍖 Food for sale:")
-        avail = [_FOOD_BY_NAME[n] for n in food_names if n in _FOOD_BY_NAME]
-        for i, f in enumerate(avail):
-            print(f"  {i}. {f['name']}  +{f['hunger']} hunger  — {f['value']} souls")
-        try:
-            idx = int(input("  Buy which? (-1 cancel) > "))
-        except ValueError:
-            return
-        if 0 <= idx < len(avail):
-            f = avail[idx]
-            if player["gold"] < f["value"]:
-                print("  Not enough souls.")
-            else:
-                player["gold"] -= f["value"]
-                player.setdefault("inventory", []).append({"name": f["name"], "value": f["value"]})
-                print(f"  Bought {f['name']}. Souls left: {player['gold']}")
-
-    elif c == "2":
-        if not gear_names:
-            print("  Nothing for sale here.")
-            return
-        all_gear = {
-            **{w["name"]: w for w in WEAPONS},
-            **{a["name"]: a for a in ARMOURS},
-            **{r["name"]: r for r in RUNES},
-        }
-        avail = [all_gear[n] for n in gear_names if n in all_gear]
-        if not avail:
-            print("  Nothing in stock.")
-            return
-        print("\n⚔ Gear for sale:")
-        for i, g in enumerate(avail):
-            price = int(g.get("value", g.get("atk", g.get("def", 10)) * 8))
-            print(f"  {i}. {g['name']}  — {price} souls")
-        try:
-            idx = int(input("  Buy which? (-1 cancel) > "))
-        except ValueError:
-            return
-        if 0 <= idx < len(avail):
-            g = avail[idx]
-            price = int(g.get("value", g.get("atk", g.get("def", 10)) * 8))
-            if player["gold"] < price:
-                print("  Not enough souls.")
-            else:
-                player["gold"] -= price
-                if "atk" in g:
-                    player.setdefault("weapons", []).append(g.copy())
-                elif "def" in g:
-                    player.setdefault("armours", []).append(g.copy())
-                else:
-                    player.setdefault("runes", []).append(g.copy())
-                print(f"  Bought {g['name']}. Souls left: {player['gold']}")
-
-    elif c == "3":
-        _eat_food()
-
-    elif c == "4":
-        if player["gold"] < 50:
-            print("  You can't afford to rest here (50 souls).")
-        else:
-            player["gold"] -= 50
-            healed = min(30, player["max_hp"] - player["hp"])
-            player["hp"] += healed
-            print(f"  You rest at the inn. +{healed} HP. Souls left: {player['gold']}")
-
-    elif c == "5":
-        quest_board(region)
-
-    elif c == "6":
-        _ingredient_brew_menu()
-
-    elif c == "8":
-        view_crafting_hub()
-    elif c == "7":
-        print("  You leave the village.")
+    visit(sys.modules[__name__], struct, region)
 
 
 def visit_ruins(struct, region):
@@ -4518,6 +4440,7 @@ def visit_elemental_village():
     print("2. Challenge their guardian to claim it by force")
     print("3. buy special loot from the elemental village")
     print("4. Leave quietly")
+    print("5. Hear the history of the fallen warriors")
 
     c = input("> ").strip()
 
@@ -4540,6 +4463,11 @@ def visit_elemental_village():
 
         village_services(sys.modules[__name__], village)
 
+    elif c == "5":
+        from source_story import remember_warriors
+        from village_life import profile
+
+        remember_warriors(player, profile(region, village["name"], True))
     elif c == "4":
         print("You slip away unseen.")
 
@@ -5061,6 +4989,9 @@ def advance_world_event():
 
 
 def record_kill(enemy_name):
+    from source_story import first_victory
+
+    first_victory(player)
     kc = player.setdefault("kill_counts", {})
     kc[enemy_name] = kc.get(enemy_name, 0) + 1
     count = kc[enemy_name]
@@ -5531,6 +5462,11 @@ def perform_original_action(c):
         ride_mounts()
     elif c == "46":
         view_active_effects()
+    elif c == "47":
+        import sys
+        from village_life import directory
+
+        directory(sys.modules[__name__])
     check_gear_set()
     return True
 
@@ -5631,20 +5567,12 @@ def game():
 
 
 def craft_armor():
+    from village_life import require_service, quality
+
+    if not require_service("loom"):
+        return
     """Craft armor pieces using the Loom structure"""
     global player
-
-    # Armor only in Elemental Villages
-    current_location = player.get("current_location", "Whispering Woods")
-    if current_location not in [
-        "Infernal Depths",
-        "Frostbound Tundra",
-        "Crystal Spire",
-        "Whispering Woods",
-    ] and not (_ui.location and _ui.location.get("kind") == "loom"):
-        print("\nArmor can only be crafted in Elemental Villages!")
-        print(f"Current location: {current_location}")
-        return
 
     armor_pieces = ["helmet", "chest", "legs", "feet"]
 
@@ -5669,7 +5597,9 @@ def craft_armor():
     print(f"\n=== Available {piece_type.title()} Recipes ===")
     for i, recipe in enumerate(recipes, 1):
         print(f"{i}. {recipe['name']} (Tier: {recipe['tier']})")
-        print(f"   DEF: +{recipe['def']}, HP: +{recipe['hp']}, SPD: {recipe['spd']}")
+        print(
+            f"   DEF: +{recipe['def'] + (quality('loom')-1)*2}, HP: +{recipe['hp']}, SPD: {recipe['spd']}"
+        )
         print(f"   Materials: {recipe['materials']}, Cost: {recipe['cost']} gold")
 
     recipe_choice = input(f"\nSelect recipe (1-{len(recipes)}): ").strip()
@@ -5722,13 +5652,18 @@ def craft_armor():
         "materials": recipe["materials"],
     }
 
+    from source_story import rank, craft_xp
+
+    armor_piece["def"] += (quality("loom") - 1) * 2 + rank(player, "weaving") - 1
+    craft_xp(player, "weaving")
+    player.setdefault("armours", []).append(armor_piece)
     player.setdefault("crafted_armor", []).append(armor_piece)
 
     # Gain structure XP
     player["structures"]["loom"]["xp"] += 5
 
     print(f"\n✓ Successfully crafted {recipe['name']}!")
-    print(f"  DEF: +{recipe['def']}, HP: +{recipe['hp']}, SPD: {recipe['spd']}")
+    print(f"  DEF: +{armor_piece['def']}, HP: +{recipe['hp']}, SPD: {recipe['spd']}")
 
 
 def view_rune_library():
@@ -6149,14 +6084,10 @@ def view_challenge_modes():
 
 
 def view_story():
-    """Display story and lore"""
-    print("\n=== STORY & LORE ===")
-    print("Discover the world's secrets through quests!\n")
+    import sys
+    from source_story import journal
 
-    for chapter_key, chapter in STORY_QUESTS.items():
-        print(f"{chapter['name']}: {chapter['description']}")
-        print(f"  NPCs: {', '.join(chapter.get('npcs', []))}")
-        print(f"  Rewards: {chapter.get('rewards', {})}\n")
+    journal(sys.modules[__name__])
 
 
 # =========================================================
@@ -6533,20 +6464,15 @@ def check_status_synergies():
 
 
 def imbue_staff():
+    from village_life import require_service, quality
+
+    if not require_service("temple"):
+        return
     """Charge empty staffs with elemental cores at the Source Temple"""
     global player
 
-    # Imbuing ONLY at Source Temple
-    current_location = player.get("current_location", "Whispering Woods")
-    if current_location != "Source Temple" and not (
-        _ui.location and _ui.location.get("kind") == "temple"
-    ):
-        print("\nStaff imbuing can only be performed at the Source Temple!")
-        print(f"Current location: {current_location}")
-        return
-
     player_staffs = player.get("staffs", [])
-    player_cores = player.get("cores", [])
+    player_cores = player.get("elemental_cores", [])
 
     if not player_staffs:
         print("\nYou have no staffs to imbue.")
@@ -6606,14 +6532,22 @@ def imbue_staff():
     selected_staff["element"] = selected_core.get("element")
     selected_staff["on_hit_effect"] = selected_core.get("on_hit_effect")
     selected_staff["bonus_atk"] = selected_core.get("bonus_atk", 0)
+    selected_staff["power"] = (
+        selected_staff.get("power", 0)
+        + selected_core.get("bonus_atk", 0)
+        + (quality("temple") - 1) * 2
+    )
 
     # Remove core from inventory
-    player["cores"].remove(selected_core_name)
+    player["elemental_cores"].remove(selected_core_name)
 
     # Gain Source Temple XP
     player["structures"].setdefault("source_temple", {"level": 1, "xp": 0})
     player["structures"]["source_temple"]["xp"] += 15
 
+    from source_story import craft_xp
+
+    craft_xp(player, "imbuing")
     # Track imbuement history
     player.setdefault("imbuement_history", []).append(
         {
@@ -6631,17 +6565,12 @@ def imbue_staff():
 
 
 def craft_staff():
+    from village_life import require_service, quality
+
+    if not require_service("tower"):
+        return
     """Create staffs by combining runes"""
     global player
-
-    # Staffs ONLY in Crimson Depths
-    current_location = player.get("current_location", "Whispering Woods")
-    if current_location != "Crimson Depths" and not (
-        _ui.location and _ui.location.get("kind") == "tower"
-    ):
-        print("\nStaffs can only be crafted in Crimson Depths!")
-        print(f"Current location: {current_location}")
-        return
 
     print("\n=== STAFF CRAFTING ALTAR ===")
     print("Combine 2-5 runes to create a powerful staff.")
@@ -6706,10 +6635,14 @@ def craft_staff():
         "runes": rune_names,
         "effects": [r.get("effect") for r in selected_runes],
         "stored_runes": [dict(r) for r in selected_runes],
-        "power": 5 + 3 * len(selected_runes),
+        "power": 5 + 3 * len(selected_runes) + (quality("tower") - 1) * 3,
         "elements": [r.get("element") for r in selected_runes],
     }
 
+    from source_story import rank, craft_xp
+
+    staff["power"] += rank(player, "enchanting") - 1
+    craft_xp(player, "enchanting")
     player.setdefault("crafted_staffs", []).append(staff)
     player.setdefault("staffs", []).append(staff)
 
@@ -6754,74 +6687,10 @@ def upgrade_structure(structure_key):
 
 
 def salvage_equipment():
-    """Disenchant equipment to recover materials and runes"""
-    global player
+    import sys
+    from village_life import salvage
 
-    print("\n=== DISENCHANTRY - SALVAGE EQUIPMENT ===")
-    print("Break down unwanted equipment to recover materials.")
-
-    equipment = []
-    equipment_types = {
-        "weapons": (player.get("weapons", []), "weapon"),
-        "armor": (player.get("crafted_armor", []), "armor"),
-        "staffs": (player.get("staffs", []), "staff"),
-    }
-
-    for eq_type, (items, label) in equipment_types.items():
-        for item in items:
-            equipment.append((item, label))
-
-    if not equipment:
-        print("You have no equipment to salvage.")
-        return
-
-    print(f"\nAvailable equipment ({len(equipment)} total):")
-    for i, (item, label) in enumerate(equipment, 1):
-        print(f"  {i}. {item.get('name', 'Unknown')} ({label})")
-
-    choice = input("\nSelect item to salvage: ").strip()
-
-    if not choice.isdigit() or int(choice) < 1 or int(choice) > len(equipment):
-        print("Invalid choice.")
-        return
-
-    item, item_type = equipment[int(choice) - 1]
-    print(f"\nSalvaging {item['name']}...")
-
-    # Calculate returns
-    materials_recovered = {}
-
-    if item_type == "weapon":
-        materials_recovered = {k: max(1, v // 2) for k, v in item.get("materials", {}).items()}
-    elif item_type == "armor":
-        materials_recovered = {k: max(1, v // 2) for k, v in item.get("materials", {}).items()}
-    elif item_type == "staff":
-        # Return basic rune materials
-        for rune_name in item.get("runes", []):
-            materials_recovered[rune_name] = materials_recovered.get(rune_name, 0) + 1
-
-    # Add materials to inventory
-    for material, amount in materials_recovered.items():
-        if material in CLOTHS:
-            player.setdefault("cloths", []).extend([material] * amount)
-        elif material in LEATHERS:
-            player.setdefault("leathers", []).extend([material] * amount)
-        elif material in METALS:
-            player.setdefault("metals", []).extend([material] * amount)
-
-    # Remove from equipment lists
-    if item_type == "weapon" and item in player.get("weapons", []):
-        player["weapons"].remove(item)
-    elif item_type == "armor" and item in player.get("crafted_armor", []):
-        player["crafted_armor"].remove(item)
-    elif item_type == "staff" and item in player.get("staffs", []):
-        player["staffs"].remove(item)
-
-    # Gain structure XP
-    player["structures"]["disenchantry"]["xp"] += 5
-
-    print(f"✓ Salvaged {item['name']}!")
-    print(f"  Materials recovered: {materials_recovered}")
+    salvage(sys.modules[__name__])
 
 
 def transmute_materials():
@@ -7221,57 +7090,10 @@ def view_merchants():
 
 
 def view_crafting_hub():
-    """View and interact with crafting structures"""
-    global player
+    import sys
+    from village_life import crafting_hub
 
-    while True:
-        print("\n=== CRAFTING HUB ===")
-        current_loc = player.get("current_location", "Whispering Woods")
-        print(f"Current Location: {current_loc}")
-        print()
-
-        for key, struct in STRUCTURES.items():
-            level = player["structures"].get(key, {"level": 1}).get("level")
-            print(f"{struct['icon']} {struct['name']} (Level {level})")
-            print(f"   {struct['description']}")
-            print(f"   Location: {struct.get('location', 'Unknown')}")
-
-        print("\n--- CRAFTING OPTIONS ---")
-        print("1. Travel to Location")
-        print("2. Forge (Weapons)")
-        print("3. Loom (Armor)")
-        print("4. Enchantment Tower (Staffs)")
-        print("5. Alchemy Lab (Potions)")
-        print("6. Disenchantry (Salvage)")
-        print("7. Imbue Staff (Village Source Temple)")
-        print("8. Rune Library (View All Runes)")
-        print("9. Trading Post (Buy/Sell)")
-        print("10. Exit")
-
-        choice = input("\nSelect option: ").strip()
-
-        if choice == "1":
-            travel_to_location()
-        elif choice == "2":
-            forge_weapon()
-        elif choice == "3":
-            craft_armor()
-        elif choice == "4":
-            craft_staff()
-        elif choice == "5":
-            _ingredient_brew_menu()
-        elif choice == "6":
-            salvage_equipment()
-        elif choice == "7":
-            imbue_staff()
-        elif choice == "8":
-            view_rune_library()
-        elif choice == "9":
-            visit_merchants()
-        elif choice == "10":
-            break
-        else:
-            print("Invalid choice.")
+    crafting_hub(sys.modules[__name__])
 
 
 if __name__ == "__main__":

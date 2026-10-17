@@ -64,10 +64,12 @@ def initial_player(config):
         player.update(deepcopy(config["save"]["player"]))
         player["unlocked_regions"] = set(player["unlocked_regions"])
     else:
+        player.update({"hp": 55, "max_hp": 55, "atk": 5, "def": 1, "speed": 5, "mana": 0})
+        player.pop("source_story", None)
         key = config.get("cls", "warrior")
         player["class_id"] = key
         for stat, value in CLASSES[key]["bonus"].items():
-            player[stat] = player.get(stat, 0) + value
+            player[stat] = player.get(stat, 0) + int(value * 0.5)
     if not config.get("save"):
         sword = deepcopy(WEAPONS[0])
         sword["name"] = "Rusty Sword"
@@ -120,15 +122,21 @@ def structure_wrappers():
         @wraps(function)
         def wrapped(*args, **kwargs):
             previous = ui.location
+            previous_village = ui.village
             structure = args[0] if args and isinstance(args[0], dict) else {}
             name = structure.get("name", function.__name__.replace("_", " ").title())
             if kind == "elemental":
                 name = ELEMENTAL_VILLAGES.get(game.player["region"], {}).get("name", name)
+            if function.__name__ == "visit_elemental_village":
+                from village_life import profile
+
+                ui.village = profile(game.player["region"], name, elemental=True)
             ui.location = dict(name=name, kind=kind)
             try:
                 return function(*args, **kwargs)
             finally:
                 ui.location = previous
+                ui.village = previous_village
 
         return wrapped
 
@@ -151,6 +159,9 @@ def main():
         print(
             "Choose a category, then click an action or type its number. During a submenu, answer the prompt below. Back to category safely leaves a submenu."
         )
+        from source_story import opening
+
+        opening(game.player)
         game.game()
     except ui.RunEnded:
         game.player["hp"] = 0

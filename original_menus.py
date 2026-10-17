@@ -10,6 +10,7 @@ GROUPS = [
             (9, "Boss fight"),
             (13, "World map"),
             (17, "Structures"),
+            (47, "Village directory & saved notes"),
         ],
     },
     {
@@ -84,4 +85,4 @@ GROUPS = [
     {"id": "system", "name": "System", "options": [(7, "Save game"), (8, "Exit to title")]},
 ]
 BY_ID = {g["id"]: g for g in GROUPS}
-assert sorted(n for g in GROUPS for n, _ in g["options"]) == list(range(1, 47))
+assert sorted(n for g in GROUPS for n, _ in g["options"]) == list(range(1, 48))

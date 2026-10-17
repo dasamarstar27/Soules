@@ -82,6 +82,75 @@ def validate_original_save(value):
             raise ValueError("Invalid equipment in save.")
     if p.get("class_id") not in CLASSES and p.get("class_id") is not None:
         raise ValueError("Unknown class in save.")
+    for field in ("saved_villages", "village_records"):
+        value = p.get(field, {})
+        if not isinstance(value, dict) or len(value) > 500:
+            raise ValueError("Invalid village records in save.")
+        for key, record in value.items():
+            if not isinstance(key, str) or not isinstance(record, dict):
+                raise ValueError("Invalid village record in save.")
+            if field == "saved_villages":
+                if (
+                    not isinstance(record.get("name"), str)
+                    or len(record["name"]) > 100
+                    or record.get("region") not in regions
+                ):
+                    raise ValueError("Invalid saved village in save.")
+                if not isinstance(record.get("note", ""), str) or len(record.get("note", "")) > 240:
+                    raise ValueError("Invalid village note in save.")
+                tags = record.get("tags", [])
+                if (
+                    not isinstance(tags, list)
+                    or len(tags) > 6
+                    or any(not isinstance(tag, str) or len(tag) > 30 for tag in tags)
+                ):
+                    raise ValueError("Invalid village tags in save.")
+            else:
+                for number in ("reputation", "stock_cycle", "harvest_cycle", "errand_cycle"):
+                    if number in record and (
+                        type(record[number]) is not int or not 0 <= record[number] <= 1000000000
+                    ):
+                        raise ValueError("Invalid village progress in save.")
+                food_stock = record.get("food_stock", {})
+                if not isinstance(food_stock, dict) or any(
+                    not isinstance(name, str) or type(count) is not int or not 0 <= count <= 10000
+                    for name, count in food_stock.items()
+                ):
+                    raise ValueError("Invalid village stock in save.")
+    story = p.get("source_story", {})
+    if not isinstance(story, dict):
+        raise ValueError("Invalid story progress in save.")
+    for flag in ("opened", "vael_defeated", "complete"):
+        if flag in story and type(story[flag]) is not bool:
+            raise ValueError("Invalid story flag in save.")
+    for field in ("clues", "witnesses", "rumours", "anomaly_wanders"):
+        if not isinstance(story.get(field, []), list) or len(story.get(field, [])) > 10000:
+            raise ValueError("Invalid story journal in save.")
+    if any(
+        not isinstance(clue, dict)
+        or not isinstance(clue.get("id"), str)
+        or not isinstance(clue.get("text"), str)
+        for clue in story.get("clues", [])
+    ):
+        raise ValueError("Invalid story clue in save.")
+    if any(
+        not isinstance(text, str)
+        for field in ("witnesses", "rumours")
+        for text in story.get(field, [])
+    ):
+        raise ValueError("Invalid story text in save.")
+    xp = story.get("profession_xp", {})
+    if not isinstance(xp, dict) or any(
+        type(number) is not int or not 0 <= number <= 1000000000 for number in xp.values()
+    ):
+        raise ValueError("Invalid profession progress in save.")
+    if not isinstance(story.get("dialogue", {}), dict):
+        raise ValueError("Invalid dialogue progress in save.")
+    if (
+        type(story.get("fragments", 0)) is not int
+        or not 0 <= story.get("fragments", 0) <= 1000000000
+    ):
+        raise ValueError("Invalid Source fragments in save.")
     # Only character progress is restored. Input prompts and half-completed actions are not replayed.
     cleaned = deepcopy(p)
     for key in list(cleaned):

@@ -55,8 +55,24 @@ def village_services(game, village):
     while True:
         print(f"\n--- {village['name']} · SEASON TWO ---")
         print("1. Elemental shop  2. Meet the keeper / training  3. Village library")
-        print("4. Side quest  5. Village crafting  6. Leave")
+        print(
+            "4. Side quest  5. Village crafting  6. Leave  7. Local services / restaurant  8. Discuss the Source"
+        )
+        print("N. Save village / edit note · T. Tags · B. Bookmark")
         choice = input("Village > ").strip()
+        if choice.lower() in ("n", "note", "t", "tags", "b", "save"):
+            import original_ui as ui
+            from village_life import bookmark
+
+            if ui.village:
+                if choice.lower() in ("n", "note"):
+                    bookmark(p, ui.village, note=input("Village note > ").strip())
+                elif choice.lower() in ("t", "tags"):
+                    bookmark(p, ui.village, tags=input("Tags, separated by commas > ").strip())
+                else:
+                    bookmark(p, ui.village)
+                print("Village bookmark updated.")
+            continue
         if choice == "6":
             return
         if choice == "1":
@@ -133,8 +149,22 @@ def village_services(game, village):
                 p.setdefault("inventory", []).append(deepcopy(GOODS[element][3][1]))
                 quests[element] = "complete"
                 print("Quest complete! Reward received.")
+        elif choice == "9":
+            import original_ui as ui
+            from source_story import remember_warriors
+
+            if ui.village:
+                remember_warriors(p, ui.village)
+        elif choice == "8":
+            import original_ui as ui
+            from source_story import talk
+
+            if ui.village:
+                talk(game, ui.village)
         elif choice == "5":
             game.view_crafting_hub()
+        elif choice == "7":
+            game.visit_village(dict(name=village["name"], elemental=True), p["region"])
 
 
 def use_art(player, enemy):

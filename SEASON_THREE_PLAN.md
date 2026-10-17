@@ -1,13 +1,19 @@
-# Season Three proposal: The Fractured Accord
+# Season Three proposal: Beyond the Broken Bridge
 
-This is a proposal, not implemented content.
+This is a proposal, not implemented content. It follows the repaired stabiliser at the end of Season Two.
 
-After meeting all four hidden villages, a broken elemental pact begins changing familiar regions. The story follows the people from Season Two rather than replacing the Chapter 1 ending.
+Chapter One is the Dreamscape monster invasion. Season Two is the deliberate Core Stabiliser sabotage and broken bridge. Season Three should explore the consequences of briefly opening that bridge instead of repeating either plot.
 
-- Four village questlines build trust. Their choices determine who helps restore the pact.
-- Elemental arts gain a small branching skill tree, with explicit mana costs and tradeoffs.
-- Paired elements unlock cooperative crafting recipes: steam, living crystal, stormwood and frostfire. Permanent weapon runes remain permanent.
-- Region events change with seasons, giving repeat exploration new encounters and ingredients.
-- A new optional endgame dungeon tests preparation, consumable management and elemental combinations. The Creator remains separate from the original ending.
+Season Three reveals that the same overarching antagonist behind the wider story deliberately reopened the rift, returning the Dreamscape and its king to the world. The player follows the connection between the ancient seal, the present invasion and the later bridge sabotage. The antagonist's identity and motives remain open for the game's creator to decide. Messages in repaired conduits and disagreements among the surviving villages can lead into this investigation.
 
-First milestone: one complete questline, one paired-element recipe and one dungeon floor. Test their balance before expanding to all villages. Preserve existing saves and keep all content playable through text menus and the sidebar.
+Possible additions:
+
+- A new frontier beyond the bridge, entered through a controlled expedition rather than another accidental stabiliser failure.
+- Village alliances and dialogue choices that affect who joins the expedition.
+- Paired-element crafting and profession specialties, keeping weapon runes permanent.
+- A shared settlement project and expedition supply planning.
+- Optional endgame dungeons and the overarching antagonist whose actions connect the earlier crises.
+
+The Creator's role and identity are still for the game's creator to decide. Do not make fighting the Creator a requirement for either previous ending.
+
+First milestone: one expedition area, one NPC questline and two paired-element recipes. Test these before expanding into a full campaign. Preserve saves, finite supplies and the text adventure with its live sidebar.

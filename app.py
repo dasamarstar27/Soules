@@ -134,7 +134,15 @@ def original_sid():
 
 @app.get("/api/original/catalog")
 def original_catalog():
-    return jsonify(groups=GROUPS, classes=CLASSES, content=catalog())
+    from copy import deepcopy
+
+    classes = deepcopy(CLASSES)
+    classes["ranger"][
+        "passive_desc"
+    ] = "25% chance of a free ranged shot: 5 damage at level 1, scaling to 15."
+    classes["ranger"]["skill_desc"] = "Three arrows, 6 damage each at level 1, scaling to 15 each."
+    classes["necromancer"]["skill_desc"] = "Drain 12 HP at level 1, scaling to 35."
+    return jsonify(groups=GROUPS, classes=classes, content=catalog())
 
 
 @app.post("/api/original/start")
