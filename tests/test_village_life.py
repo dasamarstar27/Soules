@@ -39,12 +39,15 @@ class VillageLifeTests(unittest.TestCase):
         self.assertEqual(mountain["quality"]["restaurant"], 1)
         poor_farm = v.profile("Blight Swamp", "Rotwood Village")
         self.assertEqual(poor_farm["quality"]["farm"], 1)
-        self.assertEqual(v.profile("Sunken Coast", "Dockside Village")["quality"]["restaurant"], 3)
+        self.assertEqual(
+            v.profile("Sunken Coast", "Dockside Village")["quality"]["restaurant"], 3
+        )
 
     def test_missing_workstation_cannot_be_used(self):
         before = deepcopy(self.p)
         with patch(
-            "builtins.input", side_effect=AssertionError("Unavailable bench asked for input")
+            "builtins.input",
+            side_effect=AssertionError("Unavailable bench asked for input"),
         ), patch("builtins.print"):
             game.forge_weapon()
             game.craft_staff()
@@ -69,7 +72,10 @@ class VillageLifeTests(unittest.TestCase):
         self.assertEqual(len(self.p["inventory"]), 4)
         restored = validate_original_save(ui.snapshot())
         self.assertEqual(
-            restored["player"]["village_records"][self.farm["id"]]["food_stock"][f["name"]], 0
+            restored["player"]["village_records"][self.farm["id"]]["food_stock"][
+                f["name"]
+            ],
+            0,
         )
         self.p["wander_count"] = 20
         self.assertEqual(v.stock(self.p, self.farm)[f["name"]], 4)
@@ -113,7 +119,8 @@ class VillageLifeTests(unittest.TestCase):
         self.assertIn("Restaurant", v.SERVICE_NAMES.values())
         saved = validate_original_save(snapshot)
         self.assertEqual(
-            saved["player"]["saved_villages"][self.farm["id"]]["tags"], ["cheap food", "farming"]
+            saved["player"]["saved_villages"][self.farm["id"]]["tags"],
+            ["cheap food", "farming"],
         )
         saved["player"]["saved_villages"][self.farm["id"]]["tags"] = "bad"
         with self.assertRaises(ValueError):
@@ -163,7 +170,8 @@ class VillageLifeTests(unittest.TestCase):
         self.inputs(["1", "1"], game.imbue_staff)
         self.assertEqual(self.p["core_attunements"], [core])
         self.assertEqual(
-            self.p["staffs"][0]["power"], base + data.ELEMENTAL_CORES[core]["bonus_atk"] + 6
+            self.p["staffs"][0]["power"],
+            base + data.ELEMENTAL_CORES[core]["bonus_atk"] + 6,
         )
         self.assertTrue(self.p["staffs"][0]["charged"])
 
@@ -179,7 +187,10 @@ class VillageLifeTests(unittest.TestCase):
         self.p["gold"] = 100
         self.p["hp"] = 1
         self.inputs(
-            ["4", "y", "7"], game.visit_village, {"name": "Ice Hamlet"}, "Frostbound Tundra"
+            ["4", "y", "7"],
+            game.visit_village,
+            {"name": "Ice Hamlet"},
+            "Frostbound Tundra",
         )
         self.assertEqual(self.p["gold"], 20)
         self.assertEqual(self.p["hp"], 61)
@@ -196,7 +207,9 @@ class VillageLifeTests(unittest.TestCase):
         for region, structures in data.REGION_STRUCTURES.items():
             for item in structures:
                 if item["type"] == "village":
-                    self.assertNotIn("temple", v.profile(region, item["name"])["services"])
+                    self.assertNotIn(
+                        "temple", v.profile(region, item["name"])["services"]
+                    )
         for region, clan in data.ELEMENTAL_VILLAGES.items():
             self.assertIn("temple", v.profile(region, clan["name"], True)["services"])
 
@@ -211,12 +224,16 @@ class VillageLifeTests(unittest.TestCase):
         self.assertEqual(record["levels"]["restaurant"], 3)
         self.assertEqual(v.service_quality(self.p, self.farm, "restaurant"), before + 1)
         self.assertEqual(
-            self.p["building_materials"], {"Timber": 16, "Stone": 16, "Iron fittings": 18}
+            self.p["building_materials"],
+            {"Timber": 16, "Stone": 16, "Iron fittings": 18},
         )
         self.assertEqual(self.p["gold"], 400)
         restored = validate_original_save(ui.snapshot())
         self.assertEqual(
-            restored["player"]["village_records"][self.farm["id"]]["levels"]["restaurant"], 3
+            restored["player"]["village_records"][self.farm["id"]]["levels"][
+                "restaurant"
+            ],
+            3,
         )
         self.assertEqual(v.state(self.p, self.forge)["levels"]["forge"], 2)
 
@@ -248,3 +265,38 @@ class VillageLifeTests(unittest.TestCase):
             self.inputs(["0", "1", "n"], game._ingredient_brew_menu)
         self.assertEqual(len(self.p["ingredients"]), 1)
         self.assertEqual(self.p["potions"], [result["name"]])
+
+    def test_menus_hide_facilities_absent_from_the_village(self):
+        farm = dict(v.village_options(self.farm))
+        forge = dict(v.village_options(self.forge))
+        self.assertIn(10, farm)
+        self.assertNotIn(9, farm)
+        self.assertIn(9, forge)
+        for choice in (1, 6, 10, 13, 18, 24, 26):
+            self.assertNotIn(choice, forge)
+        self.assertEqual(farm[7], "Leave")
+        self.assertEqual(forge[7], "Leave")
+        with patch("builtins.input", return_value="7"), patch(
+            "builtins.print"
+        ) as output:
+            v.visit(game, dict(name=self.forge["name"]), self.forge["region"])
+        text = "\n".join(
+            str(call.args[0]) for call in output.call_args_list if call.args
+        )
+        self.assertNotIn("10. Harvest farm", text)
+        self.assertNotIn("6. Brew potions", text)
+        self.assertIn("9. Blacksmith", text)
+
+    def test_worker_menu_only_lists_existing_specialists(self):
+        import village_jobs
+
+        with patch("builtins.input", return_value="0"), patch(
+            "builtins.print"
+        ) as output:
+            village_jobs.menu(game, self.farm)
+        text = "\n".join(
+            str(call.args[0]) for call in output.call_args_list if call.args
+        )
+        self.assertNotIn("1. Commission weapon", text)
+        self.assertNotIn("8. Apprentice batch commission", text)
+        self.assertIn("4. Commission potion", text)

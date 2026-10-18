@@ -202,3 +202,10 @@ Weapon commissions require one metal, one ordinary core and one wood, including 
 Tablet mode can be toggled in the top bar and is automatically selected for detected tablet-size touch devices. It enlarges controls and adjusts the layout without automatically scrolling the sidebar.
 
 New testing sessions keep a clean restore point; leaving testing restores the entire pre-test character, removing test items, crafted results and test progress. Older testing saves have no exact prior snapshot: catalogue test supplies are removed and a recovery copy remains in the exported JSON under `beta_legacy_recovery` and can also be downloaded through Saves → Export older testing recovery; genuine prior catalogue copies cannot be distinguished retrospectively. Keep a normal pre-test save for exact recovery.
+
+
+### Easy reading and facility-aware village menus
+
+**Easy reading** in the top bar is an optional presentation mode: clear sans-serif text (18–28px), larger controls, stronger contrast, less visual decoration/motion, labelled clickable submenu answers and direct Save / Load access. Standard presentation and game rules are preserved when switched off. Its text size is separate, and preferences stay in the browser. **Explain game words** opens a plain-language glossary. **Read latest aloud / Stop reading** use browser speech only when requested; selected text takes priority, otherwise the latest output and question are read (up to 6,000 characters). Voice and speed can be selected in Customise when supported by the device.
+
+Village menus now list only facilities available locally: no harvest option without a farm, no blacksmith without a forge, no food/meal options without a restaurant, and no potion services without an alchemy lab. Mentor and sanctuary choices appear only in Old Village. Worker menus likewise omit missing specialists. Existing answer numbers stay stable, including gaps. Hidden unavailable actions retain their backend service guards.

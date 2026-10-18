@@ -21,6 +21,16 @@ SECTIONS = [
         ],
     ),
     (
+        "easy-reading",
+        "Easy reading and read-aloud",
+        [
+            "The Easy reading switch in the top bar uses large clear text, spacious buttons, stronger contrast and a plain background while keeping your chosen region colours. A− and A+ adjust its separate 18–28 pixel text size. Turning the switch off restores the standard appearance; these settings stay in this browser.",
+            "Easy reading adds labelled buttons for numbered village, shop, combat and activity choices. Click a button or keep typing answers as before. Text such as a name or a quantity still goes in the large answer box. The game waits for your choice; the presentation mode does not change difficulty, costs or rules.",
+            "Read latest aloud speaks only on request. Select text first to read that passage, or press it without a selection to hear the latest output and question. Stop reading stops speech; new output also stops the old passage. Browser voices and reading speed are in Customise. Device/browser support and installed voices vary.",
+            "Explain game words opens a short glossary for health, mana, attack, defence, experience, money, runes, status effects, shifts and saves. Save / Load gives direct access to your save slots while Easy reading is on. Saving is still limited to safe category menus; export a backup to move a character between devices.",
+        ],
+    ),
+    (
         "new-quality-controls",
         "Potions, quick equipment, raids, companions and tablets",
         [
@@ -99,7 +109,7 @@ SECTIONS = [
         "crafting",
         "Crafting benches and professions",
         [
-            "Enter a discovered village before using its crafting hub. Villages have different available benches, starting levels and quality. Missing benches cannot be used there. The sidebar lists each local service and its current benefit.",
+            "Enter a discovered village before using its crafting hub. Villages have different available benches, starting levels and quality. Their numbered menus show only facilities that exist there; for example, farm harvesting and blacksmith choices are absent where those services do not exist. Familiar action numbers stay the same, so gaps are normal. Missing benches cannot be used there. The sidebar lists each local service and its current benefit.",
             "A forge makes weapons, a loom makes armour, an enchantment tower makes staffs, an alchemy lab brews potions, and a disenchantry salvages eligible gear. Blacksmith upgrades improve carried equipment for a quoted price. Rune binding and fusion are under Upgrades & Runes.",
             "Workshop quality changes results: weapon attack, armour defence, staff power, ingredient preservation, salvage recovery and trading discounts. Successful crafting develops professions; browsing menus grants no crafting experience. Story & Lore includes your profession progress.",
             "Only elemental villages offer an Imbuing Temple. The separate Source Temple stands in the Riftlands. Ordinary villages do not gain a temple through automatic development or community projects.",

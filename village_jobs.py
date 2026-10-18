@@ -331,9 +331,18 @@ def menu(game, village):
             print(
                 f"Order {i}: {job['kind']} · {job['remaining']} shifts left · result {job['result']}"
             )
-        print(
-            "1. Commission weapon\n2. Commission armour\n3. Commission staff\n4. Commission potion\n5. Hire gatherers\n6. Collect order\n7. Work a local shift (5 souls, 5 hunger)\n8. Apprentice batch commission\n0. Back"
-        )
+        for number, kind in enumerate(
+            ("weapon", "armour", "staff", "potion", "gather"), 1
+        ):
+            if KINDS[kind][0] in village["services"]:
+                print(
+                    f"{number}. "
+                    + ("Hire gatherers" if kind == "gather" else "Commission " + kind)
+                )
+        print("6. Collect order\n7. Work a local shift (5 souls, 5 hunger)")
+        if "forge" in village["services"]:
+            print("8. Apprentice batch commission")
+        print("0. Back")
         c = input("Workers > ").strip()
         if c == "0":
             return

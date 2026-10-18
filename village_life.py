@@ -412,6 +412,67 @@ def errand(game, village):
     print("Village helped! Reputation increased.")
 
 
+def village_options(village):
+    """Keep familiar answer numbers while hiding absent local facilities."""
+    from regional_sellers import PROFILES
+
+    services = set(village["services"])
+    options = [
+        (1, "Buy food to take away", "restaurant"),
+        (2, "Trading post", "trade"),
+        (3, "Eat carried food", None),
+        (4, "Inn (local price / quality shown in sidebar)", "inn"),
+        (5, "Local errand", None),
+        (6, "Brew potions", "alchemy"),
+        (7, "Leave", None),
+        (
+            8,
+            "Crafting benches",
+            {"forge", "loom", "tower", "alchemy", "disenchantry", "temple"},
+        ),
+        (9, "Blacksmith", "forge"),
+        (10, "Harvest farm", "farm"),
+        (11, "Save village / edit note", None),
+        (12, "Edit village tags", None),
+        (13, "Restaurant meal", "restaurant"),
+        (14, "Talk to the keeper", None),
+        (15, "Ask for a rumour", None),
+        (16, "Side quest board", None),
+        (17, "Upgrade village buildings", services),
+        (18, "Speak to your mentor", "old_village"),
+        (19, "Material stock (metals / wood / building supplies)", "trade"),
+        (20, "Community projects", services),
+        (21, "Village development history", None),
+        (
+            22,
+            "Village workers / commissions",
+            {"forge", "loom", "tower", "alchemy", "trade"},
+        ),
+        (23, "Community activities / addons", None),
+        (24, "Blend / fortify potions", "alchemy"),
+        (25, "Regional specialist traders", "specialist"),
+        (26, "Old Village companion sanctuary", "old_village"),
+    ]
+
+    def exists(requirement):
+        if requirement is None:
+            return True
+        if requirement == "old_village":
+            return (
+                village["name"] == "Old Village"
+                and village["region"] == "Whispering Woods"
+            )
+        if requirement == "specialist":
+            return village["region"] in PROFILES
+        if isinstance(requirement, set):
+            return bool(requirement & services)
+        return requirement in services
+
+    return [
+        (number, label) for number, label, requirement in options if exists(requirement)
+    ]
+
+
 def visit(game, struct, region):
     import original_ui as ui
 
@@ -438,13 +499,18 @@ def visit(game, struct, region):
                 )
             )
             print(
-                f"Blacksmith: {v['smith_label']} | Reputation {info['reputation']} | Food discount {info['discount']}% | Restock in {info['restock_in']} wanders"
+                (
+                    f"Blacksmith: {v['smith_label']} | "
+                    if "forge" in v["services"]
+                    else ""
+                )
+                + f"Reputation {info['reputation']} | Food discount {info['discount']}% | Restock in {info['restock_in']} wanders"
             )
             if info["note"]:
                 print("Your note: " + info["note"])
-            print(
-                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor\n19. Material stock (metals / wood / building supplies)\n20. Community projects\n21. Village development history\n22. Village workers / commissions\n23. Community activities / addons\n24. Blend / fortify potions\n25. Regional specialist traders\n26. Old Village companion sanctuary"
-            )
+            print("Choose a listed number. Only facilities available in this village are shown.")
+            for number, label in village_options(v):
+                print(f"{number}. {label}")
             before_activity = (
                 game.player["gold"],
                 len(game.player.get("ingredients", [])),
