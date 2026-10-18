@@ -2,13 +2,9 @@
 
 import data
 
+from wander_roll import CHANCES, TOTAL, ticket_table
+
 WEATHER_RESELECT = 0.20
-BUILDING_SUPPLY = 0.25
-STRUCTURE = 0.12
-INGREDIENT = 0.08
-ELEMENTAL_VILLAGE = 0.01
-BOUNTY = 0.02
-SPECIAL_EVENT = 0.08
 NIGHT_ELITE = 0.05
 
 
@@ -16,33 +12,30 @@ def percent(value):
     return f"{value*100:.4f}".rstrip("0").rstrip(".") + "%"
 
 
-def probabilities(region, undiscovered=True, bounty_available=True):
-    """Exclusive outcomes, assuming a living player without a tracking assignment."""
-    remaining = .20
-    outcomes = {"monster": .80}
-    for key, chance in [
+def probabilities(
+    region, undiscovered=True, bounty_available=True, difficulty="normal"
+):
+    """Actual exclusive ticket ranges, with unavailable structures becoming quiet."""
+    outcomes = dict.fromkeys(
         (
-            "structure",
-            STRUCTURE if undiscovered and data.REGION_STRUCTURES.get(region) else 0,
-        ),
-        (
-            "elemental_village",
-            ELEMENTAL_VILLAGE if region in data.ELEMENTAL_VILLAGES else 0,
-        ),
-        (
+            "monster",
             "bounty",
-            BOUNTY if bounty_available and region in data.BOUNTY_MONSTERS else 0,
+            "ingredient",
+            "building_supply",
+            "structure",
+            "elemental_village",
+            "special_event",
+            "merchant",
+            "companion",
+            "peaceful",
         ),
-        ("special_event", SPECIAL_EVENT),
-    ]:
-        outcomes[key] = remaining * chance
-        remaining *= 1 - chance
-    for key, chance in [
-        ("companion", 0.05),
-        ("merchant", 0.40),
-        ("peaceful", 0.55),
-    ]:
-        outcomes[key] = remaining * chance
+        0,
+    )
+    for key, tickets in ticket_table(
+        region, undiscovered, bounty_available, difficulty
+    ):
+        key = "special_event" if key.startswith("event:") else key
+        outcomes[key] += tickets / TOTAL
     return outcomes
 
 
@@ -50,63 +43,70 @@ def reference():
     stages = [
         dict(
             name="How wandering chances work",
-            description="After supplies and any tracked target, the monster roll happens FIRST: 80% ordinary monster. Only the remaining 20% reaches structure, ingredient, clan, bounty and special-event checks. Survivors of these checks select companion 5%, merchant 40% or peaceful 55% conditionally. Ingredient and building-supply finds can accompany another outcome. The next-wander estimates assume you survive hunger and have no pending tracked target.",
+            description="One weighted main roll chooses exactly one outcome. There is no monster-first roll and no chain of discovery rolls. Rare bounties, hidden clans and the six event types already occupy their own ranges in this same roll. Item/species selection, combat, event choices and loot can have their own detail rolls. Weather and survival timers continue independently. Paid tracking replaces the random outcome; scheduled story scenes and companion perks remain explicit bonuses.",
             type="Read first",
         ),
+        *[
+            dict(
+                name=mode.title() + " wander table",
+                description=" · ".join(
+                    name.replace("_", " ").title() + ": " + str(chance) + "%"
+                    for name, chance in chances.items()
+                )
+                + ". Gathering gives one regional ingredient or one building supply, equally likely where ingredients exist. No extra gather roll runs alongside other outcomes.",
+                type="One main roll",
+            )
+            for mode, chances in CHANCES.items()
+        ],
         dict(
             name="Weather selection",
-            description=f"{percent(WEATHER_RESELECT)} each wander to select uniformly from all {len(data.WEATHER_EFFECTS)} weather types, including the current weather. The actual chance of changing weather is {percent(WEATHER_RESELECT*(len(data.WEATHER_EFFECTS)-1)/len(data.WEATHER_EFFECTS))}.",
-            type="Before encounters",
+            description=f"{percent(WEATHER_RESELECT)} each wander to select uniformly from all {len(data.WEATHER_EFFECTS)} weather types, including the current weather. The actual chance of changing weather is {percent(WEATHER_RESELECT*(len(data.WEATHER_EFFECTS)-1)/len(data.WEATHER_EFFECTS))}. Weather is an environment update, not an extra loot encounter.",
+            type="Environment",
         ),
         dict(
             name="Construction supplies",
-            description=f"{percent(BUILDING_SUPPLY)} each wander to gain one Timber, Stone or Iron fitting, equally likely. This can happen alongside discoveries and encounters.",
-            type="Independent find",
-        ),
-        dict(
-            name="Ordinary structures",
-            description=f"{percent(STRUCTURE)} when there are undiscovered ordinary structures in your region. One remaining structure is chosen uniformly. A discovery ends the encounter checks; the new place becomes revisitable through Structures.",
-            type="After the 80% monster check",
+            description="Half the gathering range gives one Timber, Stone or Iron fitting: 10% per Normal wander, 15% per Easy wander. If a region has no ingredients, its entire gathering range gives a building supply. There is no independent supply find on monster or peaceful outcomes.",
+            type="Gathering outcome",
         ),
         dict(
             name="Regional ingredients",
-            description=f"{percent(INGREDIENT)} if this check is reached and the region has ingredients. One native ingredient is selected uniformly. This does not end the wander. A structure discovery or tracked fight bypasses this check.",
-            type="Find alongside an encounter",
+            description="Half the gathering range gives one native ingredient: 10% per Normal wander, 15% per Easy wander in regions with ingredients. Gathering does not also trigger a monster, merchant or separate discovery.",
+            type="Gathering outcome",
+        ),
+        dict(
+            name="Ordinary structures",
+            description="Structures occupy 10% of Normal wanders or 12% on Easy. In a clan region, 1% of this structure range belongs to a hidden-clan visit. One undiscovered ordinary structure is otherwise selected uniformly. If all ordinary sites are known, their range becomes peaceful; it is not rerolled into free loot. Sites remain revisitable through Structures.",
+            type="Structure outcome",
         ),
         dict(
             name="Hidden elemental village",
-            description=f"{percent(ELEMENTAL_VILLAGE)} if reached in one of the four clan regions. This can also revisit an already known clan. The chance is lower per complete wander when earlier checks can end it; the dictionary does not discover the village for you.",
-            type="Second encounter check",
+            description="Clan visits occupy 1% of the structure range: 0.1% of a full Normal wander, 0.12% on Easy, in the four clan regions only. These are ranges in the same main roll, not another roll. Already discovered villages can be revisited this way or through Structures.",
+            type="Rare structure subtype",
         ),
         dict(
             name="Bounty target",
-            description=f"{percent(BOUNTY)} if reached, the region has a bounty and you have not claimed it. A bounty encounter ends the remaining checks.",
-            type="Third encounter check",
+            description="An unclaimed regional bounty occupies 2% of the monster range: 0.9% per full Normal wander, 0.6% on Easy. The rest is ordinary monsters. After claiming it, those tickets become ordinary monsters. Combat totals remain 45% / 30% before special-event fights.",
+            type="Rare monster subtype",
         ),
         dict(
             name="Special wander event",
-            description=f"{percent(SPECIAL_EVENT)} if reached. The six events below use their catalogue weights. Night does not increase this event roll.",
-            type="Fourth encounter check",
-        ),
-        dict(
-            name="Ordinary encounter roll",
-            description="If earlier checks allow it: companion opportunity 1% (roll 1), ordinary merchant 8% (2–9), peaceful wandering 11% (10–20), monster path 80% (21–100). A companion requires an unrecruited eligible species; an empty monster pool produces no fight.",
-            type="Last encounter check",
+            description="The special-event ranges total 10% per Normal wander, 12% on Easy. The six catalogue events split that range by their weights within the same roll. A bandit event can lead to a fight and a wandering-merchant event can open a shop; these are event subtypes, not extra main outcomes.",
+            type="Event outcome",
         ),
         dict(
             name="Day and night",
-            description="Each ten-wander cycle contains seven day wanders followed by three night wanders. Ordinary night monsters gain 15% HP and attack, with a 5% elite roll after the monster is selected. Night victories add 20% gold; elites add another ×2 gold and an extra loot roll. Dark-region night fights also add corruption.",
+            description="Each ten-wander cycle contains seven day wanders followed by three night wanders. Ordinary night monsters gain 15% HP and attack, with a 5% elite detail roll. Night victories add 20% gold; elites add another ×2 gold and an extra loot roll. Night does not change the main outcome weights.",
             type="Journey cycle",
         ),
         dict(
             name="Monster level pools",
             description="Below level 10 the ordinary monster path uses the regional normal pool. From level 10 it selects uniformly from evolved monsters and mini-bosses, falling back to normal monsters if that pool is empty.",
-            type="Combat encounters",
+            type="Combat details",
         ),
         dict(
             name="Tracked targets",
-            description="A paid tracked target in the current region guarantees that target on your next Wander and replaces all structure/ingredient/clan/bounty/event/ordinary encounter checks. Weather, supply, hunger and journey updates still happen first.",
-            type="Tracking exception",
+            description="A paid tracked target in the current region guarantees that target on your next Wander and replaces the weighted outcome entirely. Weather, hunger, recovery and work shifts still update. No random gathering or discovery is added.",
+            type="Explicit tracking exception",
         ),
         dict(
             name="Survival on a wander",
@@ -115,7 +115,7 @@ def reference():
         ),
         dict(
             name="Exploration timers",
-            description="Every 20 wander-count steps, village shops/farms and limited gathering sites enter their next supply cycle, and the world event advances in catalogue order. Source anomalies appear on every tenth eligible Season Two wander until the stabiliser repair; they can give one ordinary Source fragment and your wander continues.",
+            description="Every 20 wander-count steps, village shops/farms and limited gathering sites enter their next supply cycle, and the world event advances. Scheduled Season Two anomalies can appear every tenth eligible wander until repair; these story scenes and existing companion scouting bonuses are separate from the random outcome, not extra discovery rolls.",
             type="Supplies and story",
         ),
     ]
@@ -132,7 +132,7 @@ def reference():
         stages.append(
             dict(
                 name=event["title"],
-                description=f"{event['desc']} {event_details[event['id']]} {percent(event['weight']/total)} of special events; {percent(SPECIAL_EVENT*event['weight']/total)} once the special-event check is reached, before earlier-check reductions.",
+                description=f"{event['desc']} {event_details[event['id']]} {percent(event['weight']/total)} of special events; {percent(.10*event['weight']/total)} per complete Normal wander, {percent(.12*event['weight']/total)} on Easy. The event subtype is part of the same main roll.",
                 type="Weighted special event",
             )
         )
@@ -162,6 +162,16 @@ def reference():
         bounty = data.BOUNTY_MONSTERS.get(region)
         regions[region] = dict(
             structures=[x["name"] for x in data.REGION_STRUCTURES.get(region, [])],
+            difficulty_scenarios={
+                mode: {
+                    f"{int(undiscovered)}:{int(available)}": probabilities(
+                        region, undiscovered, available, mode
+                    )
+                    for undiscovered in (False, True)
+                    for available in (False, True)
+                }
+                for mode in CHANCES
+            },
             bounty=bounty["name"] if bounty else None,
             scenarios={
                 f"{int(undiscovered)}:{int(available)}": probabilities(
@@ -193,7 +203,7 @@ def reference():
                     else "No regional bounty."
                 )
                 + (
-                    " Hidden-clan check available."
+                    " Rare hidden-clan tickets available."
                     if region in data.ELEMENTAL_VILLAGES
                     else ""
                 ),
@@ -239,5 +249,10 @@ def reference():
         ),
     ]
     return dict(
-        wandering=stages, weather=weather, world=world, loot=loot, regions=regions
+        wandering=stages,
+        weather=weather,
+        world=world,
+        loot=loot,
+        regions=regions,
+        difficulty_chances=CHANCES,
     )

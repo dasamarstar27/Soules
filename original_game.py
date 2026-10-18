@@ -2557,7 +2557,7 @@ def regenerate_from_full_hunger():
 
 
 def explore():
-    from wander_reference import WEATHER_RESELECT, STRUCTURE, INGREDIENT, ELEMENTAL_VILLAGE, BOUNTY, SPECIAL_EVENT, NIGHT_ELITE
+    from wander_reference import WEATHER_RESELECT
     r = player["region"]
 
     # ── Day / Night cycle (every 7 wanders = night for 3 wanders) ──
@@ -2595,9 +2595,6 @@ def explore():
 
     anomaly(__import__(__name__))
 
-    from village_life import gather_building_material
-
-    gather_building_material(player, random)
     if player["wander_count"] % 20 == 0:
         advance_world_event()
 
@@ -2632,86 +2629,8 @@ def explore():
     if before_wander(__import__(__name__)):
         return
 
-    # Original monster roll now precedes optional discoveries.
-    if random.random() < .80:
-        _wander_monster(r, night)
-        return
-
-    # ── Structure discovery (12% of non-monster paths) ──
-    region_structs = REGION_STRUCTURES.get(r, [])
-    found_names = player.setdefault("discovered_structures", {}).get(r, [])
-    undiscovered = [s for s in region_structs if s["name"] not in found_names]
-    if undiscovered and random.random() < STRUCTURE:
-        struct = random.choice(undiscovered)
-        player["discovered_structures"].setdefault(r, []).append(struct["name"])
-        print(f"\n🗺 You've discovered a new location: {struct['icon']} {struct['name']}!")
-        print("  (Visit it via option 17 — Structures)")
-        _check_achievements()
-        return
-
-    # ── Ingredient discovery (8% chance per wander) ──
-    region_ings = REGION_INGREDIENTS.get(r, [])
-    if region_ings and random.random() < INGREDIENT:
-        found_ing = random.choice(region_ings)
-        player.setdefault("ingredients", []).append(found_ing)
-        print(f"\n🌿 You spot a rare ingredient: [{found_ing}]! Added to your pouch.")
-
-    # ── Elemental village discovery (1% chance in the 4 elemental regions) ──
-    if r in ELEMENTAL_VILLAGES and random.random() < ELEMENTAL_VILLAGE:
-        village = ELEMENTAL_VILLAGES[r]
-        print(f"\n✨ You notice something hidden between the shadows...")
-        print(f"  A faint {village['icon']} glow pulses ahead — a secret place awaits!")
-        visit_elemental_village()
-        return
-
-    # ── Bounty encounter (2% chance — named rare enemy) ──
-    bounty = BOUNTY_MONSTERS.get(r)
-    if bounty and bounty["name"] not in player.get("bounties_claimed", []):
-        if random.random() < BOUNTY:
-            print(f"\n☠ BOUNTY TARGET SPOTTED: {bounty['name']}!")
-            print("  This creature has a price on its head.")
-            fight(bounty.copy())
-            if player["hp"] > 0:
-                player.setdefault("bounties_claimed", []).append(bounty["name"])
-                player["gold"] += bounty["reward"]
-                print(f"  🏴 Bounty claimed! +{bounty['reward']} souls!")
-            _check_achievements()
-            return
-
-    # ── Random wander events (8% chance) ──
-    if random.random() < SPECIAL_EVENT:
-        weights = [e["weight"] for e in WANDER_EVENTS]
-        total = sum(weights)
-        rnd = random.uniform(0, total)
-        cumulative = 0
-        chosen_event = WANDER_EVENTS[0]
-        for ev in WANDER_EVENTS:
-            cumulative += ev["weight"]
-            if rnd <= cumulative:
-                chosen_event = ev
-                break
-        print(f"\n✦ {chosen_event['title']}: {chosen_event['desc']}")
-        _handle_wander_event(chosen_event["id"], r)
-        _check_achievements()
-        return
-
-    roll = random.randint(1, 100)
-    if roll <= 5:
-        candidates = get_region_companion_candidates(r)
-        if candidates:
-            companion = random.choice(candidates)
-            print(f"\n🐾 You encounter {companion['name']}!")
-            if input("Recruit? (y/n) > ").lower() == "y":
-                recruit_companion(companion)
-        else:
-            print("No new companion answers your call here.")
-        return
-    if roll <= 45:
-        merchant()
-        return
-    if roll <= 100:
-        print("Peaceful wandering...")
-        return
+    from wander_roll import resolve
+    resolve(__import__(__name__))
 
 
 
@@ -3917,7 +3836,7 @@ def show_map():
                 st = s.get("type", "?")
                 print(f"     {si} {n}  [{st}]")
     else:
-        print("\n  (Explore regions to discover structures — 12% chance each wander)")
+        print("\n  (Explore to discover structures — 10% on Normal, 12% on Easy)")
 
 
 # =========================

@@ -9,25 +9,31 @@ from app import app
 
 
 class WanderReferenceTests(TestCase):
-    def test_sequential_probabilities_sum_to_one_for_every_region_and_progress_state(
+    def test_exclusive_probabilities_sum_to_one_for_every_region_and_progress_state(
         self,
     ):
-        for region in data.REGIONS + [data.SECRET_REGION]:
-            for undiscovered in (False, True):
-                for bounty in (False, True):
-                    odds = reference.probabilities(region, undiscovered, bounty)
-                    self.assertAlmostEqual(sum(odds.values()), 1)
-                    self.assertTrue(all(0 <= value <= 1 for value in odds.values()))
-                    if not undiscovered:
-                        self.assertEqual(odds["structure"], 0)
-                    if not bounty:
-                        self.assertEqual(odds["bounty"], 0)
-                    if region not in data.ELEMENTAL_VILLAGES:
-                        self.assertEqual(odds["elemental_village"], 0)
+        for difficulty in ("normal", "easy"):
+            for region in data.REGIONS + [data.SECRET_REGION]:
+                for undiscovered in (False, True):
+                    for bounty in (False, True):
+                        odds = reference.probabilities(
+                            region, undiscovered, bounty, difficulty
+                        )
+                        self.assertAlmostEqual(sum(odds.values()), 1)
+                        self.assertTrue(all(0 <= value <= 1 for value in odds.values()))
+                        if not undiscovered:
+                            self.assertEqual(odds["structure"], 0)
+                        if not bounty:
+                            self.assertEqual(odds["bounty"], 0)
+                        if region not in data.ELEMENTAL_VILLAGES:
+                            self.assertEqual(odds["elemental_village"], 0)
         woods = reference.probabilities("Whispering Woods")
-        self.assertAlmostEqual(woods["structure"], 0.2 * 0.12)
-        self.assertAlmostEqual(woods["elemental_village"], 0.2 * 0.88 * 0.01)
-        self.assertAlmostEqual(woods["monster"], 0.80)
+        self.assertAlmostEqual(woods["structure"] + woods["elemental_village"], 0.10)
+        self.assertAlmostEqual(woods["elemental_village"], 0.001)
+        self.assertAlmostEqual(woods["monster"] + woods["bounty"], 0.45)
+        easy = reference.probabilities("Whispering Woods", difficulty="easy")
+        self.assertAlmostEqual(easy["monster"] + easy["bounty"], 0.30)
+        self.assertAlmostEqual(easy["ingredient"] + easy["building_supply"], 0.30)
 
     def test_reference_covers_every_weather_world_event_and_special_event(self):
         ref = reference.reference()
@@ -52,24 +58,15 @@ class WanderReferenceTests(TestCase):
         self.assertEqual(len(ref["weather"]), 6)
         self.assertIn("1:1", ref["regions"]["Whispering Woods"]["scenarios"])
 
-    def test_engine_uses_shared_thresholds_without_adding_new_rolls(self):
+    def test_quiet_main_roll_does_not_add_gathering_or_discoveries(self):
+        from wander_roll import TOTAL
+
         old = game.player
         game.player = initial_player({"name": "Wander reference", "cls": "warrior"})
         try:
-            with patch.multiple(
-                reference,
-                WEATHER_RESELECT=0,
-                BUILDING_SUPPLY=0,
-                STRUCTURE=0,
-                INGREDIENT=0,
-                ELEMENTAL_VILLAGE=0,
-                BOUNTY=0,
-                SPECIAL_EVENT=0,
-            ), patch.object(game.random, "random", return_value=0.99), patch.object(
-                game.random, "randint", return_value=99
-            ), patch(
-                "builtins.print"
-            ) as output, patch.object(
+            with patch.object(game.random, "random", return_value=0.99), patch.object(
+                game.random, "randrange", return_value=TOTAL - 1
+            ) as main_roll, patch("builtins.print") as output, patch.object(
                 game, "fight"
             ) as fight, patch.object(
                 game, "visit_elemental_village"
@@ -81,8 +78,10 @@ class WanderReferenceTests(TestCase):
                         for call in output.call_args_list
                     )
                 )
+                main_roll.assert_called_once_with(TOTAL)
                 fight.assert_not_called()
                 clan.assert_not_called()
                 self.assertEqual(game.player["ingredients"], [])
+                self.assertFalse(game.player.get("building_materials"))
         finally:
             game.player = old

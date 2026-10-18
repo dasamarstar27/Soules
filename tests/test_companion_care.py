@@ -75,7 +75,7 @@ class CompanionCareTests(TestCase):
         self.assertEqual(self.c["hunger"], 60)
 
     def test_actual_explore_drains_companion_once(self):
-        with patch.object(game.random, "random", return_value=0.99), patch.object(
+        with patch("wander_roll.pick", return_value="peaceful"), patch.object(game.random, "random", return_value=0.99), patch.object(
             game.random, "randint", return_value=99
         ), patch("builtins.print"):
             game.explore()

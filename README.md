@@ -1,4 +1,4 @@
-# Soules V25.6 — Echoes of the World Tree
+# Soules V25.7 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -104,7 +104,7 @@ The full history is recorded in STORY_CANON.md: the Riftlands once separated the
 
 Attacks, village menus and other options follow automatically when you are near the bottom. Very long blocks and reading older text preserve your position; use Latest to jump down. Crimson Forge appears in the travel menu without a preliminary popup. Imbuing temples are available only in elemental villages. The Sacred Temple in Riftlands remains the story location and contains the stabiliser, not the four surviving cores.
 
-Building level is separate from service quality. Better facilities start at Level 2; others start at Level 1. Village option 17 upgrades existing buildings to Level 5 using Timber, Stone, Iron fittings and souls. Wandering has a separate 25% chance to find a building supply, and the upgrade menu converts carried wood or metal. Levels improve local service results and future restaurant stock capacity. These upgrades belong to each village and persist in saves.
+Building level is separate from service quality. Better facilities start at Level 2; others start at Level 1. Village option 17 upgrades existing buildings to Level 5 using Timber, Stone, Iron fittings and souls. The one-roll gathering range can yield one building supply (10% of a full Normal wander, 15% on Easy where ingredients exist), and the upgrade menu converts carried wood or metal. Levels improve local service results and future restaurant stock capacity. These upgrades belong to each village and persist in saves.
 
 Elian is an old man met in the first village visited and the grandson of one of the fallen warriors. At the Season One ending he warns that someone must have reopened the rift and understands core energy. Complete 20 side quests after the victory, then begin Season Two through the journal or mentor. Its opening is five months later in lore, without a real-time wait. Existing Season Two saves keep their progress. Blessings allow paid channeling at elemental villages without taking their protected cores.
 
@@ -174,7 +174,7 @@ No paid service, real-time waiting or account is required. Public hosting has no
 
 ### Clan defence, exploration reference and regional forge update
 
-The sidebar keeps its manual scrollbar but never follows game updates automatically. The journal keeps its existing short-menu following behaviour. Dictionary adds Wandering, Weather, World events and Loot, including sequential encounter probabilities based on the current character's discoveries, six weather types, eight cycling world events, regional drops and chosen exploration activities.
+The sidebar keeps its manual scrollbar but never follows game updates automatically. The journal keeps its existing short-menu following behaviour. Dictionary adds Wandering, Weather, World events and Loot, including exclusive one-roll probabilities based on difficulty and the current character's discoveries, six weather types, eight cycling world events, regional drops and chosen exploration activities.
 
 Elemental clan history and purchases return to the village menu; only leaving explicitly ends the visit. Discovered clans remain accessible through Structures. Automatic scenery matches each clan's element, including local services; fixed/custom themes are preserved. Both clan shops show ATK, DEF, staff power, food/potion recovery, elements, prices and remaining stock in consistent rows. The larger Season Two halls retain their progression gate.
 
@@ -200,7 +200,7 @@ Shared activity prompts now tell the player to type the number at the left and p
 
 Raids now have 3–5 attackers by level, and the Woods quest has 2/3/4 monsters across its waves. A visual assignment board shows available villagers, levels, completed assignments and four clickable role cards with costs/effects. Text answers remain available.
 
-Wandering checks for an **80% ordinary monster first**. If it does not find one, the remaining 20% runs structure/clan/bounty/event checks, then selects companion 5%, merchant 40% or peaceful 55% among the remaining paths. Dictionary probabilities follow this order; tracked encounters retain their explicit override. Construction supplies, weather, hunger and work shifts run before encounters.
+Wandering makes **one weighted main roll**. Normal: monster 45%, gathering 20%, structures 10%, events 10%, merchant 5%, companion 1%, peaceful 9%. Easy: 30%, 30%, 12%, 12%, 6%, 1%, 9%. Rare bounties (2% of monster tickets), hidden clans (1% of structure tickets) and each weighted event are encoded into this same draw. Gathering gives one regional ingredient or building material, not another encounter. Exhausted ordinary discoveries become peaceful; claimed bounty tickets become normal monsters. Weather, hunger, work shifts and scheduled story/perk effects still update; a paid tracked target replaces the random draw. Dictionary odds use the exact same ticket table as the engine.
 
 Potion controls are in Inventory & Equip and in the equipment sidebar alongside a quick weapon selector. Potion blends show their result and wait for Enter. Short potion output follows automatically; long journal output retains the existing reading policy. Food and scrolls are excluded from bulk loot sales. Takeaway food supports positive bulk quantities with full price/stock checks.
 
@@ -247,3 +247,7 @@ The top corner shows the actual running release. Press it for published V25.4/V2
 ### V25.6 · Tablet purchase confirmations
 
 Tablet and Easy reading modes now render Yes/No answers directly from the current question, including confirmations that arrive without a new printed story line. A confirmation takes priority over old item lists, quantities and naming text. Short `y/n` questions send `y` or `n`; `yes/no` questions send the full words. Enter-only questions get Continue. No cancels a merchant purchase, and Yes buys the selected item once. Character and NPC names are unchanged in this patch.
+
+### V25.7 · One weighted wander outcome
+
+Normal and Easy now share a single-draw encounter system with different weights, as listed above. There is no monster-first check followed by discovery checks. The independent construction-supply roll is removed from automatic wandering; building materials are one of the gathering results. Rare subtypes and event identities are already in the main table, so they do not require another outcome roll. Detail choices such as monster species, item identity, combat rolls, weather updates and player decisions are separate. Existing source-story scenes, companion perks, full-hunger regeneration and work shifts remain; no save conversion is needed.

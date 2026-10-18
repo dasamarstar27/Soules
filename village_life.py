@@ -919,13 +919,11 @@ BUILDING_MATERIALS = ("Timber", "Stone", "Iron fittings")
 
 
 def gather_building_material(player, rng):
-    from wander_reference import BUILDING_SUPPLY
-
-    if rng.random() < BUILDING_SUPPLY:
-        name = rng.choice(BUILDING_MATERIALS)
-        bag = player.setdefault("building_materials", {})
-        bag[name] = bag.get(name, 0) + 1
-        print(f"Building supply found: 1 {name}.")
+    """Grant the one supply selected by a gathering outcome; no extra chance roll."""
+    name = rng.choice(BUILDING_MATERIALS)
+    bag = player.setdefault("building_materials", {})
+    bag[name] = bag.get(name, 0) + 1
+    print(f"Building supply found: 1 {name}.")
 
 
 def upgrade_buildings(game, village):

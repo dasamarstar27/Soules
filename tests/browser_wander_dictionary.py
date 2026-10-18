@@ -36,11 +36,16 @@ with sync_playwright() as playwright:
             before,
             sidebar.evaluate("x=>x.scrollTop"),
         )
+    send("/difficulty easy")
     page.locator('.topbar [data-view="home"]').first.click()
     page.locator('[data-view="dictionary"]').click()
     page.locator('[data-dictionary="wandering"]').click()
     assert "Your next wander" in page.locator(".cards").inner_text()
-    assert "80%" in page.locator(".cards").inner_text()
+    assert "EASY" in page.locator(".cards article").first.inner_text()
+    assert "Ordinary monster: 29.4%" in page.locator(".cards article").first.inner_text()
+    assert "45%" in page.locator(".cards").inner_text()
+    assert "30%" in page.locator(".cards").inner_text()
+    assert "One weighted main roll" in page.locator(".cards").inner_text()
     page.locator("#dictionary-search").fill("cursed chest")
     assert "1/3" in page.locator(".cards").inner_text()
     page.locator('[data-dictionary="weather"]').click()

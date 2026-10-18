@@ -23,7 +23,7 @@ class LootAndRecoveryTests(TestCase):
         ui.village = self.old_village
 
     def wander(self, roll=99):
-        with patch.object(game.random, 'random', return_value=0 if roll==80 else .99), patch.object(game.random, 'randint', return_value=roll), patch.object(game, 'fight') as fight, patch('builtins.print'):
+        with patch('wander_roll.pick', return_value='monster' if roll==80 else 'peaceful'), patch.object(game.random, 'random', return_value=0 if roll==80 else .99), patch.object(game.random, 'randint', return_value=roll), patch.object(game, 'fight') as fight, patch('builtins.print'):
             game.explore()
             return fight
 
@@ -121,9 +121,8 @@ class LootAndRecoveryTests(TestCase):
 
     def test_discovery_early_return_also_gets_one_recovery(self):
         self.p.update(hp=30, hunger=100)
-        # Weather, construction material, then structure discovery; returning
-        # early must not skip recovery or grant a second recovery.
-        with patch.object(game.random, 'random', side_effect=[.99, .99, .99, 0]), patch('builtins.print'):
+        # The structure outcome must still receive exactly one recovery.
+        with patch('wander_roll.pick', return_value='structure'), patch.object(game.random, 'random', return_value=.99), patch('builtins.print'):
             game.explore()
         self.assertEqual(self.p['hp'], 33)
         self.assertEqual(self.p['hunger'], 95)

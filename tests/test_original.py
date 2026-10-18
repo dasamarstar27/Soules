@@ -39,7 +39,7 @@ class OriginalTests(unittest.TestCase):
         for count, level in [(0, 1), (7, 1), (0, 10), (7, 11)]:
             self.p["wander_count"] = count
             self.p["level"] = level
-            with patch.object(game.random, "random", return_value=0), patch.object(
+            with patch("wander_roll.pick", return_value="monster"), patch.object(game.random, "random", return_value=0), patch.object(
                 game.random, "randint", return_value=80
             ), patch.object(game, "fight") as fight, patch("builtins.print"):
                 game.explore()
@@ -49,7 +49,7 @@ class OriginalTests(unittest.TestCase):
 
     def test_merchant_and_quiet_roll_do_not_start_fights(self):
         for roll in [10, 99]:
-            with patch.object(game.random, "random", return_value=0.99), patch.object(
+            with patch("wander_roll.pick", return_value="merchant" if roll==10 else "peaceful"), patch.object(game.random, "random", return_value=0.99), patch.object(
                 game.random, "randint", return_value=roll
             ), patch.object(game, "fight") as fight, patch.object(
                 game, "merchant"

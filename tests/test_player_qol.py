@@ -32,8 +32,8 @@ class PlayerQualityTests(TestCase):
         with patch("builtins.input", side_effect=answers), patch("builtins.print"):
             return fn(*args, **kw)
 
-    def test_monster_roll_precedes_structure_roll(self):
-        with patch.object(game.random, "random", return_value=0), patch.object(
+    def test_monster_outcome_does_not_also_discover_structure(self):
+        with patch("wander_roll.pick", return_value="monster"), patch.object(game.random, "random", return_value=0), patch.object(
             game, "fight"
         ) as fight, patch.object(game, "visit_elemental_village") as clan, patch(
             "builtins.print"
@@ -144,7 +144,7 @@ class PlayerQualityTests(TestCase):
         v = villages.profile("Crimson Depths", "Smiths' Quarter")
         local = jobs.record(self.p, v)
         local["work_orders"] = [dict(remaining=3)]
-        with patch.object(game.random, "random", return_value=0.99), patch.object(
+        with patch("wander_roll.pick", return_value="peaceful"), patch.object(game.random, "random", return_value=0.99), patch.object(
             game.random, "randint", return_value=99
         ), patch("builtins.print"):
             game.explore()
