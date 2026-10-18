@@ -165,7 +165,7 @@ def menu(game, kind):
         from journal_addons import character_sheet
 
         history = state(p).get("chronicles", []) + [character_sheet(p)]
-        fresh = initial_player({"name": p["name"], "cls": p.get("class_id", "warrior")})
+        fresh = initial_player({"name": p["name"], "cls": p.get("class_id", "warrior"), "difficulty": p.get("difficulty", "normal")})
         runs = s.get("ngplus", 0) + 1
         p.clear()
         p.update(fresh)

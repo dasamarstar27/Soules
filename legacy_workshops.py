@@ -70,7 +70,7 @@ def ascend(game):
 
     history = state(p).get("chronicles", []) + [character_sheet(p)]
     old = dict(title=p.get("title"), achievements=list(p.get("achievements", [])))
-    fresh = initial_player({"name": p["name"], "cls": p.get("class_id", "warrior")})
+    fresh = initial_player({"name": p["name"], "cls": p.get("class_id", "warrior"), "difficulty": p.get("difficulty", "normal")})
     p.clear()
     p.update(fresh)
     p.update(old)

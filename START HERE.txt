@@ -1,6 +1,6 @@
-PLAY SOULES V25.2
+PLAY SOULES V25.3
 
-This download lives in a folder named V25.2. Keep the entire folder together.
+This download lives in a folder named V25.3. Keep the entire folder together.
 Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
@@ -37,3 +37,8 @@ available, use the browser's Translate page -> Hindi option and select a Hindi
 passage to read. The Hindi voice itself does not translate English.
 Initial voice/translation downloads or browser translation may need Internet.
 No translation account or paid API key is required by Soules.
+
+DIFFICULTY
+Choose Normal for the original game balance, or Easy for beginners.
+You can also change difficulty in Settings at a village or category menu.
+Easy reading and Tablet mode are separate from adventure difficulty.

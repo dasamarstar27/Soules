@@ -2,7 +2,7 @@
 
 Implemented in `village_projects.py`. Each village offers only projects for its local services, with different selections by settlement. Each project costs Timber, Stone, Iron fittings and souls. Completion grants +1 local reputation; every third completed project for a service grants +1 effective local service quality, capped at +3. Late projects require two earlier local projects. A project can be built once in each compatible village.
 
-This is a catalogue of 100 construction projects sharing those rules. The separate `ADDON_IDEAS_100.md` proposes 100 broader additions and is not completed by this catalogue.
+This is a catalogue of 100 construction projects sharing those rules. The separate `ADDON_CATALOG_100.md` documents the 100 broader additions implemented separately through the Adventures hub. Their implementation is recorded in IMPLEMENTATION_CHECKLIST.md.
 
 1. **Covered bellows** — forge; 2 Timber, 2 Stone, 1 Iron fittings, 30 souls.
 2. **Quenching trough** — forge; 3 Timber, 3 Stone, 1 Iron fittings, 45 souls.

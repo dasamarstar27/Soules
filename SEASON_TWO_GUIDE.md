@@ -14,6 +14,6 @@ Playable progression:
 4. Defeat Vael. This encounter does not count as a regional guardian or unlock unrelated regions.
 5. Use the four clans’ harmonic knowledge to repair the stabiliser. The four cores remain in their villages and are not carried to or consumed at the temple. Source balance is restored and Season Two completes.
 
-The Creator is not a required boss in either chapter. The ending leaves open what noticed the unfinished bridge from the far side. Season Three is now playable through the Adventures hub after this ending; see SEASON_THREE_PLAN.md.
+The Creator is not a required boss in either chapter. The ending leaves open what noticed the unfinished bridge from the far side. Season Three is now playable through the Adventures hub after this ending; see SEASON_THREE_GUIDE.md.
 
 Villages retain their core encounters, element-themed shops, training, exclusive libraries and side quests. Local services vary in availability and quality. Food stock, farm regrowth, notes, tags and reputation persist with the character. Postgame anomalies offer optional Source fragments while wandering.

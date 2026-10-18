@@ -202,6 +202,9 @@ def original_start():
         cls = body.get("cls", "warrior")
         if not isinstance(cls, str) or cls not in CLASSES:
             raise ValueError("Choose an original character class.")
+        from difficulty import validate as validate_difficulty
+
+        difficulty = validate_difficulty(body.get("difficulty", "normal"))
         name = body.get("name", "Wanderer")
         if not isinstance(name, str):
             raise ValueError("Enter a character name.")
@@ -217,7 +220,9 @@ def original_start():
             original.SESSIONS.pop(sid).close()
         if len(original.SESSIONS) >= 32:
             return jsonify(error="The game server is busy. Please try again later."), 503
-        process = original.OriginalSession(dict(name=name[:24], cls=cls, save=saved))
+        process = original.OriginalSession(
+            dict(name=name[:24], cls=cls, save=saved, difficulty=difficulty)
+        )
         original.SESSIONS[sid] = process
         return jsonify(process.poll())
 

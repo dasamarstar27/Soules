@@ -57,3 +57,13 @@ document.addEventListener('click',event=>{
  if(button.dataset.characterName){$('#new-character').elements.name.value=button.dataset.characterName;updateButtonAppearance();}
 });
 updateButtonAppearance();
+
+function difficultySettings(){
+ const player=packet?.snapshot?.player,current=player?.difficulty||'normal';
+ return `<section class="page-card"><h2>Adventure difficulty</h2><p>Normal keeps the original balance. Easy gives enemies 25% less health and reduces their direct attack damage by 40%. Rewards, starting equipment, encounter chances and the story stay the same. Status effects and hazards remain dangerous, and death still ends your character.</p>${player?`<p>Current character: <b>${current==='easy'?'Easy':'Normal'}</b>. Change at a category or village menu, outside combat and purchases.</p><div class="buttons">${['easy','normal'].map(value=>`<button data-difficulty="${value}" aria-pressed="${current===value}" ${!quickReady()||busy?'disabled':''}>${value==='easy'?'Easy · beginners':'Normal · original balance'}</button>`).join('')}</div>`:'<p>Choose Easy or Normal when creating your character.</p>'}<p>Reading and tablet settings are separate: either difficulty works with either layout.</p></section>`;
+}
+document.addEventListener('click',async event=>{
+ const button=event.target.closest('[data-difficulty]');if(!button)return;
+ await respond('/difficulty '+button.dataset.difficulty);
+ if(view!=='play')renderPage();
+});

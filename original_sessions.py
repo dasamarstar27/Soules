@@ -25,6 +25,9 @@ def validate_original_save(value):
             "Choose an original text-edition save. Earlier browser-edition saves are still available in /edition."
         )
     p = value["player"]
+    from difficulty import validate as validate_difficulty
+
+    validate_difficulty(p.get("difficulty", "normal"))
     if "beta_backup" in p:
         backup = p["beta_backup"]
         if not isinstance(backup, dict) or "beta_backup" in backup:

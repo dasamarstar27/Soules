@@ -9,7 +9,9 @@ from expansion_state import state, mark, pay, count, choose
 def encounter(game, enemies, practice_mode=False, terrain=None, rules=None):
     p = game.player
     rules = rules or []
-    enemies = deepcopy(enemies)
+    from difficulty import easy_enemy
+
+    enemies = [easy_enemy(p, enemy) for enemy in deepcopy(enemies)]
     for e in enemies:
         e["addon_encounter"] = True
         e.setdefault("max_hp", e.get("hp", 40))

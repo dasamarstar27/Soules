@@ -57,6 +57,21 @@ def input_line(prompt=""):
 
             disable_beta(game.player)
             raise ui.ReturnToMenu()
+        if value.startswith("/difficulty "):
+            from difficulty import validate as validate_difficulty
+
+            safe_menu = ui._phase in ("main", "category") or prompt in (
+                "Village > ", "Elemental village > "
+            )
+            if safe_menu and not ui.get_ui().current_enemy:
+                try:
+                    game.player["difficulty"] = validate_difficulty(value.split(" ", 1)[1])
+                    print("Difficulty set to " + game.player["difficulty"].title() + ".")
+                except ValueError as error:
+                    print(str(error))
+            else:
+                print("Change difficulty at a category or village menu, outside combat and purchases.")
+            continue
         if value.startswith(("/equip ", "/drink ")):
             from player_qol import quick
 
@@ -130,6 +145,13 @@ def initial_player(config):
                 player[equipped] = next(
                     (v for v in player.get(owned, []) if v == item), item
                 )
+    from difficulty import validate as validate_difficulty
+
+    player["difficulty"] = validate_difficulty(
+        player.get("difficulty", "normal")
+        if config.get("save")
+        else config.get("difficulty", "normal")
+    )
     from companion_care import normalise
 
     if len(player.get("companions", [])) > 3:

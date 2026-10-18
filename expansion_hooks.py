@@ -73,6 +73,9 @@ def finish_battle(player, won):
 
 
 def scale_enemy(player, enemy):
+    from difficulty import easy_enemy
+
+    enemy = easy_enemy(player, enemy)
     runs = state(player).get("systems", {}).get("ngplus", 0)
     if not runs and player.get("faction") != "shadow_cult":
         return enemy

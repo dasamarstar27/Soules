@@ -113,6 +113,9 @@ def strike(source, target, amount, magical=False):
             1, round(amount * (1 - min(0.5, armour.get("element_resistance", 0))))
         )
     amount = max(1, amount + ritual_bonus(source, "atk") - ritual_bonus(target, "def"))
+    from difficulty import incoming_strike
+
+    amount = incoming_strike(target, amount)
     # Original damage calculation already accounts for equipment and defence.
     dealt = effects.hit(actor, victim, amount, log, piercing=True, magical=magical)
     for _ in range(max(0, int(effects.total(actor, "attack_count")) - 1)):

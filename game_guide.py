@@ -22,8 +22,9 @@ SECTIONS = [
     ),
     (
         "easy-reading",
-        "Easy reading and read-aloud",
+        "Difficulty, Easy reading and read-aloud",
         [
+            "Choose Normal for the original balance or Easy for beginners. Easy enemies have 25% less health and their direct attacks deal 40% less damage. Starting items, rewards, story and encounter chances are unchanged. Status effects and hazards still hurt, and death still ends the character. Choose difficulty when creating a character or change it in Settings at a safe category/village menu. The choice travels with your save; older saves use Normal. Easy reading and Tablet mode change the controls independently of difficulty.",
             "The Easy reading switch in the top bar uses large clear text, spacious buttons, stronger contrast and a plain background while keeping your chosen region colours. A− and A+ adjust its separate 18–28 pixel text size. Turning the switch off restores the standard appearance; these settings stay in this browser.",
             "Easy reading and Tablet mode use buttons instead of typing. Choose a preset character name or village note, use quantity buttons when buying, and tap labelled answers for village, shop, combat and activity choices. Save slots use your character’s name automatically. Turn both modes off to use custom typed names, notes or search text in the standard interface. The game waits for your choice; the presentation mode does not change difficulty, costs or rules.",
             "Read latest aloud speaks only on request. Select text first to read that passage, or press it without a selection to hear the latest output and question. Stop reading stops speech; new output also stops the old passage. Narration language, browser voices and reading speed are in Customise. Choose Hindi or press हिंदी में सुनें for Hindi narration. Install a Hindi voice first. Supported browsers translate automatically; otherwise translate the page to Hindi using the browser and select the translated passage. Hindi setup help explains both steps. A Hindi voice alone does not translate English. Device/browser support and installed voices vary.",

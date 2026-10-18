@@ -33,7 +33,7 @@ Inventory offers sorting by name, attack/power, defence, element or sell value, 
 
 ## Season Two and Season Three
 
-Unlock all main regions and defeat The Dreaming God in The Dreamscape to complete Chapter 1. The Creator is optional. Chapter 2 opens expanded services in the four existing hidden elemental villages: finite-stock shops, keepers, training, exclusive libraries, side quests and mana-powered elemental arts. Discovery remains rare; discovered villages can be revisited through Structures. See PLANNED_CHAPTER_2.md and SEASON_THREE_PLAN.md.
+Unlock all main regions and defeat The Dreaming God in The Dreamscape to complete Chapter 1. The Creator is optional. Chapter 2 opens expanded services in the four existing hidden elemental villages: finite-stock shops, keepers, training, exclusive libraries, side quests and mana-powered elemental arts. Discovery remains rare; discovered villages can be revisited through Structures. See SEASON_TWO_GUIDE.md and SEASON_THREE_GUIDE.md.
 
 ## Earlier browser edition
 
@@ -85,11 +85,11 @@ Find the directory under Explore or in the sidebar. Village records, bookmarks, 
 
 ## Story and character progression
 
-The opening scene, early monster evidence, village conversations and sidebar objective begin Chapter One immediately. Story & Lore opens the journal. Chapter One stays focused on the Dreamscape invasion; Source sabotage is introduced after the Dreaming God's defeat. Season Two includes four keeper testimonies, a confrontation at the Broken Bridge and a repair ending using the clans’ harmonic knowledge while the cores stay guarded in their villages. See PLANNED_CHAPTER_2.md.
+The opening scene, early monster evidence, village conversations and sidebar objective begin Chapter One immediately. Story & Lore opens the journal. Chapter One stays focused on the Dreamscape invasion; Source sabotage is introduced after the Dreaming God's defeat. Season Two includes four keeper testimonies, a confrontation at the Broken Bridge and a repair ending using the clans’ harmonic knowledge while the cores stay guarded in their villages. See SEASON_TWO_GUIDE.md.
 
 New characters start from 55 HP, 5 attack and 1 defence, with half-sized class starting bonuses and a Rusty Sword. A new Warrior has 70 HP, 7 base attack and 2 defence. Early Ranger and Necromancer damage skills scale with level. Existing saved character stats are preserved.
 
-Five expandable features are active: the story journal, keeper conversations, crafting professions, recorded rumours and postgame Source anomalies. Their implemented follow-ups are described in EXPANDABLE_FEATURES_PLAN.md. Profession ranks come from successful paid/resource-consuming actions, cap at five, and add small forge/loom/tower bonuses or ingredient-preservation chances. Rumours do not automatically discover locations. Anomalies are available every ten postgame wanders; a collected fragment can restore up to 15 HP and 5 mana through the journal.
+Five expandable features are active: the story journal, keeper conversations, crafting professions, recorded rumours and postgame Source anomalies. Their implemented follow-ups are described in FEATURE_GUIDE.md. Profession ranks come from successful paid/resource-consuming actions, cap at five, and add small forge/loom/tower bonuses or ingredient-preservation chances. Rumours do not automatically discover locations. Anomalies are available every ten postgame wanders; a collected fragment can restore up to 15 HP and 5 mana through the journal.
 
 The full history is recorded in STORY_CANON.md: the Riftlands once separated the realms; the Dreamscape King corrupted the Sacred Temple's core energy; the elemental civilisations fought until four remained; their warriors sacrificed themselves to stabilise the power and banish him. The current reopening begins Chapter One. Its underlying cause is reserved for the overarching-antagonist reveal in Season Three. The Dreaming God is the existing boss name for the corrupted Dreamscape King.
 
@@ -107,7 +107,7 @@ All 132 distinct normal rune types can be fused in unordered pairs, including tw
 
 Dictionary → Fusions includes a two-rune ability preview. The original combat loop now uses the complete effect registry through original_magic.py, including periodic effects, stat changes, shields, reflection, lifesteal, control effects and expiry. Rage/Berserk gives +50% attack and -30% defence for three turns. Loose runes remain single-use; weapon-bound runes remain permanent.
 
-ADDON_IDEAS_100.md lists the 100 addon designs now accessible through Adventures. IMPLEMENTATION_CHECKLIST.md records their implementation and checks.
+ADDON_CATALOG_100.md lists the 100 addon designs now accessible through Adventures. IMPLEMENTATION_CHECKLIST.md records their implementation and checks.
 
 
 ## Village arrivals and development
@@ -128,7 +128,7 @@ Every region contains ancient civilisation ruins. Searches have a 35% broken-cor
 
 The Riftlands Source Temple sells portable Core Stabilisers for 300 souls and uses core energy to imbue a weapon or staff. A portable stabiliser is consumed. Old physical cores are consumed if used; a clan attunement channels energy while leaving the clan's core at home. Permanent bound runes survive imbuing.
 
-The separate [100-addon catalogue](ADDON_IDEAS_100.md) is now accessible through World & Social → Adventures, projects & research. These activities are separate from the earlier 100 construction projects. [Implementation checklist](IMPLEMENTATION_CHECKLIST.md) records the code and validation coverage.
+The separate [100-addon catalogue](ADDON_CATALOG_100.md) is now accessible through World & Social → Adventures, projects & research. These activities are separate from the earlier 100 construction projects. [Implementation checklist](IMPLEMENTATION_CHECKLIST.md) records the code and validation coverage.
 
 ## Companion care and the complete field guide
 
@@ -220,3 +220,11 @@ The packaged download is `releases/Soules-V25.2.zip`, extracting into `V25.2/`. 
 English and Hindi voice preferences are saved separately. Stop reading, new output or a language change cancels pending narration, including delayed translation. The written game, original answers and save format remain unchanged. `/api/version` reports the running release; the launcher asks you to close a different/older running version before reopening it.
 
 Tablet mode and Easy reading use button answers, quantity steppers and preset names/notes without a keyboard. Save labels are automatic in these modes. Standard desktop mode retains free text input and custom names/notes.
+
+### V25.3 · Easy and Normal difficulty
+
+Choose Normal (the existing balance) or Easy when creating a character. Easy enemies have 25% less health and their direct strikes deal 40% less damage, including bosses and tactical/raid enemies. Rewards, starting supplies, encounter chances and the story stay the same; status damage and hazards remain dangerous, and death still ends the character. The choice travels in exports and save slots; existing saves without it stay Normal. Settings allows a change only at category/village menus outside combat and purchases. Easy reading and Tablet mode remain independent.
+
+Build `releases/Soules-V25.3.zip` with `python build_release.py`; the extracted folder is `V25.3`.
+
+The idea backlog is now [IDEAS.md](IDEAS.md), containing only unresolved work. Implemented addon and campaign documents have been renamed as catalogues/guides so they no longer appear to be pending features. Small changes use minor versions such as V25.3; major version numbers are reserved for major updates.
