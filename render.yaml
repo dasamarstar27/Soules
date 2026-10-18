@@ -1,0 +1,18 @@
+# One server process owns the isolated game sessions; do not increase workers.
+services:
+  - type: web
+    name: soules
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-hosted.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120 app:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SOULES_HOSTED
+        value: "1"
+      - key: SOULES_MAX_SESSIONS
+        value: "4"

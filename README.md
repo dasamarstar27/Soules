@@ -1,4 +1,11 @@
-# Soules V25.2 — Echoes of the World Tree
+# Soules V25.4 — Echoes of the World Tree
+
+**Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
+
+[![Deploy Soules to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/dasamarstar27/Soules)
+
+The button configures hosting; it is not a live game address. Render assigns the playable HTTPS link after you sign in and deploy. Tablet mode supplies button controls; the ZIP alone cannot execute Python on an iPad.
+
 
 A playable, single-player browser edition of the uploaded SoulCrypt/Soules RPG. Monsters used to be rarer and peaceful; the Dreamscape boss is now sending hostile monsters to take over the world. Free the original fifteen regions and defeat The Dreaming God in The Dreamscape to finish Chapter 1. Season Two begins afterward with the Core Stabiliser sabotage. The Creator is not required to beat the original game.
 
@@ -228,3 +235,7 @@ Choose Normal (the existing balance) or Easy when creating a character. Easy ene
 Build `releases/Soules-V25.3.zip` with `python build_release.py`; the extracted folder is `V25.3`.
 
 The idea backlog is now [IDEAS.md](IDEAS.md), containing only unresolved work. Implemented addon and campaign documents have been renamed as catalogues/guides so they no longer appear to be pending features. Small changes use minor versions such as V25.3; major version numbers are reserved for major updates.
+
+### V25.4 · Tablet hosting setup
+
+`render.yaml` prepares a single-process, threaded Gunicorn service with an automatically generated session secret, secure cookies and four active browser sessions. Hosted dependencies are separate in `requirements-hosted.txt`, so the Windows launcher does not install Gunicorn. The `/health` readiness route is used by the host. This is deployment configuration and tested local hosting, not a claim of an already-deployed public site. The free deployment needs Internet, can sleep/restart and uses ephemeral local disk; portable browser saves and export/import remain the way to keep character progress. See `TABLET PLAY.txt` for the one-time owner setup and simple steps for Nanu.

@@ -13,8 +13,12 @@ from release_version import LABEL, VERSION
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET") or secrets.token_hex(32)
 app.config.update(
-    MAX_CONTENT_LENGTH=2 * 1024 * 1024, SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax"
+    MAX_CONTENT_LENGTH=2 * 1024 * 1024,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("SOULES_HOSTED") == "1",
 )
+ORIGINAL_SESSION_LIMIT = max(1, int(os.environ.get("SOULES_MAX_SESSIONS", "32")))
 # Browser sessions are isolated. Export JSON for durable saves across server restarts.
 games = {}
 lock = threading.RLock()
@@ -218,7 +222,7 @@ def original_start():
                 del original.SESSIONS[key]
         if sid in original.SESSIONS:
             original.SESSIONS.pop(sid).close()
-        if len(original.SESSIONS) >= 32:
+        if len(original.SESSIONS) >= ORIGINAL_SESSION_LIMIT:
             return jsonify(error="The game server is busy. Please try again later."), 503
         process = original.OriginalSession(
             dict(name=name[:24], cls=cls, save=saved, difficulty=difficulty)

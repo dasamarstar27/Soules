@@ -1,0 +1,48 @@
+SOULES ON NANU'S TABLET — NO LAPTOP NEEDED WHILE PLAYING
+
+A ZIP download cannot run the Python game directly on an iPad.
+Tablet mode gives touch controls; an online game link supplies the game server.
+The online host runs the game while your own computers are switched off.
+
+ONE-TIME SETUP BY YOU (not Nanu)
+
+1. Open this deployment button:
+   https://render.com/deploy?repo=https://github.com/dasamarstar27/Soules
+2. Sign in to Render, connect GitHub if asked, and approve this repository.
+3. Review the Soules service. The blueprint selects the Free plan.
+   Confirm the plan offered by Render before creating the service.
+4. Choose Deploy / Create and wait for the service to become Live.
+5. Render gives the service an HTTPS website address. Open that address,
+   check that Play starts an adventure, then send that address to Nanu.
+
+The deployment button is NOT the game link. The actual playable address is
+assigned by Render after deployment; do not guess an address from the name.
+This repository has hosting configuration, but it does not deploy itself.
+GitHub stores the code/downloads; this Python edition does not run on GitHub Pages.
+You can do this setup in a tablet browser too.
+
+FOR NANU
+
+1. Open the game address in Safari (iPad) or Chrome (Android).
+2. Turn on Tablet mode or Easy reading. Both use buttons instead of typing.
+3. Press Play, choose a name, select Easy difficulty, then Begin adventure.
+4. Optional: in Safari choose Share -> Add to Home Screen. On Android use
+   the browser menu's Add to Home screen option. This shortcut opens the
+   online game; an Internet connection is still required.
+
+SAVES AND WAITING
+
+Use the same browser and game address to keep your save slots. Each device
+has its own browser saves. Save at a category menu and Export save regularly.
+Use Import save to bring an existing laptop character onto the tablet.
+This does not add cloud accounts or automatic save synchronisation.
+
+A free host may sleep when unused, so the first opening can take a while.
+Keep the page open while it wakes. If a server restart interrupts an adventure,
+press Play / Continue to resume the last safe browser checkpoint; unsaved
+battle progress may be lost. The host also stores shared guild/trade data on
+its local filesystem, which is temporary on this free deployment.
+The starter configuration allows four active browser sessions at once.
+
+Hindi read-aloud needs an installed Hindi voice and browser translation support;
+Hindi setup help in Settings explains the device-specific steps.

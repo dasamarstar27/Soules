@@ -1,6 +1,6 @@
-PLAY SOULES V25.3
+PLAY SOULES V25.4
 
-This download lives in a folder named V25.3. Keep the entire folder together.
+This download lives in a folder named V25.4. Keep the entire folder together.
 Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
@@ -14,8 +14,9 @@ Close any older Soules server window before starting this version.
    On the first launch, Internet access is needed to install the game's libraries.
 5. Choose Play / Continue. Tutorial is on the main menu.
 
-This download runs on a computer, not directly on a phone. A phone needs a hosted
-version of the game; this ZIP is not a website or a public hosting service.
+FOR TABLETS WITHOUT A LAPTOP: see "TABLET PLAY.txt". The game must be deployed
+to an online host once; Nanu can then play by opening its link, with your laptop
+switched off. The ZIP itself is a computer download, not an iPad application.
 
 Use Save slots for multiple characters and Export save for portable backups.
 The game stores progress in your browser, so keep the same browser and export a
