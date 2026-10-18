@@ -53,6 +53,9 @@ def opening(player):
     print(
         "The four clans keep their surviving cores at home; the Riftlands temple holds only the stabiliser. For generations the clans hid behind their wards. Now the rift has opened again. The Dreamscape has fallen back into the world, and the corrupted king's monsters are overrunning the roads."
     )
+    from clan_defence import quest
+    quest(player)
+    print("MAIN QUEST: Protect Whispering Woods. Speak to Elian in Old Village; any discovered clans can send volunteers.")
     print("Seek shelter in a village. Someone there may know how to help you face this invasion.")
     print(
         "You awaken in Whispering Woods with a Rusty Sword. Survive, find shelter, free the regions and confront the Dreamscape King—known in the old game as The Dreaming God."
@@ -94,7 +97,10 @@ def objective(player):
     if player.get("chapter", 1) < 2:
         if not any(c["id"] == "first_victory" for c in s["clues"]):
             return "Survive your first encounter; find shelter and ask villagers about the monster invasion."
-        return "Free the main regions from the invading monsters, unlock the road to the Dreamscape and defeat the Dreaming God."
+        from clan_defence import quest
+        defence=quest(player)
+        task=(" Elian also needs help protecting Whispering Woods: "+str(defence["waves"])+"/3 invasion waves repelled.") if not defence["complete"] else ""
+        return "Free the main regions from the invading monsters, unlock the road to the Dreamscape and defeat the Dreaming God."+task
     if len(s["witnesses"]) < 4:
         return f'Investigate the sabotage: speak to all four elemental keepers about the Source ({len(s["witnesses"])}/4).'
     return (
@@ -257,11 +263,15 @@ def journal(game):
             print(
                 f"7. Side quest board · 8. Begin Season Two ({min(20,interlude_progress(p))}/20 side quests)"
             )
+        print("9. Protect Whispering Woods / clan volunteers")
         print("0. Back")
         c = input("Journal > ").strip()
         if c == "0":
             return
-        if c == "8":
+        if c == "9":
+            from clan_defence import menu
+            menu(game)
+        elif c == "8":
             begin_season_two(game)
         elif c == "7":
             game.quest_board(p["region"])
@@ -525,7 +535,7 @@ def mentor_talk(game, village):
         print(f'Elian is waiting in {home["name"]}, {home["region"]}.')
         return
     print(
-        "\n--- ELIAN · YOUR MENTOR ---\n1. Ask about his grandmother\n2. Ask for advice\n3. Discuss the next season\n0. Back"
+        "\n--- ELIAN · YOUR MENTOR ---\n1. Ask about his grandmother\n2. Ask for advice\n3. Discuss the next season\n4. Protect Whispering Woods / clan volunteers\n0. Back"
     )
     c = input("Mentor > ").strip()
     if c == "1":
@@ -541,6 +551,9 @@ def mentor_talk(game, village):
         print(
             'Elian: "Keep food for the road. Learn which villages have good workshops. Free each region and stop the king. Courage is useful; preparation keeps you alive."'
         )
+    elif c == "4":
+        from clan_defence import menu
+        menu(game)
     elif c == "3":
         if p.get("chapter", 1) >= 2:
             print(

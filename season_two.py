@@ -4,10 +4,38 @@ from copy import deepcopy
 import data
 
 PROFILES = {
-    "fire": ("Ignar", "Keeper Asha", "Ember Touch", "Hearth Mend", "Ember Bread", "burn"),
-    "ice": ("Glacien", "Archivist Neris", "Frost Touch", "Snow Mend", "Frost Berry Jam", "freeze"),
-    "storm": ("Voltis", "Stormkeeper Ren", "Spark Touch", "Cloud Mend", "Stormfruit", "shock"),
-    "nature": ("Sylvar", "Gardener Lio", "Vine Touch", "Bloom Mend", "Forest Berries", "poison"),
+    "fire": (
+        "Ignar",
+        "Keeper Asha",
+        "Ember Touch",
+        "Hearth Mend",
+        "Ember Bread",
+        "burn",
+    ),
+    "ice": (
+        "Glacien",
+        "Archivist Neris",
+        "Frost Touch",
+        "Snow Mend",
+        "Frost Berry Jam",
+        "freeze",
+    ),
+    "storm": (
+        "Voltis",
+        "Stormkeeper Ren",
+        "Spark Touch",
+        "Cloud Mend",
+        "Stormfruit",
+        "shock",
+    ),
+    "nature": (
+        "Sylvar",
+        "Gardener Lio",
+        "Vine Touch",
+        "Bloom Mend",
+        "Forest Berries",
+        "poison",
+    ),
 }
 ARTS = {}
 GOODS = {}
@@ -17,7 +45,12 @@ for element, (clan, person, touch, mend, food, effect) in PROFILES.items():
     GOODS[element] = [
         (
             "weapons",
-            {"name": f"{clan} Guard Blade", "atk": 28, "element": element, "value": 450},
+            {
+                "name": f"{clan} Guard Blade",
+                "atk": 28,
+                "element": element,
+                "value": 450,
+            },
             450,
         ),
         (
@@ -25,7 +58,16 @@ for element, (clan, person, touch, mend, food, effect) in PROFILES.items():
             {"name": f"{clan} Woven Coat", "def": 16, "element": element, "value": 350},
             350,
         ),
-        ("staffs", {"name": f"{clan} Apprentice Staff", "power": 18, "value": 400}, 400),
+        (
+            "staffs",
+            {
+                "name": f"{clan} Apprentice Staff",
+                "power": 18,
+                "element": element,
+                "value": 400,
+            },
+            400,
+        ),
         (
             "inventory",
             next(
@@ -36,6 +78,31 @@ for element, (clan, person, touch, mend, food, effect) in PROFILES.items():
         ),
         ("potions", "Health Potion", 80),
     ]
+
+
+def goods_line(bag, item, price, remaining):
+    """Shared, predictable shop rows for both clan tiers."""
+    name = item["name"] if isinstance(item, dict) else item
+    stats = []
+    if isinstance(item, dict):
+        for key, label in (
+            ("atk", "ATK"),
+            ("def", "DEF"),
+            ("power", "Power"),
+            ("hunger", "Hunger"),
+            ("heal", "HP"),
+        ):
+            if key in item:
+                stats.append(f"{label} +{item[key]}")
+        if item.get("element"):
+            stats.append("Element: " + item["element"].title())
+    elif bag == "potions":
+        stats.append("HP +50" if item == "Health Potion" else "See potion description")
+    return (
+        name
+        + (" | " + " | ".join(stats) if stats else "")
+        + f" | Price: {price} souls | Stock: {remaining}"
+    )
 
 
 def available(player):
@@ -49,7 +116,9 @@ def village_services(game, village):
             "The elders will open their halls after Chapter 1: unlock every region and defeat the Dreaming God in the Dreamscape."
         )
         return
-    game._FOOD_BY_NAME.update({goods[3][1]["name"]: goods[3][1] for goods in GOODS.values()})
+    game._FOOD_BY_NAME.update(
+        {goods[3][1]["name"]: goods[3][1] for goods in GOODS.values()}
+    )
     element = village["element"]
     clan, person, touch, mend, food, effect = PROFILES[element]
     while available(p):
@@ -70,7 +139,11 @@ def village_services(game, village):
                 if choice.lower() in ("n", "note"):
                     bookmark(p, ui.village, note=input("Village note > ").strip())
                 elif choice.lower() in ("t", "tags"):
-                    bookmark(p, ui.village, tags=input("Tags, separated by commas > ").strip())
+                    bookmark(
+                        p,
+                        ui.village,
+                        tags=input("Tags, separated by commas > ").strip(),
+                    )
                 else:
                     bookmark(p, ui.village)
                 print("Village bookmark updated.")
@@ -78,10 +151,13 @@ def village_services(game, village):
         if choice == "6":
             return
         if choice == "1":
-            stock = p.setdefault("elemental_shop_stock", {}).setdefault(element, [1, 1, 1, 3, 3])
-            for i, (_, item, price) in enumerate(GOODS[element], 1):
-                name = item["name"] if isinstance(item, dict) else item
-                print(f"{i}. {name} — {price} souls ({stock[i-1]} left)")
+            stock = p.setdefault("elemental_shop_stock", {}).setdefault(
+                element, [1, 1, 1, 3, 3]
+            )
+            print("\n--- ELEMENTAL SHOP · " + clan.upper() + " ---")
+            for i, (bag, item, price) in enumerate(GOODS[element], 1):
+                print(f"{i}. " + goods_line(bag, item, price, stock[i - 1]))
+            print("0. Back to village")
             try:
                 index = int(input("Buy number (0 cancel) > ")) - 1
                 if not available(p):
@@ -102,7 +178,9 @@ def village_services(game, village):
             p.setdefault(key, []).append(deepcopy(item))
             print("Purchased. Supplies are finite.")
         elif choice == "2":
-            print(f"{person}: Our element is a practice, not a possession. Spend mana with care.")
+            print(
+                f"{person}: Our element is a practice, not a possession. Spend mana with care."
+            )
             print(f"I can teach {touch} for 75 souls. Enter 1 to learn, 0 to leave.")
             if input("Training > ").strip() == "1" and available(p):
                 known = p.setdefault("elemental_arts", [])
@@ -142,7 +220,9 @@ def village_services(game, village):
             ingredient = data.REGION_INGREDIENTS.get(p["region"], ["Moonleaf"])[0]
             if isinstance(ingredient, dict):
                 ingredient = ingredient["name"]
-            print(f"{person}: Bring me 3 {ingredient}. Reward: 200 souls and one {food}.")
+            print(
+                f"{person}: Bring me 3 {ingredient}. Reward: 200 souls and one {food}."
+            )
             quests[element] = "accepted"
             if input("Hand in? (y/n) > ").strip().lower() == "y" and available(p):
                 bag = p.setdefault("ingredients", [])
@@ -170,7 +250,9 @@ def village_services(game, village):
         elif choice == "5":
             game.view_crafting_hub()
         elif choice == "7":
-            game.visit_village(dict(name=village["name"], elemental=True), p["region"])
+            game.visit_village(
+                dict(name=village["name"], elemental=True, same_visit=True), p["region"]
+            )
 
 
 def use_art(player, enemy):

@@ -75,6 +75,7 @@ def initial_player(config):
         cloths=[],
         leathers=[],
         ingredients=[],
+        charged_cores=[],
         skill_tree={k: {} for k in SKILL_TREES},
         boss_rush_stats={
             "total_runs": 0,
@@ -150,6 +151,7 @@ def structure_wrappers():
         "view_crafting_hub": "village",
         "_ingredient_brew_menu": "alchemy",
         "forge_weapon": "forge",
+        "crimson_forge": "forge",
         "craft_armor": "loom",
         "craft_staff": "tower",
         "visit_elemental_village": "elemental",
@@ -171,6 +173,9 @@ def structure_wrappers():
 
                 ui.village = profile(game.player["region"], name, elemental=True)
             ui.location = dict(name=name, kind=kind)
+            clan = ELEMENTAL_VILLAGES.get(game.player["region"], {})
+            if clan and ui.village and ui.village.get("elemental"):
+                ui.location["element"] = clan["element"]
             try:
                 return function(*args, **kwargs)
             finally:

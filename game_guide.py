@@ -17,7 +17,7 @@ SECTIONS = [
             "The main text menu has seven categories. Choose 1 for Explore or 2 for Inventory & Equip. A category opens its own numbered secondary menu; its numbers are local, so always read the current list. Tabs open the same categories.",
             "The highlighted question belongs to the story panel, directly below the journal. Type your response in the answer box and press Enter, or use a numbered button. Some original submenus start counting at 0; follow their displayed numbers rather than assuming 0 always means Back.",
             "Back to category safely leaves most submenus. During a fight you must use the combat Run option; Back cannot escape an enemy. Escape returns toward the category menu when allowed. / focuses the answer box, and up/down arrows browse your command history.",
-            "Attacks, village menus and other options follow automatically when you are already near the bottom. Only very long blocks keep your reading position. Scrolling up to read earlier entries pauses automatic following. Latest jumps to the newest text when you choose; Recall last fills the previous command without sending it. Copy journal copies the visible history, and Clear journal clears its display. Compact sidebar reduces the status panel.",
+            "Attacks, village menus and other options follow automatically when you are already near the bottom. Only very long blocks keep your reading position. Scrolling up to read earlier entries pauses automatic following. Latest jumps to the newest text when you choose; Recall last fills the previous command without sending it. Copy journal copies the visible history, and Clear journal clears its display. Compact sidebar reduces the status panel. The sidebar itself never follows updates automatically: use its manual scrollbar to read any part.",
         ],
     ),
     (
@@ -68,6 +68,18 @@ SECTIONS = [
             "Fuse exactly two normal runes. All 8,778 unordered pairs of the 132 normal types are supported, including two of the same type when you own two copies. A fusion cannot be used as an ingredient for another fusion in this edition.",
             "A fusion keeps its component effects and gains a pair synergy. Dictionary → Fusions lets you choose two types and preview their abilities before spending them. Named recipes may add additional compatible effects. Pair synergies use shared mechanical families rather than 8,778 separately hand-written combat systems.",
             "Rage and Berserk, for example, increase attack and reduce defence for their listed turns. Effects expire; they do not permanently add their temporary bonuses to your base statistics.",
+        ],
+    ),
+    (
+        "clan-defence-and-forges",
+        "Clan visits, Woods defence and elemental forging",
+        [
+            "Discovered elemental clans remain in Explore → Structures. Their automatic background matches fire, ice, storm or nature; fixed and custom colours remain your choice. History, shops and services return to the clan menu. Choose 4 to leave. Option 3 opens the traveller shop in Season One and the larger halls in Season Two; prices, stock and item stats are shown together.",
+            "Elian's fourth conversation choice, Story journal 9 or clan option 8 opens Protect Whispering Woods. Prepare 2 Timber and 1 Stone in Whispering Woods, repel three attacks, then report to Elian in Old Village. Discovered clans may send volunteers to defend, gather, treat or repair; finding rare clans is optional. Clan option 7 opens settlement raid defence and worker assignments. Clan cores and keepers stay home.",
+            "Ironpeak Mountains Quarry is home to Bromm's dwarven bulk-metal shop. Buy a positive quantity within its finite stock. Eight metal types are available initially, fourteen at level 10 and twenty at level 20 or in Season Two. Stocks refresh every 20 wanders.",
+            "Village option 25 opens regional specialist traders: herbs and woods in Whispering Woods, cloth in Tundra, runes in Crystal Spire, food on Sunken Coast, hides in Infernal Depths and weapon cores in Riftlands. These are different people; only the Ironpeak quarry traders are dwarves. Riftlands shipments have eight of every ordinary core and a 25% chance of one rare charged core. Opening a menu or loading a save never rerolls it.",
+            "Crafting hub C, specialist shop C or Crimson Forge option 5 sacrifices one loose normal rune into one ordinary weapon core. The charging menu lists compatibility limits and only offers compatible carried runes. Hot cores reject water/tide and ice families; Glacier and Ocean reject hot runes; dark cores reject light families and Celestial rejects dark families. Nature rejects death, necrotic and inferno; Blight rejects life and harmony. Phoenix cannot accept Water. Other normal elements remain allowed; normal rune fusion recipes keep their existing rules.",
+            "Enter Crimson Forge through Travel → F or discovered Structures in Crimson Depths. Win its three infestation fights, with time to rest between them. Only its reclaimed hearth can spend a charged core plus one metal and one wood on a named elemental weapon. Each hit activates its permanent native core ability and the sacrificed rune ability. Ordinary village core forging stays physical; protected clan cores and broken-core relics cannot be spent. Charged cores appear in Inventory and forge weapons are protected from automatic duplicate sales and salvage.",
         ],
     ),
     (
@@ -170,7 +182,7 @@ SECTIONS = [
         "appearance",
         "Dictionary, colours, accessibility and devices",
         [
-            "The title menu contains Dictionary, Tutorial, Customise and Saves. Play / Continue opens your adventure. Dictionary explains normal runes, fusion previews, effects, regional ingredients and all potion recipes without consuming anything.",
+            "The title menu contains Dictionary, Tutorial, Customise and Saves. Play / Continue opens your adventure. Dictionary explains normal runes, fusion previews, effects, regional ingredients and potion recipes. Wandering, Weather, World events and Loot tabs show encounter probabilities and the things that can happen; wandering estimates reflect your current discoveries.",
             "Automatic scenery changes colour by region and structure. Customise can fix a theme or set your own background and accent colours. A− and A+ change text size; Compact sidebar changes the status layout. The visible story question also describes the answer box for screen readers.",
             "On Windows extract the download and open Play Soules.bat with Python installed. Keep its server window open while playing in your browser. An iPad needs an accessible hosted server; the GitHub repository itself is source code, not a public play server.",
         ],
@@ -225,7 +237,7 @@ SECTIONS.extend(
 # Keys are original action identifiers; the browser derives local menu numbers.
 ACTION_HELP = {
     1: "Advance a wander: encounters, discoveries, resources, weather and hunger.",
-    2: "Move to an unlocked region; the Crimson Forge shortcut enters its smith village.",
+    2: "Move to an unlocked region; the Crimson Forge shortcut enters its monster-held elemental hearth.",
     3: "Choose blacksmith, scroll, rune binding, two-rune fusion, spell or weapon fusion.",
     4: "Select a carried weapon to equip.",
     5: "Select carried armour to equip.",
@@ -237,7 +249,7 @@ ACTION_HELP = {
     11: "Sell selected inventory categories; read bulk-sale choices carefully.",
     12: "Choose an available spell and follow its requirements.",
     13: "View regional progression and unlocked locations.",
-    14: "Open Crimson forge crafting, subject to location and service requirements.",
+    14: "Clear three Crimson Forge chambers, charge a compatible core with a loose rune, then craft elemental weapons.",
     15: "Infuse eligible equipment at the Riftlands Source Temple.",
     16: "Visit the Source Temple while in Riftlands: stabilisers, infusion and story.",
     17: "Visit a discovered structure in the current region.",

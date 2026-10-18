@@ -1205,6 +1205,12 @@ def use_staff(enemy):
 
 
 def crimson_forge():
+    import sys
+    from regional_forges import forge_menu
+    forge_menu(sys.modules[__name__])
+
+
+def _reinforce_crimson_gear():
     if player["region"] != "Crimson Depths":
         print("🔥 You must travel to Crimson Forge.")
         return
@@ -2543,6 +2549,7 @@ def regenerate_from_full_hunger():
 
 
 def explore():
+    from wander_reference import WEATHER_RESELECT, STRUCTURE, INGREDIENT, ELEMENTAL_VILLAGE, BOUNTY, SPECIAL_EVENT, NIGHT_ELITE
     r = player["region"]
 
     # ── Day / Night cycle (every 7 wanders = night for 3 wanders) ──
@@ -2559,7 +2566,7 @@ def explore():
 
     # ── Weather update (20% chance to change each explore) ──
     weather_keys = list(WEATHER_EFFECTS.keys())
-    if random.random() < 0.20:
+    if random.random() < WEATHER_RESELECT:
         player["weather"] = random.choice(weather_keys)
     wx = player.get("weather", "Clear")
     wx_data = WEATHER_EFFECTS[wx]
@@ -2619,7 +2626,7 @@ def explore():
     region_structs = REGION_STRUCTURES.get(r, [])
     found_names = player.setdefault("discovered_structures", {}).get(r, [])
     undiscovered = [s for s in region_structs if s["name"] not in found_names]
-    if undiscovered and random.random() < 0.12:
+    if undiscovered and random.random() < STRUCTURE:
         struct = random.choice(undiscovered)
         player["discovered_structures"].setdefault(r, []).append(struct["name"])
         print(f"\n🗺 You've discovered a new location: {struct['icon']} {struct['name']}!")
@@ -2629,13 +2636,13 @@ def explore():
 
     # ── Ingredient discovery (8% chance per wander) ──
     region_ings = REGION_INGREDIENTS.get(r, [])
-    if region_ings and random.random() < 0.08:
+    if region_ings and random.random() < INGREDIENT:
         found_ing = random.choice(region_ings)
         player.setdefault("ingredients", []).append(found_ing)
         print(f"\n🌿 You spot a rare ingredient: [{found_ing}]! Added to your pouch.")
 
     # ── Elemental village discovery (1% chance in the 4 elemental regions) ──
-    if r in ELEMENTAL_VILLAGES and random.random() < 0.01:
+    if r in ELEMENTAL_VILLAGES and random.random() < ELEMENTAL_VILLAGE:
         village = ELEMENTAL_VILLAGES[r]
         print(f"\n✨ You notice something hidden between the shadows...")
         print(f"  A faint {village['icon']} glow pulses ahead — a secret place awaits!")
@@ -2645,7 +2652,7 @@ def explore():
     # ── Bounty encounter (2% chance — named rare enemy) ──
     bounty = BOUNTY_MONSTERS.get(r)
     if bounty and bounty["name"] not in player.get("bounties_claimed", []):
-        if random.random() < 0.02:
+        if random.random() < BOUNTY:
             print(f"\n☠ BOUNTY TARGET SPOTTED: {bounty['name']}!")
             print("  This creature has a price on its head.")
             fight(bounty.copy())
@@ -2657,12 +2664,11 @@ def explore():
             return
 
     # ── Random wander events (8% chance) ──
-    if random.random() < 0.08:
+    if random.random() < SPECIAL_EVENT:
         weights = [e["weight"] for e in WANDER_EVENTS]
         total = sum(weights)
         rnd = random.uniform(0, total)
         cumulative = 0
-        night_mod = 1.15 if night else 1  # night events are 15% more likely
         chosen_event = WANDER_EVENTS[0]
         for ev in WANDER_EVENTS:
             cumulative += ev["weight"]
@@ -2706,7 +2712,7 @@ def explore():
     if night:
         enemy["hp"] = int(enemy["hp"] * 1.15)
         enemy["atk"] = int(enemy["atk"] * 1.15)
-        if random.random() < 0.05:
+        if random.random() < NIGHT_ELITE:
             enemy = make_elite(enemy)
             print(f"\n★ AN ELITE MONSTER APPEARS! {enemy['name']} — beware!")
         if r in _DARK_REGIONS:
@@ -2756,7 +2762,7 @@ def travel():
     print("Travelled to " + region)
     advance_quest("reach_region", region)
     if choice == "f":
-        visit_village({"name": "Smiths' Quarter", "type": "village"}, region)
+        crimson_forge()
 
 
 # =========================
@@ -3797,6 +3803,8 @@ def visit_structures():
             visit_graveyard(struct, r)
         elif t == "camp":
             visit_camp(struct, r)
+        elif t == "crimsonforge":
+            crimson_forge()
         elif t in ("quarry", "lumberyard", "watchpost"):
             from world_sites import visit
             import sys
@@ -3936,36 +3944,51 @@ def visit_elemental_village():
     print(
         "Their core remains guarded here. Destroyed cores once left eleven civilisations powerless."
     )
-    print("1. Ask for the clan’s elemental blessing")
-    print("2. Test yourself against their guardian (the core stays here)")
-    print("3. buy special loot from the elemental village")
-    print("4. Leave quietly")
-    print("5. Hear the history of the fallen warriors")
-
-    c = input("> ").strip()
-
-    if c == "1":
-        _give_elemental_core(village["core"])
-
-    elif c == "2":
-        boss_key = village["boss_key"]
-        boss_data = ELEMENTAL_BOSSES[boss_key].copy()
-        print(f"\n{icon} {boss_data['name']} rises to defend the village!")
-        print(f'"{boss_data["taunt"]}"')
-        _fight_elemental_boss(boss_data)
-    elif c == "3":
-        import sys
-        from season_two import village_services
-
-        village_services(sys.modules[__name__], village)
-
-    elif c == "5":
-        from source_story import remember_warriors
-        from village_life import profile
-
-        remember_warriors(player, profile(region, village["name"], True))
-    elif c == "4":
-        print("You slip away unseen.")
+    from village_life import register_visit, profile
+    clan_profile=profile(region,village['name'],True)
+    register_visit(player,clan_profile,random)
+    while True:
+        print("\n1. Ask for the clan’s elemental blessing")
+        print("2. Test yourself against their guardian (the core stays here)")
+        print("3. Buy clan supplies / visit the expanded halls")
+        print("4. Leave quietly")
+        print("5. Hear the history of the fallen warriors")
+        print("6. Local services, crafting and restaurant")
+        print("7. Protect this clan from a raid / assign village defenders")
+        print("8. Protect Whispering Woods / assign clan volunteers")
+        c=input("Elemental village > ").strip()
+        if c in ('4','0'):
+            print("You leave the village. Its location remains in Structures.")
+            return
+        if c=='1':_give_elemental_core(village['core'])
+        elif c=='2':
+            boss_data=ELEMENTAL_BOSSES[village['boss_key']].copy()
+            print(f"\n{icon} {boss_data['name']} rises for your trial!")
+            print(f'"{boss_data["taunt"]}"')
+            _fight_elemental_boss(boss_data)
+        elif c=='3':
+            import sys
+            from season_two import available, village_services
+            if available(player):village_services(sys.modules[__name__],village)
+            else:
+                from clan_defence import basic_market
+                basic_market(sys.modules[__name__],village)
+        elif c=='5':
+            from source_story import remember_warriors
+            remember_warriors(player,clan_profile)
+        elif c=='6':
+            import sys
+            from village_life import visit
+            visit(sys.modules[__name__],dict(name=village['name'],elemental=True,same_visit=True),region)
+        elif c=='7':
+            import sys
+            from community_addons import defence
+            defence(sys.modules[__name__],clan_profile)
+        elif c=='8':
+            import sys
+            from clan_defence import menu
+            menu(sys.modules[__name__])
+        else:print("Choose a listed village option; 4 leaves.")
 
 
 def _give_elemental_core(core_name):
@@ -4247,6 +4270,10 @@ def _apply_charged_weapon_effect(enemy):
     """Called after a weapon attack — apply elemental on-hit if weapon is infused."""
     w = player.get("weapon")
     if not w or not w.get("elemental_charged"):
+        return
+    if w.get('forge_core_effect'):
+        apply_rune_effect({'name':w.get('elemental_core','Forged core'),'effect':w['forge_core_effect']},player,enemy)
+        if w.get('forge_core_rune'):apply_rune_effect(w['forge_core_rune'],player,enemy)
         return
     if w.get('paired_effects'):
         for effect in w['paired_effects'][1:]:

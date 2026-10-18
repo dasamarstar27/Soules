@@ -236,7 +236,7 @@ class VillageLifeTests(unittest.TestCase):
             game.travel()
         self.assertEqual(self.p["region"], "Whispering Woods")
         self.p["unlocked_regions"].add("Crimson Depths")
-        with patch.object(game, "visit_village") as visit:
+        with patch.object(game, "crimson_forge") as visit:
             self.inputs(["f"], game.travel)
             visit.assert_called_once()
         self.assertEqual(self.p["region"], "Crimson Depths")

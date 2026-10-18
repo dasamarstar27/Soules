@@ -405,7 +405,8 @@ def visit(game, struct, region):
     ui.village = v
     from source_story import meet_mentor
 
-    register_visit(game.player, v, game.random)
+    if not struct.get("same_visit"):
+        register_visit(game.player, v, game.random)
     meet_mentor(game.player, v)
     found = game.player.setdefault("discovered_structures", {}).setdefault(region, [])
     if v["name"] not in found:
@@ -427,7 +428,7 @@ def visit(game, struct, region):
             if info["note"]:
                 print("Your note: " + info["note"])
             print(
-                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor\n19. Material stock (metals / wood / building supplies)\n20. Community projects\n21. Village development history\n22. Village workers / commissions\n23. Community activities / addons\n24. Blend / fortify potions"
+                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor\n19. Material stock (metals / wood / building supplies)\n20. Community projects\n21. Village development history\n22. Village workers / commissions\n23. Community activities / addons\n24. Blend / fortify potions\n25. Regional specialist traders"
             )
             before_activity = (
                 game.player["gold"],
@@ -453,6 +454,10 @@ def visit(game, struct, region):
                 restaurant(game, v)
             elif c == "13":
                 restaurant(game, v, meal=True)
+            elif c == "25":
+                from regional_sellers import menu
+
+                menu(game)
             elif c == "24":
                 if has_service(game, "alchemy"):
                     from food_addons import mix_potions
@@ -729,11 +734,15 @@ def crafting_hub(game):
         ]
         if missing:
             print("Unavailable here: " + ", ".join(missing))
-        print("R. Rune library\n0. Back")
+        print("R. Rune library\nC. Sacrifice a rune to charge a weapon core\n0. Back")
         choice = input("Workstation > ").strip().lower()
         if choice == "0":
             return
-        if choice == "r":
+        if choice == "c":
+            from core_charging import menu
+
+            menu(game)
+        elif choice == "r":
             game.view_rune_library()
             continue
         try:
@@ -761,6 +770,8 @@ def salvage(game):
                 or item.get("rune")
                 or item.get("stored_runes")
                 or item.get("charged")
+                or item.get("elemental_charged")
+                or item.get("elemental_core")
                 or item["name"] in p.get("inventory_favourites", [])
             ):
                 continue
@@ -812,7 +823,9 @@ BUILDING_MATERIALS = ("Timber", "Stone", "Iron fittings")
 
 
 def gather_building_material(player, rng):
-    if rng.random() < 0.25:
+    from wander_reference import BUILDING_SUPPLY
+
+    if rng.random() < BUILDING_SUPPLY:
         name = rng.choice(BUILDING_MATERIALS)
         bag = player.setdefault("building_materials", {})
         bag[name] = bag.get(name, 0) + 1

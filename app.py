@@ -153,6 +153,8 @@ def original_catalog():
     ]
     from game_guide import GUIDE
     import data
+    from wander_reference import reference
+    content['exploration'] = reference()
     content['potions'] = [dict(recipe, ingredients=sorted(pair)) for pair, recipe in data.INGREDIENT_COMBOS.items()]
 
     return jsonify(groups=GROUPS, classes=classes, content=content, guide=GUIDE)

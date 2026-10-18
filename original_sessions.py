@@ -67,6 +67,7 @@ def validate_original_save(value):
         "inventory",
         "companions",
         "forge_cores",
+        "charged_cores",
         "elemental_cores",
         "ingredients",
         "potions",
@@ -98,6 +99,32 @@ def validate_original_save(value):
             for item in p.get(key, [])
         ):
             raise ValueError("Invalid equipment in save.")
+    import data
+    import effects
+
+    from core_charging import compatible
+
+    for core in p.get("charged_cores", []):
+        if (
+            not isinstance(core, dict)
+            or core.get("core_name") not in data.CORES
+            or core.get("charged") is not True
+            or not isinstance(core.get("name"), str)
+            or not isinstance(core.get("rune"), dict)
+            or not compatible(core.get("core_name"), core["rune"])
+        ):
+            raise ValueError("Invalid charged weapon core.")
+    for weapon in p.get("weapons", []):
+        if "forge_core_effect" in weapon and (
+            weapon.get("elemental_core") not in data.CORES
+            or weapon.get("elemental_charged") is not True
+            or not compatible(
+                weapon.get("elemental_core"), weapon.get("forge_core_rune")
+            )
+            or weapon["forge_core_effect"]
+            != data.CORES[weapon["elemental_core"]]["effect"]
+        ):
+            raise ValueError("Invalid permanent forge-core weapon.")
     if "beta_mode" in p and type(p["beta_mode"]) is not bool:
         raise ValueError("Invalid testing mode in save.")
     for companion in p.get("companions", []):

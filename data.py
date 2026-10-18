@@ -247,6 +247,7 @@ REGION_STRUCTURES = {'Whispering Woods': [{'name': 'Old Village', 'type': 'villa
                   {'name': 'Ashen Wastes Timber Yard', 'type': 'lumberyard', 'icon': '🪵'},
                   {'name': 'Ashen Wastes Watch Post', 'type': 'watchpost', 'icon': '🛡'}],
  'Crimson Depths': [{'name': "Smiths' Quarter", 'type': 'village', 'icon': '🏘'},
+                    {'name': 'Crimson Forge', 'type': 'crimsonforge', 'icon': '🔥'},
                     {'name': 'Forge Ruins', 'type': 'ruins', 'icon': '🗿'},
                     {'name': 'Magma Vault', 'type': 'dungeon', 'icon': '🏰'},
                     {'name': 'Forge Blacksmith', 'type': 'blacksmith', 'icon': '🔨'},

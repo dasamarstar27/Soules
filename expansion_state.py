@@ -139,6 +139,15 @@ def validate(value, system_record=True):
     ):
         if key in value and not isinstance(value[key], dict):
             raise ValueError("Invalid expansion system record: " + key)
+    forge = value.get("activities", {}).get("crimson_forge")
+    if forge is not None and (
+        not isinstance(forge, dict)
+        or type(forge.get("waves")) is not int
+        or not 0 <= forge["waves"] <= 3
+        or type(forge.get("cleared")) is not bool
+        or forge["cleared"] != (forge["waves"] == 3)
+    ):
+        raise ValueError("Invalid Crimson Forge progress.")
     if "daily" in value:
         from datetime import date
 
@@ -181,3 +190,23 @@ def validate(value, system_record=True):
             or not 1 <= blend["heal"] <= 120
         ):
             raise ValueError("Invalid potion blend.")
+
+    woods = value.get("activities", {}).get("woods_defence")
+    if woods is not None:
+        import data
+        from clan_defence import ROLES
+
+        if (
+            not isinstance(woods, dict)
+            or type(woods.get("prepared")) is not bool
+            or type(woods.get("complete")) is not bool
+            or type(woods.get("waves")) is not int
+            or not 0 <= woods["waves"] <= 3
+        ):
+            raise ValueError("Invalid Whispering Woods defence progress.")
+        assignments = woods.get("assignments")
+        if not isinstance(assignments, dict) or any(
+            region not in data.ELEMENTAL_VILLAGES or role not in ROLES
+            for region, role in assignments.items()
+        ):
+            raise ValueError("Invalid clan volunteer assignments.")

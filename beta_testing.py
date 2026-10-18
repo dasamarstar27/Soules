@@ -9,7 +9,9 @@ def grant_collectibles(player):
     def add(key, item):
         bag = player.setdefault(key, [])
         name = item.get("name") if isinstance(item, dict) else item
-        if not any((old.get("name") if isinstance(old, dict) else old) == name for old in bag):
+        if not any(
+            (old.get("name") if isinstance(old, dict) else old) == name for old in bag
+        ):
             bag.append(deepcopy(item))
 
     for key, catalog in [
@@ -51,6 +53,13 @@ def grant_collectibles(player):
         names = found.setdefault(region, [])
         if village["name"] not in names:
             names.append(village["name"])
+    from core_charging import make_charged, compatible
+
+    for i, core in enumerate(data.CORES):
+        add(
+            "charged_cores",
+            make_charged(core, next(r for r in data.RUNES if compatible(core, r)), player["region"]),
+        )
     player["beta_mode"] = True
     print(
         "DAMAR activated! One of every catalogued weapon, armour, staff, rune, metal, wood, core, cloth, leather, scroll, loot, food, ingredient and stock potion is now in your bags."

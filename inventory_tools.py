@@ -58,25 +58,39 @@ def sort_items(items, primary="name", secondary=None, kind="inventory"):
             return -sale_value(item, kind)
         return -item_stat(item, key)
 
-    keys = [primary] + ([secondary] if secondary and secondary != primary else []) + ["name"]
+    keys = (
+        [primary]
+        + ([secondary] if secondary and secondary != primary else [])
+        + ["name"]
+    )
     return sorted(items, key=lambda item: tuple(stat(item, key) for key in keys))
 
 
 def sell_duplicates(player, quiet=False):
     sold = 0
     gold = 0
-    for key, equipped_key in [("weapons", "weapon"), ("armours", "armour"), ("staffs", None)]:
+    for key, equipped_key in [
+        ("weapons", "weapon"),
+        ("armours", "armour"),
+        ("staffs", None),
+    ]:
         bag = player.get(key, [])
         equipped = player.get(equipped_key) if equipped_key else None
         seen = set()
         kept_indices = set()
-        ordered = sorted(enumerate(bag), key=lambda pair: (pair[1] is not equipped, pair[0]))
+        ordered = sorted(
+            enumerate(bag), key=lambda pair: (pair[1] is not equipped, pair[0])
+        )
         for index, item in ordered:
             signature = json.dumps(item, sort_keys=True, ensure_ascii=True)
             protected = (
                 item is equipped
                 or item.get("name") in player.get("inventory_favourites", [])
-                or bool(item.get("rune") or item.get("stored_runes") or item.get("elemental_core"))
+                or bool(
+                    item.get("rune")
+                    or item.get("stored_runes")
+                    or item.get("elemental_core")
+                )
             )
             if signature in seen and not protected:
                 gold += sale_value(item, key)
@@ -104,20 +118,34 @@ def inventory_menu(game):
             + " ====="
         )
         sections = [
-            ("Loot & food", "inventory", [x for x in p["inventory"] if "turns" not in x]),
+            (
+                "Loot & food",
+                "inventory",
+                [x for x in p["inventory"] if "turns" not in x],
+            ),
             ("Scrolls", "inventory", [x for x in p["inventory"] if "turns" in x]),
             ("Weapons", "weapons", p["weapons"]),
             ("Armour", "armours", p["armours"]),
             ("Staffs", "staffs", p["staffs"]),
             ("Runes", "runes", p["runes"]),
-            ("Ancient finds — protected for Season Three", "protected_relics",p.get("protected_relics",[])),
+            (
+                "Charged weapon cores — Crimson Forge only",
+                "charged_cores",
+                p.get("charged_cores", []),
+            ),
+            (
+                "Ancient finds — protected for Season Three",
+                "protected_relics",
+                p.get("protected_relics", []),
+            ),
         ]
         for title, kind, items in sections:
             query = p.get("inventory_search", "").lower()
             items = [
                 item
                 for item in items
-                if query in (json.dumps(item).lower() + " " + str(item_element(item)).lower())
+                if query
+                in (json.dumps(item).lower() + " " + str(item_element(item)).lower())
             ]
             print(f"\n--- {title} ({len(items)}) ---")
             if not items:
@@ -136,8 +164,20 @@ def inventory_menu(game):
                 defense = item_stat(item, "def")
                 print(
                     f"- {item['name']} ×{quantity}"
-                    + (" ★" if item["name"] in p.get("inventory_favourites", []) else "")
-                    + (f" | Element: {item_element(item)} | Protected · cannot sell / salvage" if kind=="protected_relics" else f" | ATK {attack} | DEF {defense} | Element: {item_element(item)} | Sell: {sale_value(item, kind)} souls")
+                    + (
+                        " ★"
+                        if item["name"] in p.get("inventory_favourites", [])
+                        else ""
+                    )
+                    + (
+                        f" | Element: {item_element(item)} | Protected · cannot sell / salvage"
+                        if kind == "protected_relics"
+                        else (
+                            f" | Rune: {item['rune']['name']} | Crimson Forge only"
+                            if kind == "charged_cores"
+                            else f" | ATK {attack} | DEF {defense} | Element: {item_element(item)} | Sell: {sale_value(item, kind)} souls"
+                        )
+                    )
                     + (" [EQUIPPED]" if equipped else "")
                 )
         print("\nSort: 1 Name · 2 Attack/power · 3 Defence · 4 Element · 5 Sell value")

@@ -22,3 +22,6 @@
 .rune-seal{width:55px;height:55px;display:block;color:var(--accent);margin-bottom:12px}.portrait[data-skin=dark_knight]{background:#202030;border-color:#9393bf}.portrait[data-skin=celestial_sage]{background:#2f2940;box-shadow:0 0 12px #bca4f0}.portrait[data-skin=void_walker]{background:#160f29;border-color:#955edb}.portrait[data-skin=shadow_assassin]{background:#24202d;border-color:#6b6079}.portrait[data-skin=legendary_hero]{background:#3b2d13;border-color:#e8c465}
 
 .weapon-appearance[data-weapon-skin="flame_edge"]{color:#ffa56b}.weapon-appearance[data-weapon-skin="frost_blade"]{color:#91ddff}.weapon-appearance[data-weapon-skin="eclipse_sword"]{color:#d0a2ff}.weapon-appearance[data-weapon-skin="void_cleaver"]{color:#efa0e6}
+
+/* Live sidebar updates keep the reader’s position instead of selecting a new anchor. */
+#status-sidebar{overflow-anchor:none;scroll-behavior:auto}
