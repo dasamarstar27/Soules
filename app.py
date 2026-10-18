@@ -8,6 +8,8 @@ from copy import deepcopy
 from flask import Flask, jsonify, render_template, request, session
 from game import new_game, act, catalog, fuse, validate_save
 
+from release_version import LABEL, VERSION
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET") or secrets.token_hex(32)
 app.config.update(
@@ -33,9 +35,14 @@ def current():
     return games[sid]
 
 
+@app.get("/api/version")
+def get_release_version():
+    return jsonify(name="Soules", version=VERSION, release=LABEL)
+
+
 @app.get("/")
 def index():
-    return render_template("text.html")
+    return render_template("text.html", release_label=LABEL)
 
 
 @app.get("/edition")

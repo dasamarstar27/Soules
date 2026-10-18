@@ -1,4 +1,7 @@
-PLAY SOULES
+PLAY SOULES V25.2
+
+This download lives in a folder named V25.2. Keep the entire folder together.
+Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
 2. You need Python 3.11 or newer installed from python.org.
@@ -21,3 +24,16 @@ available. Keep using the same browser profile; other browsers have separate sav
 
 All original uploads are preserved in legacy/. The malformed old save cannot be
 imported into this browser edition.
+
+HINDI READ-ALOUD FOR NANU
+
+Use Settings / Customise -> Narration language -> Hindi, then press the
+"Hindi mein sunein" button (shown in Hindi script) while playing.
+A Hindi text-to-speech voice must be installed on that computer or tablet.
+Use Hindi setup help in Settings for Windows and iPad instructions.
+
+Supported browsers can translate English to Hindi automatically. If this is not
+available, use the browser's Translate page -> Hindi option and select a Hindi
+passage to read. The Hindi voice itself does not translate English.
+Initial voice/translation downloads or browser translation may need Internet.
+No translation account or paid API key is required by Soules.

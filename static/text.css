@@ -95,3 +95,20 @@ body.comfort-mode #game-screen { min-height:700px; }
  body.comfort-mode #comfort-choices { max-height:25svh; }
  body.comfort-mode #categories { max-height:130px; }
 }
+#narration-status{font-size:12px;line-height:1.5;color:var(--accent);overflow-wrap:anywhere}#hindi-setup-dialog{max-width:700px;max-height:85svh;overflow:auto}#hindi-setup-dialog li{margin:14px 0;line-height:1.7}body.comfort-mode #narration-status,body.comfort-mode #hindi-setup-dialog{font-size:18px}#read-hindi{font-family:Arial,'Noto Sans Devanagari',sans-serif}
+
+/* Tablet and easy reading require no text entry. Native selectors remain touchable. */
+#preset-names { display:none; }
+.buttons-only #preset-names { display:block; }
+.buttons-only #command-form,.buttons-only #quick-keys,.buttons-only #recall-command,
+.buttons-only #new-character label:has(input[name="name"]),
+.buttons-only #dictionary-search,.buttons-only .keyboard-settings { display:none; }
+.button-answer-grid { display:flex; flex-wrap:wrap; gap:10px; }
+.button-answer-grid button { min-height:48px; text-align:left; }
+.quantity-controls { display:flex; align-items:center; gap:12px; flex-basis:100%; }
+.quantity-controls output { min-width:3em; text-align:center; font-weight:bold; }
+.buttons-only [data-character-name][aria-pressed="true"] { outline:3px solid var(--accent); }
+.buttons-only .wordmark { max-width:100%; white-space:normal; }
+.buttons-only .wordmark small { margin-left:10px; }
+.buttons-only .quantity-controls { display:flex; flex-wrap:wrap; grid-column:1 / -1; }
+@media(max-width:440px){.comfort-mode .wordmark small{font-size:12px;}}

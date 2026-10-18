@@ -1,4 +1,4 @@
-# Soules — Echoes of the World Tree
+# Soules V25.2 — Echoes of the World Tree
 
 A playable, single-player browser edition of the uploaded SoulCrypt/Soules RPG. Monsters used to be rarer and peaceful; the Dreamscape boss is now sending hostile monsters to take over the world. Free the original fifteen regions and defeat The Dreaming God in The Dreamscape to finish Chapter 1. Season Two begins afterward with the Core Stabiliser sabotage. The Creator is not required to beat the original game.
 
@@ -209,3 +209,14 @@ New testing sessions keep a clean restore point; leaving testing restores the en
 **Easy reading** in the top bar is an optional presentation mode: clear sans-serif text (18–28px), larger controls, stronger contrast, less visual decoration/motion, labelled clickable submenu answers and direct Save / Load access. Standard presentation and game rules are preserved when switched off. Its text size is separate, and preferences stay in the browser. **Explain game words** opens a plain-language glossary. **Read latest aloud / Stop reading** use browser speech only when requested; selected text takes priority, otherwise the latest output and question are read (up to 6,000 characters). Voice and speed can be selected in Customise when supported by the device.
 
 Village menus now list only facilities available locally: no harvest option without a farm, no blacksmith without a forge, no food/meal options without a restaurant, and no potion services without an alchemy lab. Mentor and sanctuary choices appear only in Old Village. Worker menus likewise omit missing specialists. Existing answer numbers stay stable, including gaps. Hidden unavailable actions retain their backend service guards.
+
+
+### V25.2 — Hindi narration and named release folders
+
+The packaged download is `releases/Soules-V25.2.zip`, extracting into `V25.2/`. Keep that folder together and open **Play Soules.bat** inside it. `VERSION` is the source of the browser/launcher release label; future packages use their own version folder. `python build_release.py` builds the versioned archive from tracked source files, excludes local saves/environments and earlier release ZIPs, and includes a SHA-256 source manifest.
+
+**Hindi narration:** Settings / Customise → Narration language → **हिंदी · Hindi**, or press **हिंदी में सुनें** in the game. Soules automatically chooses an installed Hindi voice and translates the passage using the browser's on-device Translator API when available. This API and Hindi language-pair support vary by browser/device; downloading the voice/model may require Internet. Soules does not send passages to a translation API server. When automatic translation is unavailable, use the browser's **Translate page → Hindi**, select a translated passage, then read it aloud. Hindi already visible in the current journal can also be read directly. Hindi setup help explains Windows/iPad voice installation. Missing voices/translation produce instructions rather than English speech labelled as Hindi.
+
+English and Hindi voice preferences are saved separately. Stop reading, new output or a language change cancels pending narration, including delayed translation. The written game, original answers and save format remain unchanged. `/api/version` reports the running release; the launcher asks you to close a different/older running version before reopening it.
+
+Tablet mode and Easy reading use button answers, quantity steppers and preset names/notes without a keyboard. Save labels are automatic in these modes. Standard desktop mode retains free text input and custom names/notes.
