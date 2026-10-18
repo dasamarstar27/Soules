@@ -47,7 +47,8 @@ class DifficultyTests(unittest.TestCase):
             name="Hero", hp=100, max_hp=100, atk=10, def_=0, region="Whispering Woods"
         )
         enemy = dict(name="Monster", hp=100, max_hp=100, atk=10)
-        with patch("builtins.print"):
+        # Keep random critical hits out of this exact-damage comparison.
+        with patch("builtins.print"), patch("effects.random.random", return_value=0.99):
             standard = deepcopy(base)
             self.assertEqual(strike(deepcopy(enemy), standard, 20), 20)
             easy = dict(base, difficulty="easy")

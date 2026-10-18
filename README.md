@@ -1,4 +1,4 @@
-# Soules V25.4 — Echoes of the World Tree
+# Soules V25.5 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -239,3 +239,7 @@ The idea backlog is now [IDEAS.md](IDEAS.md), containing only unresolved work. I
 ### V25.4 · Tablet hosting setup
 
 `render.yaml` prepares a single-process, threaded Gunicorn service with an automatically generated session secret, secure cookies and four active browser sessions. Hosted dependencies are separate in `requirements-hosted.txt`, so the Windows launcher does not install Gunicorn. The `/health` readiness route is used by the host. This is deployment configuration and tested local hosting, not a claim of an already-deployed public site. The free deployment needs Internet, can sleep/restart and uses ephemeral local disk; portable browser saves and export/import remain the way to keep character progress. See `TABLET PLAY.txt` for the one-time owner setup and simple steps for Nanu.
+
+### V25.5 · Version corner and older releases
+
+The top corner shows the actual running release. Press it for published V25.4/V25.3/V25.2 downloads, checkpoint export and downgrade instructions. Older links are pinned to their published commits. Downloads do not change the current game or saves. Computer players extract a separate version folder, close their current server and launch the older folder. Hosted/tablet players need the website owner to deploy the chosen release commit through the host dashboard; that restarts the shared service for all players. Keep untouched save backups because older builds may not understand newer items or systems. Only builds with published archives appear; historic V21/V22 packages are not invented.

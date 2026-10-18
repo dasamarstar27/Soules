@@ -9,6 +9,7 @@ from flask import Flask, jsonify, render_template, request, session
 from game import new_game, act, catalog, fuse, validate_save
 
 from release_version import LABEL, VERSION
+from release_catalog import available_releases
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET") or secrets.token_hex(32)
@@ -44,9 +45,19 @@ def get_release_version():
     return jsonify(name="Soules", version=VERSION, release=LABEL)
 
 
+@app.get("/api/releases")
+def get_releases():
+    return jsonify(current=VERSION, releases=available_releases())
+
+
 @app.get("/")
 def index():
-    return render_template("text.html", release_label=LABEL)
+    return render_template(
+        "text.html",
+        release_label=LABEL,
+        releases=available_releases(),
+        hosted=os.environ.get("SOULES_HOSTED") == "1",
+    )
 
 
 @app.get("/edition")

@@ -1,6 +1,6 @@
-PLAY SOULES V25.4
+PLAY SOULES V25.5
 
-This download lives in a folder named V25.4. Keep the entire folder together.
+This download lives in a folder named V25.5. Keep the entire folder together.
 Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
@@ -43,3 +43,8 @@ DIFFICULTY
 Choose Normal for the original game balance, or Easy for beginners.
 You can also change difficulty in Settings at a village or category menu.
 Easy reading and Tablet mode are separate from adventure difficulty.
+
+OLDER VERSIONS
+Click the version badge in the top corner for archived downloads and downgrade
+steps. Back up your saves first. Website players need the host owner to roll
+back the server; downloading a ZIP does not change a hosted game.

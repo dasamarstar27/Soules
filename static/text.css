@@ -112,3 +112,16 @@ body.comfort-mode #game-screen { min-height:700px; }
 .buttons-only .wordmark small { margin-left:10px; }
 .buttons-only .quantity-controls { display:flex; flex-wrap:wrap; grid-column:1 / -1; }
 @media(max-width:440px){.comfort-mode .wordmark small{font-size:12px;}}
+
+#release-version { border-color:var(--accent); color:var(--accent); white-space:nowrap; }
+#versions-dialog { width:min(720px,calc(100vw - 24px)); max-height:85svh; overflow:auto; }
+#versions-dialog p,#versions-dialog li { font-size:15px; line-height:1.7; overflow-wrap:anywhere; }
+#versions-dialog li { margin:10px 0; }
+.version-list { display:grid; gap:12px; margin:20px 0; }
+.version-entry { border:1px solid var(--line); padding:16px; border-radius:8px; }
+.version-entry h2 { font-size:21px; margin:0; }
+.version-entry code { display:block; font-size:12px; overflow-wrap:anywhere; margin:12px 0; }
+.version-entry details { margin-top:15px; }
+.version-download { display:inline-flex; min-height:48px; align-items:center; padding:10px 15px; border:1px solid var(--accent); border-radius:6px; }
+body.comfort-mode #versions-dialog p,body.comfort-mode #versions-dialog li { font-size:18px; }
+@media(max-width:1050px){.topbar{height:auto;min-height:66px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}.top-tools{flex-wrap:wrap}}
