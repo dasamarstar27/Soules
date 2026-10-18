@@ -40,16 +40,20 @@ def number(prompt, length):
     try:
         selected = int(input(prompt)) - 1
     except ValueError:
+        print("Enter a whole option number. No action selected; returning to the previous menu.")
         return None
+    if selected != -1 and not 0 <= selected < length:
+        print("That option is not listed. No action selected; returning to the previous menu.")
     return selected if 0 <= selected < length else None
 
 
-def choose(title, rows):
+def choose(title, rows, instruction=None):
     print("\n--- " + title + " ---")
+    print(instruction or "Type the number to the LEFT of the action you want, then press Enter. Type 0 to go back without choosing.")
     for index, row in enumerate(rows, 1):
         print(f"{index}. {row}")
     print("0. Back")
-    return number("Choice > ", len(rows))
+    return number("Option number (0 = back) > ", len(rows))
 
 
 def pay(player, gold=0, materials=None, ingredients=None):

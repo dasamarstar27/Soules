@@ -147,7 +147,29 @@ def defend_woods(game):
         + "/3. Volunteers: "
         + str(q["assignments"])
     )
-    if not encounter(game, [enemy]):
+    enemies = [enemy]
+    # More attackers without multiplying the entire introductory wave's stats.
+    enemy["hp"] = max(8, int(enemy["hp"] * 0.6))
+    enemy["atk"] = max(2, int(enemy["atk"] * 0.65))
+    for index in range(wave):
+        enemies.append(
+            dict(
+                name=["Rift-touched Woodling", "Dreamscape Thornling", "Rift Howler"][
+                    index
+                ],
+                hp=max(6, (18 + 4 * wave + 2 * p["level"]) // (wave + 1)),
+                atk=max(
+                    1, (4 + wave + p["level"] // 2) // (wave + 1) - defenders - repair
+                ),
+                **{"def": max(0, wave - 2)},
+                gold=3,
+                xp=3,
+            )
+        )
+    print(
+        f"{len(enemies)} monsters are attacking this wave. Defeat them all; use Change target to choose who you attack."
+    )
+    if not encounter(game, enemies):
         return False
     q["waves"] = wave
     gathered = 2 * assigned.count(ROLES[1])

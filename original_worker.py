@@ -56,6 +56,19 @@ def input_line(prompt=""):
             from beta_testing import disable_beta
 
             disable_beta(game.player)
+            raise ui.ReturnToMenu()
+        if value.startswith(("/equip ", "/drink ")):
+            from player_qol import quick
+
+            if ui._phase in ("main", "category") or (
+                prompt in ("Village > ", "Elemental village > ")
+                and not ui.get_ui().current_enemy
+            ):
+                print(quick(game, value))
+            else:
+                print(
+                    "Use sidebar inventory actions at a main/category menu, outside combat and purchases."
+                )
             continue
         if value.strip() == "/back":
             raise ui.ReturnToMenu()
@@ -76,6 +89,7 @@ def initial_player(config):
         leathers=[],
         ingredients=[],
         charged_cores=[],
+        home_companions=[],
         skill_tree={k: {} for k in SKILL_TREES},
         boss_rush_stats={
             "total_runs": 0,
@@ -118,7 +132,10 @@ def initial_player(config):
                 )
     from companion_care import normalise
 
-    for companion in player.get("companions", []):
+    if len(player.get("companions", [])) > 3:
+        player.setdefault("home_companions", []).extend(player["companions"][3:])
+        player["companions"] = player["companions"][:3]
+    for companion in player.get("companions", []) + player.get("home_companions", []):
         normalise(companion, player["region"])
     from expansion_state import state
 

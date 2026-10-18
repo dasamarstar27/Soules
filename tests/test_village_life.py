@@ -64,7 +64,7 @@ class VillageLifeTests(unittest.TestCase):
         f = v.food_catalog(self.farm)[0]
         price = v.food_price(self.p, self.farm, f)
         for _ in range(5):
-            self.inputs(["1"], v.restaurant, game, self.farm)
+            self.inputs(["1", "1"], v.restaurant, game, self.farm)
         self.assertEqual(self.p["gold"], 1000 - price * 4)
         self.assertEqual(len(self.p["inventory"]), 4)
         restored = validate_original_save(ui.snapshot())

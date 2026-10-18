@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#100d1c"><title>Soules · The original text adventure</title><link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/text.css"><script src="/static/text.js" defer></script></head>
 <body>
-<header class="topbar"><button class="wordmark" data-view="home" aria-label="Soules main menu"><i></i>SOULES <small>THE ORIGINAL JOURNEY</small></button><div class="top-tools"><button id="font-down" aria-label="Smaller text">A−</button><button id="font-up" aria-label="Larger text">A+</button><button data-view="customise">◈ Theme</button><button data-view="home">☰ Menu</button><button id="play" class="primary">▶ Play / Continue</button></div></header>
+<header class="topbar"><button class="wordmark" data-view="home" aria-label="Soules main menu"><i></i>SOULES <small>THE ORIGINAL JOURNEY</small></button><div class="top-tools"><button id="tablet-mode" aria-pressed="false">Tablet mode</button><button id="font-down" aria-label="Smaller text">A−</button><button id="font-up" aria-label="Larger text">A+</button><button data-view="customise">◈ Theme</button><button data-view="home">☰ Menu</button><button id="play" class="primary">▶ Play / Continue</button></div></header>
 <div class="layout"><main>
 <section id="game-screen" hidden>
 <nav id="categories" aria-label="Game categories"></nav>
@@ -9,6 +9,7 @@
 <div class="journal-tools" aria-label="Adventure conveniences"><button id="recall-command" title="Recall your last command without sending">Recall last</button><button id="latest-output">↓ Latest</button><button id="copy-journal">Copy journal</button><button id="clear-journal">Clear journal</button><button id="compact-status" aria-pressed="false">Compact sidebar</button><span id="health-warning" role="status"></span></div>
 <div class="story-panel"><div id="terminal" tabindex="0" role="log" aria-label="Text adventure journal" aria-live="polite" aria-relevant="additions text"></div>
 <div id="prompt" class="story-prompt" role="status">Your choice</div></div>
+<section id="village-assignment" hidden aria-label="Assign village defenders"></section>
 <div id="action-buttons" aria-label="Category actions"></div>
 <div class="command-dock"><label class="visually-hidden" for="command">Your response</label><form id="command-form"><input id="command" autocomplete="off" maxlength="2000" placeholder="Type an answer… ↑↓ history · / focus" aria-label="Game command" aria-describedby="prompt"><button type="submit" class="primary" id="send">Send ↵</button><button type="button" id="back">↶ Back to category</button></form><div id="quick-keys" aria-label="Quick responses"></div></div>
 </section>

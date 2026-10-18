@@ -8,7 +8,7 @@ import village_life as villages
 from expansion_state import number, pay, state, count
 
 KINDS = {
-    "weapon": ("forge", "metals", 1, 35),
+    "weapon": ("forge", "metals", 3, 35),
     "armour": ("loom", "cloths", 2, 35),
     "staff": ("tower", "woods", 1, 40),
     "potion": ("alchemy", "ingredients", 2, 20),
@@ -51,8 +51,52 @@ def order_fee(player, village, kind):
     return max(1, round(fee * (1 - 0.05 * market)))
 
 
+def resources(kind, selections):
+    if kind == "weapon":
+        if len(selections) != 3:
+            return []
+        return list(zip(("metals", "cores", "woods"), selections))
+    return [(KINDS[kind][1], name) for name in selections]
+
+
+def commission_stock(player, village):
+    local = record(player, village)
+    cycle = villages.cycle(player)
+    if local.get("commission_stock_cycle") != cycle:
+        region_index = (data.REGIONS + [data.SECRET_REGION]).index(village["region"])
+        local["commission_stock"] = {
+            bag: {
+                name: 3 for name in list(catalog)[: min(len(catalog), 2 + region_index)]
+            }
+            for bag, catalog in (
+                ("metals", data.METALS),
+                ("cores", data.CORES),
+                ("woods", data.WOODS),
+            )
+        }
+        local["commission_stock_cycle"] = cycle
+    return local["commission_stock"]
+
+
+def materials_cost(selections):
+    return sum(
+        (
+            25
+            if bag == "cores"
+            else 10 + data.METALS.get(name, {}).get("atk", 0) if bag == "metals" else 15
+        )
+        for bag, name in selections
+    )
+
+
 def commission(
-    player, village, kind, selections=None, resource="ingredients", assistant=False
+    player,
+    village,
+    kind,
+    selections=None,
+    resource="ingredients",
+    assistant=False,
+    village_stock=False,
 ):
     if kind not in KINDS:
         return False, "Unknown work order."
@@ -70,10 +114,31 @@ def commission(
     selections = selections or []
     from collections import Counter
 
-    if len(selections) != required or any(
-        player.get(bag, []).count(name) < n for name, n in Counter(selections).items()
+    supplied = resources(kind, selections)
+    if len(selections) != required or (
+        kind == "weapon"
+        and (
+            selections[0] not in data.METALS
+            or selections[1] not in data.CORES
+            or selections[2] not in data.WOODS
+        )
     ):
-        return False, "Supply the required carried materials."
+        return (
+            False,
+            "Weapons require one metal, one ordinary core and one wood. Supply every listed material.",
+        )
+    counts = Counter(supplied)
+    stock = commission_stock(player, village) if village_stock else None
+    if any(
+        (
+            stock.get(bag, {}).get(name, 0)
+            if stock is not None
+            else player.get(bag, []).count(name)
+        )
+        < count
+        for (bag, name), count in counts.items()
+    ):
+        return False, "Not enough carried materials or finite village commission stock."
     if kind == "potion" and frozenset(selections) not in data.INGREDIENT_COMBOS:
         return (
             False,
@@ -93,11 +158,16 @@ def commission(
     from community_addons import project
     from expansion_state import state as expansion_state
 
-    fee = order_fee(player, village, kind)
+    fee = order_fee(player, village, kind) + (
+        materials_cost(supplied) if village_stock else 0
+    )
     if not pay(player, fee):
         return False, "Not enough souls."
-    for material in selections:
-        player[bag].remove(material)
+    for bag, material in supplied:
+        if village_stock:
+            stock[bag][material] -= 1
+        else:
+            player[bag].remove(material)
     quality = villages.service_quality(player, village, service)
     from expansion_state import state as expansion_state
 
@@ -205,6 +275,21 @@ def advance(player, village, shifts=1):
         job["remaining"] = max(0, job["remaining"] - shifts)
 
 
+def advance_all(player):
+    """One wander is one work shift everywhere; opening menus is not time."""
+    for record_ in state(player)["projects"].values():
+        if isinstance(record_, dict) and record_.get("visitor"):
+            record_["visitor"]["shifts"] = max(
+                0, record_["visitor"].get("shifts", 0) - 1
+            )
+    for local in player.get("village_records", {}).values():
+        if not isinstance(local, dict):
+            continue
+        local["work_clock"] = local.get("work_clock", 0) + 1
+        for job in local.get("work_orders", []):
+            job["remaining"] = max(0, job["remaining"] - 1)
+
+
 def collect(player, village, index):
     jobs = record(player, village)["work_orders"]
     if type(index) is not int or not 0 <= index < len(jobs):
@@ -235,7 +320,7 @@ def menu(game, village):
         jobs = record(p, village)["work_orders"]
         print("\n--- VILLAGE WORKERS & COMMISSIONS ---")
         print(
-            "One active assignment per specialist. Paid rest advances two shifts; productive local actions advance one. Gathering is finite. Leaving or reopening this menu does not advance work."
+            "One active assignment per specialist. Every Wander advances all orders one shift. Inn rest advances two shifts; productive local actions advance one. Gathering is finite. Leaving or reopening this menu does not advance work."
         )
         for worker in workers(p, village):
             if worker["id"] in village["services"]:
@@ -264,7 +349,10 @@ def menu(game, village):
                 quantity = int(input(f"Batch quantity (1–{level+1}) > "))
             except ValueError:
                 continue
-            print(batch(p, village, "weapon", [metal], quantity)[1])
+            core = choose_material(p, "cores")
+            wood = choose_material(p, "woods")
+            if core is not None and wood is not None:
+                print(batch(p, village, "weapon", [metal, core, wood], quantity)[1])
             continue
         if c == "6":
             index = number("Order number (0 cancel) > ", len(jobs))
@@ -290,15 +378,52 @@ def menu(game, village):
             print("This village does not offer that service.")
             continue
         selections = []
+        buy_stock = False
         resource = "ingredients"
         if kind == "gather":
-            resources = ["ingredients", "woods", "metals", "Timber", "Stone"]
-            for i, x in enumerate(resources, 1):
+            gathering_options = ["ingredients", "woods", "metals", "Timber", "Stone"]
+            for i, x in enumerate(gathering_options, 1):
                 print(f"{i}. {x}")
-            index = number("Gather which resource (0 cancel) > ", len(resources))
+            index = number(
+                "Gather which resource (0 cancel) > ", len(gathering_options)
+            )
             if index is None:
                 continue
-            resource = resources[index]
+            resource = gathering_options[index]
+        elif kind == "weapon":
+            provider = number(
+                "Materials: 1 = supply your own; 2 = pay extra for village stock; 0 = cancel > ",
+                2,
+            )
+            if provider is None:
+                continue
+            buy_stock = provider == 1
+            for needed in ("metals", "cores", "woods"):
+                pool = (
+                    list(commission_stock(p, village).get(needed, {}))
+                    if buy_stock
+                    else list(dict.fromkeys(p.get(needed, [])))
+                )
+                for i, name in enumerate(pool, 1):
+                    count_ = (
+                        commission_stock(p, village).get(needed, {}).get(name, 0)
+                        if buy_stock
+                        else p.get(needed, []).count(name)
+                    )
+                    print(
+                        f"{i}. {name} · {count_} available"
+                        + (
+                            f" · {materials_cost([(needed,name)])} extra souls"
+                            if buy_stock
+                            else " · supplied by you"
+                        )
+                    )
+                index = number("Choose " + needed + " (0 = cancel) > ", len(pool))
+                if index is None:
+                    break
+                selections.append(pool[index])
+            if len(selections) != 3:
+                continue
         else:
             pool = list(dict.fromkeys(p.get(bag, [])))
             for i, name in enumerate(pool, 1):
@@ -310,14 +435,22 @@ def menu(game, village):
                 selections.append(pool[index])
             if len(selections) != amount:
                 continue
-        fee = order_fee(p, village, kind)
+        fee = order_fee(p, village, kind) + (
+            materials_cost(resources(kind, selections)) if buy_stock else 0
+        )
         if (
-            input(f"Pay {fee} souls and supply {selections} for this order? (y/n) > ")
+            input(
+                f"Pay {fee} souls ({'labour plus village materials' if buy_stock else 'labour; bring your materials'}) for {selections}? (y/n) > "
+            )
             .strip()
             .lower()
             == "y"
         ):
-            print(commission(p, village, kind, selections, resource)[1])
+            print(
+                commission(
+                    p, village, kind, selections, resource, village_stock=buy_stock
+                )[1]
+            )
 
 
 def choose_material(player, bag):
@@ -354,8 +487,8 @@ def batch(player, village, kind, selections, quantity):
     if (
         len(selections) != amount
         or any(
-            player.get(bag, []).count(name) < n * quantity
-            for name, n in Counter(selections).items()
+            player.get(material_bag, []).count(name) < n * quantity
+            for (material_bag, name), n in Counter(resources(kind, selections)).items()
         )
         or player["gold"] < fee * quantity
     ):

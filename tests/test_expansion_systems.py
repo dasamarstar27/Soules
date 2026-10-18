@@ -140,12 +140,18 @@ class ExpansionSystems(unittest.TestCase):
     def test_work_order_escrows_cost_waits_and_delivers_exactly_once(self):
         before = self.p["metals"].count("Iron")
         gold = self.p["gold"]
-        ok, _ = jobs.commission(self.p, self.forge, "weapon", ["Iron"])
+        ok, _ = jobs.commission(
+            self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"]
+        )
         self.assertTrue(ok)
         self.assertEqual(self.p["metals"].count("Iron"), before - 1)
         self.assertEqual(self.p["gold"], gold - 35)
         self.assertFalse(jobs.collect(self.p, self.forge, 0)[0])
-        self.assertFalse(jobs.commission(self.p, self.forge, "weapon", ["Iron"])[0])
+        self.assertFalse(
+            jobs.commission(
+                self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"]
+            )[0]
+        )
         restored = validate_original_save(ui.snapshot())["player"]
         self.assertEqual(
             jobs.record(restored, self.forge)["work_orders"],
@@ -160,7 +166,9 @@ class ExpansionSystems(unittest.TestCase):
 
     def test_no_order_is_created_when_materials_or_service_missing(self):
         before = deepcopy(self.p)
-        self.assertFalse(jobs.commission(self.p, self.v, "weapon", ["Iron"])[0])
+        self.assertFalse(
+            jobs.commission(self.p, self.v, "weapon", ["Iron", "Molten Core", "Oak"])[0]
+        )
         self.assertEqual(self.p["gold"], before["gold"])
         self.assertFalse(
             jobs.commission(self.p, self.forge, "weapon", ["Not a metal"])[0]
@@ -202,12 +210,20 @@ class ExpansionSystems(unittest.TestCase):
 
     def test_apprentice_batch_requires_all_materials_and_collects_separate_orders(self):
         state(self.p)["professions"]["apprentice"] = 2
-        self.assertTrue(jobs.batch(self.p, self.forge, "weapon", ["Iron"], 3)[0])
+        self.assertTrue(
+            jobs.batch(self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"], 3)[
+                0
+            ]
+        )
         self.assertEqual(len(jobs.record(self.p, self.forge)["work_orders"]), 3)
         jobs.advance(self.p, self.forge, 10)
         for _ in range(3):
             self.assertTrue(jobs.collect(self.p, self.forge, 0)[0])
-        self.assertFalse(jobs.batch(self.p, self.forge, "weapon", ["Iron"], 4)[0])
+        self.assertFalse(
+            jobs.batch(self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"], 4)[
+                0
+            ]
+        )
 
     def test_every_story_has_travel_gates_unique_reward_and_preserved_relics(self):
         base = deepcopy(self.p)
@@ -540,7 +556,7 @@ class ExpansionSystems(unittest.TestCase):
     def test_potion_blends_are_consumed_once_and_cannot_be_blended_recursively(self):
         self.p["potions"] = ["Health Potion", "Health Potion"]
         self.p["hp"] = 20
-        self.call(["1", "1", "1"], food_addons.mix_potions, game)
+        self.call(["1", "1", "1", ""], food_addons.mix_potions, game)
         self.assertEqual(len(self.p["potions"]), 1)
         name = self.p["potions"][0]
         self.assertEqual(food_addons.potion_effect(self.p, name), "blend")
@@ -650,14 +666,22 @@ class ExpansionSystems(unittest.TestCase):
         fee = jobs.order_fee(self.p, self.forge, "weapon")
         self.p["gold"] = fee * 2
         before = len(self.p["metals"])
-        self.assertTrue(jobs.batch(self.p, self.forge, "weapon", ["Iron"], 2)[0])
+        self.assertTrue(
+            jobs.batch(self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"], 2)[
+                0
+            ]
+        )
         self.assertEqual(self.p["gold"], 0)
         self.assertEqual(len(self.p["metals"]), before - 2)
         jobs.advance(self.p, self.forge, 10)
         self.p["gold"] = 1000
         systems(self.p)["mode"] = {"id": "budget_run"}
         before = deepcopy(self.p)
-        self.assertFalse(jobs.batch(self.p, self.forge, "weapon", ["Iron"], 2)[0])
+        self.assertFalse(
+            jobs.batch(self.p, self.forge, "weapon", ["Iron", "Molten Core", "Oak"], 2)[
+                0
+            ]
+        )
         self.assertEqual(self.p, before)
 
     def test_wards_rituals_and_permanent_paired_staff_have_real_combat_effects(self):

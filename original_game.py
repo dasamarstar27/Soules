@@ -130,7 +130,7 @@ def is_region_staff(staff, region):
 
 
 def get_region_companion_candidates(region):
-    owned_names = {c["name"] for c in player.get("companions", [])}
+    owned_names = {c["name"] for c in player.get("companions", []) + player.get("home_companions", [])}
     return [c for c in COMPANIONS.get(region, []) if c["name"] not in owned_names]
 
 
@@ -229,9 +229,17 @@ def apply_companion_support(enemy):
 
 
 def recruit_companion(companion):
-    if len(player.get("companions", [])) >= 3:
-        print("You already have 3 companions and cannot recruit another.")
+    from copy import deepcopy
+    if any(c["name"] == companion["name"] for c in player.get("companions", []) + player.get("home_companions", [])):
+        print("That companion is already with your party or staying in Old Village.")
         return False
+    if len(player.get("companions", [])) >= 3:
+        recruit=deepcopy(companion)
+        from companion_care import normalise
+        normalise(recruit, player["region"])
+        player.setdefault("home_companions", []).append(recruit)
+        print(recruit["name"] + " is staying safely in Old Village; change your party at its sanctuary.")
+        return True
     recruit = companion.copy()
     recruit["stage"] = 0
     recruit["xp"] = 0
@@ -2578,6 +2586,8 @@ def explore():
     from companion_care import wander as companion_hunger
 
     companion_hunger(player)
+    from village_jobs import advance_all
+    advance_all(player)
     from expansion_hooks import on_wander
     on_wander(__import__(__name__))
 
@@ -2622,7 +2632,12 @@ def explore():
     if before_wander(__import__(__name__)):
         return
 
-    # ── Structure discovery (12% chance per wander, undiscovered only) ──
+    # Original monster roll now precedes optional discoveries.
+    if random.random() < .80:
+        _wander_monster(r, night)
+        return
+
+    # ── Structure discovery (12% of non-monster paths) ──
     region_structs = REGION_STRUCTURES.get(r, [])
     found_names = player.setdefault("discovered_structures", {}).get(r, [])
     undiscovered = [s for s in region_structs if s["name"] not in found_names]
@@ -2681,7 +2696,7 @@ def explore():
         return
 
     roll = random.randint(1, 100)
-    if roll == 1:
+    if roll <= 5:
         candidates = get_region_companion_candidates(r)
         if candidates:
             companion = random.choice(candidates)
@@ -2691,13 +2706,17 @@ def explore():
         else:
             print("No new companion answers your call here.")
         return
-    if roll < 10:
+    if roll <= 45:
         merchant()
         return
-    if roll <= 20:
+    if roll <= 100:
         print("Peaceful wandering...")
         return
 
+
+
+def _wander_monster(r, night):
+    from wander_reference import NIGHT_ELITE
     if player["level"] >= 10:
         enemy_pool = EVOLVED_MONSTERS.get(r, []) + MINI_BOSSES.get(r, [])
     else:
@@ -4286,7 +4305,8 @@ def _apply_charged_weapon_effect(enemy):
 
 
 def _sell_all_loot():
-    loot = [item for item in player["inventory"] if "value" in item]
+    from player_qol import loot as is_loot
+    loot = [item for item in player["inventory"] if is_loot(item)]
     if not loot:
         print("No loot to sell.")
         return
@@ -4327,9 +4347,10 @@ def _sell_all_runes():
 
 
 def sell():
+    from player_qol import loot as is_loot
     while True:
-        loot_count = len([i for i in player["inventory"] if "value" in i])
-        loot_value = sum(i["value"] for i in player["inventory"] if "value" in i)
+        loot_count = len([i for i in player["inventory"] if is_loot(i)])
+        loot_value = sum(i["value"] for i in player["inventory"] if is_loot(i))
         unequipped_w = [w for w in player["weapons"] if w != player.get("weapon")]
         weapon_value = sum(w["atk"] * 5 for w in unequipped_w)
         rune_value = len(player["runes"]) * 50
@@ -4379,7 +4400,7 @@ def sell():
             continue
 
         if choice == "1":
-            loot = [item for item in player["inventory"] if "value" in item]
+            loot = [item for item in player["inventory"] if is_loot(item)]
 
             if not loot:
                 print("No loot.")
@@ -4895,6 +4916,10 @@ def perform_original_action(c):
         return False
     elif c == "9":
         boss_fight()
+    elif c == "49":
+        from player_qol import potion_menu
+        import sys
+        potion_menu(sys.modules[__name__])
     elif c == "10":
         view_inventory()
     elif c == "11":

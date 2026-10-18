@@ -127,7 +127,7 @@ def menu(game):
     companions = player.get("companions", [])
     if not companions:
         print(
-            "You have no companions. You may meet them while wandering; up to three can join."
+            "You have no companions. You may meet them while wandering; up to three travel in your party; others stay in Old Village."
         )
         return
     while True:
@@ -157,10 +157,14 @@ def menu(game):
         print(
             "Hunger falls 5 per wander. Below 30, companions rest from combat. Feeding restores hunger but grants no evolution XP. Actual support in a won battle earns combat bond XP: stage 1 at 20 and stage 2 at 60. Juvenile battle species can help weakly; peaceful species can heal you in battle. Final forms strengthen support. They never leave or die from hunger."
         )
-        print("1. Feed a companion\n2. Regional food guide\n0. Back")
+        print("1. Feed a companion\n2. Regional food guide\n3. Manage Old Village sanctuary / party\n0. Back")
         choice = input("Companions > ").strip()
         if choice == "0":
             return
+        if choice == "3":
+            from player_qol import sanctuary
+            sanctuary(game)
+            continue
         if choice == "2":
             for companion in companions:
                 print(

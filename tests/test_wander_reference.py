@@ -25,9 +25,9 @@ class WanderReferenceTests(TestCase):
                     if region not in data.ELEMENTAL_VILLAGES:
                         self.assertEqual(odds["elemental_village"], 0)
         woods = reference.probabilities("Whispering Woods")
-        self.assertAlmostEqual(woods["structure"], 0.12)
-        self.assertAlmostEqual(woods["elemental_village"], 0.88 * 0.01)
-        self.assertAlmostEqual(woods["monster"], 0.88 * 0.99 * 0.98 * 0.92 * 0.80)
+        self.assertAlmostEqual(woods["structure"], 0.2 * 0.12)
+        self.assertAlmostEqual(woods["elemental_village"], 0.2 * 0.88 * 0.01)
+        self.assertAlmostEqual(woods["monster"], 0.80)
 
     def test_reference_covers_every_weather_world_event_and_special_event(self):
         ref = reference.reference()
@@ -65,8 +65,8 @@ class WanderReferenceTests(TestCase):
                 ELEMENTAL_VILLAGE=0,
                 BOUNTY=0,
                 SPECIAL_EVENT=0,
-            ), patch.object(game.random, "random", return_value=0), patch.object(
-                game.random, "randint", return_value=15
+            ), patch.object(game.random, "random", return_value=0.99), patch.object(
+                game.random, "randint", return_value=99
             ), patch(
                 "builtins.print"
             ) as output, patch.object(

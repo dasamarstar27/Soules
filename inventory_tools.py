@@ -119,9 +119,14 @@ def inventory_menu(game):
         )
         sections = [
             (
-                "Loot & food",
+                "Loot",
                 "inventory",
-                [x for x in p["inventory"] if "turns" not in x],
+                [x for x in p["inventory"] if __import__("player_qol").loot(x)],
+            ),
+            (
+                "Food",
+                "inventory",
+                [x for x in p["inventory"] if __import__("player_qol").food(x)],
             ),
             ("Scrolls", "inventory", [x for x in p["inventory"] if "turns" in x]),
             ("Weapons", "weapons", p["weapons"]),
@@ -180,6 +185,10 @@ def inventory_menu(game):
                     )
                     + (" [EQUIPPED]" if equipped else "")
                 )
+        print("\n--- POTIONS ---")
+        for name in p.get("potions", []):
+            print(name + " · use with option 10 below")
+        print("10. Use a carried potion")
         print("\nSort: 1 Name · 2 Attack/power · 3 Defence · 4 Element · 5 Sell value")
         print(
             f"6. Auto-sell identical spare equipment: {'ON' if p.get('auto_sell_duplicates') else 'OFF'}"
@@ -195,6 +204,11 @@ def inventory_menu(game):
         choice = input("Inventory option > ").strip()
         if choice == "0":
             return
+        if choice == "10":
+            from player_qol import potion_menu
+
+            potion_menu(game)
+            continue
         if choice in SORTS:
             p["inventory_sort"] = SORTS[choice]
             print(

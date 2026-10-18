@@ -25,6 +25,11 @@ def validate_original_save(value):
             "Choose an original text-edition save. Earlier browser-edition saves are still available in /edition."
         )
     p = value["player"]
+    if "beta_backup" in p:
+        backup = p["beta_backup"]
+        if not isinstance(backup, dict) or "beta_backup" in backup:
+            raise ValueError("Invalid clean beta restore point.")
+        validate_original_save(dict(format="soules-original-v1", player=backup))
     if not isinstance(p.get("name"), str) or not 1 <= len(p["name"]) <= 24:
         raise ValueError("Invalid character name in save.")
     for key in (
@@ -66,6 +71,7 @@ def validate_original_save(value):
         "staffs",
         "inventory",
         "companions",
+        "home_companions",
         "forge_cores",
         "charged_cores",
         "elemental_cores",
@@ -93,7 +99,14 @@ def validate_original_save(value):
             for k, n in p.get(key, {}).items()
         ):
             raise ValueError("Invalid status duration in save.")
-    for key in ("weapons", "armours", "runes", "staffs", "companions"):
+    for key in (
+        "weapons",
+        "armours",
+        "runes",
+        "staffs",
+        "companions",
+        "home_companions",
+    ):
         if any(
             not isinstance(item, dict) or not isinstance(item.get("name"), str)
             for item in p.get(key, [])
@@ -127,7 +140,7 @@ def validate_original_save(value):
             raise ValueError("Invalid permanent forge-core weapon.")
     if "beta_mode" in p and type(p["beta_mode"]) is not bool:
         raise ValueError("Invalid testing mode in save.")
-    for companion in p.get("companions", []):
+    for companion in p.get("companions", []) + p.get("home_companions", []):
         if "stage" in companion and (
             type(companion["stage"]) is not int or not 0 <= companion["stage"] <= 2
         ):

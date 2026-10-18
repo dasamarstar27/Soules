@@ -21,6 +21,7 @@ with sync_playwright() as playwright:
     page.goto("http://127.0.0.1:5000")
     page.wait_for_selector(".home-options")
     page.locator('[data-view="dictionary"]').click()
+    page.locator('[data-dictionary="runes"]').click()
     assert page.locator(".rune-seal").count() == 132
     seals = page.locator(".rune-seal").evaluate_all("(xs)=>xs.map(x=>x.innerHTML)")
     assert len(set(seals)) == 132

@@ -55,6 +55,9 @@ def hub(game):
         (91, 100),
     ]
     while True:
+        print(
+            "Choose the NUMBER AT THE LEFT to open a category. The 1–20 and 21–30 labels describe adventure IDs, not the number you should type. Nothing is purchased just by opening a category."
+        )
         index = choose("ADVENTURES, PROJECTS & RESEARCH", groups)
         if index is None:
             return
@@ -75,10 +78,15 @@ def hub(game):
             continue
         start, end = ranges[index]
         ids = list(range(start, end + 1))
+        from community_addons import INSTRUCTIONS
+
+        print(
+            "Choose a numbered activity below. Read its cost first: some choices immediately spend the listed supplies; 0 returns without selecting one."
+        )
         feature = choose(
             groups[index],
             [
-                f'Addon {i}: {ADDONS[i]["name"]} — {ADDONS[i]["description"]}'
+                f'{ADDONS[i]["name"]} — {INSTRUCTIONS.get(i, ADDONS[i]["description"])}'
                 for i in ids
             ],
         )

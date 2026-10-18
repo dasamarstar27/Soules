@@ -18,8 +18,8 @@ def percent(value):
 
 def probabilities(region, undiscovered=True, bounty_available=True):
     """Exclusive outcomes, assuming a living player without a tracking assignment."""
-    remaining = 1.0
-    outcomes = {}
+    remaining = .20
+    outcomes = {"monster": .80}
     for key, chance in [
         (
             "structure",
@@ -38,10 +38,9 @@ def probabilities(region, undiscovered=True, bounty_available=True):
         outcomes[key] = remaining * chance
         remaining *= 1 - chance
     for key, chance in [
-        ("companion", 0.01),
-        ("merchant", 0.08),
-        ("peaceful", 0.11),
-        ("monster", 0.80),
+        ("companion", 0.05),
+        ("merchant", 0.40),
+        ("peaceful", 0.55),
     ]:
         outcomes[key] = remaining * chance
     return outcomes
@@ -51,7 +50,7 @@ def reference():
     stages = [
         dict(
             name="How wandering chances work",
-            description="Checks happen in order. Structure discovery, a hidden-village visit, a bounty or a special event can end the wander before the ordinary encounter roll. Ingredient and building-supply finds can accompany another outcome. The next-wander estimates assume you survive hunger and have no pending tracked target.",
+            description="After supplies and any tracked target, the monster roll happens FIRST: 80% ordinary monster. Only the remaining 20% reaches structure, ingredient, clan, bounty and special-event checks. Survivors of these checks select companion 5%, merchant 40% or peaceful 55% conditionally. Ingredient and building-supply finds can accompany another outcome. The next-wander estimates assume you survive hunger and have no pending tracked target.",
             type="Read first",
         ),
         dict(
@@ -67,7 +66,7 @@ def reference():
         dict(
             name="Ordinary structures",
             description=f"{percent(STRUCTURE)} when there are undiscovered ordinary structures in your region. One remaining structure is chosen uniformly. A discovery ends the encounter checks; the new place becomes revisitable through Structures.",
-            type="First encounter check",
+            type="After the 80% monster check",
         ),
         dict(
             name="Regional ingredients",
@@ -147,7 +146,7 @@ def reference():
     stages.append(
         dict(
             name="Ironpeak dwarves and Crimson Forge",
-            description="Visit Ironpeak Mountains Quarry for dwarven bulk metal trades, with finite stock refreshing every 20 wanders. The Crimson Forge in Crimson Depths has three monster-held chambers. Sacrifice a normal rune into an ordinary core, then reclaim the forge to create named weapons whose charged core grants permanent abilities. These are chosen structure activities, not extra random encounter rolls.",
+            description="Visit Ironpeak Mountains Quarry for dwarven bulk metal trades, with finite stock refreshing every 20 wanders. The Crimson Forge in Crimson Depths has three monster-held chambers. Sacrifice a compatible normal rune or matching-energy fusion into an ordinary core, then reclaim the forge to create named weapons whose charged core grants permanent abilities. These are chosen structure activities, not extra random encounter rolls.",
             type="Regional activities",
         )
     )

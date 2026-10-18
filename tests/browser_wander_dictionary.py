@@ -40,7 +40,7 @@ with sync_playwright() as playwright:
     page.locator('[data-view="dictionary"]').click()
     page.locator('[data-dictionary="wandering"]').click()
     assert "Your next wander" in page.locator(".cards").inner_text()
-    assert "62.8379%" in page.locator(".cards").inner_text()
+    assert "80%" in page.locator(".cards").inner_text()
     page.locator("#dictionary-search").fill("cursed chest")
     assert "1/3" in page.locator(".cards").inner_text()
     page.locator('[data-dictionary="weather"]').click()

@@ -360,7 +360,8 @@ def mix_potions(game):
         potions.remove(b)
         f.setdefault("blends", {})[name] = dict(heal=amount, ingredients=[a, b])
         potions.append(name)
-        print(name + f" restores {amount} HP. Two bottles became one.")
+        print("BREW COMPLETE: " + name + f" restores {amount} HP. Two bottles became one. Find it under Inventory & Equip → Use carried potions.")
+        input("Press Enter to return to the village > ")
     else:
         local = next(
             (
@@ -381,5 +382,5 @@ def mix_potions(game):
         f.setdefault("blends", {})[name] = dict(heal=amount, ingredients=[a, local])
         potions.append(name)
         print(
-            name + f" restores {amount} HP. Recipe recorded in your personal notebook."
+            "BREW COMPLETE: " + name + f" restores {amount} HP. Recipe recorded in your personal notebook."
         )

@@ -7,6 +7,7 @@ _group = "explore"
 _ui = None
 location = None
 village = None
+assignment = None
 
 
 class RunEnded(Exception):
@@ -72,6 +73,7 @@ def snapshot():
     return dict(
         format="soules-original-v1",
         location=clean(location),
+        assignment=clean(assignment),
         village=(
             clean(__import__("village_life").snapshot(_ui.player, village))
             if _ui and village

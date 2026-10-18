@@ -66,7 +66,7 @@ def craft(player, core, metal, wood, name):
     ):
         return (
             False,
-            "Sacrifice a loose normal rune into an ordinary core first. The elemental hearth requires a carried charged core.",
+            "Sacrifice a compatible loose rune into an ordinary core first. The elemental hearth requires a carried charged core.",
         )
     from core_charging import compatible, CORE_ELEMENTS
 
@@ -207,7 +207,7 @@ def forge_menu(game):
                     + limits(name)
                 )
             print(
-                "Only the reclaimed Crimson hearth grants these innate abilities. Ordinary village forges use core, metal and wood for physical equipment. First sacrifice a normal rune into an ordinary core to charge it. That charged core can only be spent here, with a metal and a wood. Neither a protected fragment nor a clan’s surviving core can be used."
+                "Only the reclaimed Crimson hearth grants these innate abilities. Ordinary village forges use core, metal and wood for physical equipment. First sacrifice a compatible normal rune or matching-energy fusion into an ordinary core to charge it. That charged core can only be spent here, with a metal and a wood. Neither a protected fragment nor a clan’s surviving core can be used."
             )
 
 

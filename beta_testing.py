@@ -6,6 +6,15 @@ from season_two import GOODS
 
 
 def grant_collectibles(player):
+    if not player.get("beta_mode"):
+        player["beta_backup"] = deepcopy(
+            {
+                key: value
+                for key, value in player.items()
+                if key not in ("beta_backup", "beta_legacy_recovery")
+            }
+        )
+
     def add(key, item):
         bag = player.setdefault(key, [])
         name = item.get("name") if isinstance(item, dict) else item
@@ -58,7 +67,11 @@ def grant_collectibles(player):
     for i, core in enumerate(data.CORES):
         add(
             "charged_cores",
-            make_charged(core, next(r for r in data.RUNES if compatible(core, r)), player["region"]),
+            make_charged(
+                core,
+                next(r for r in data.RUNES if compatible(core, r)),
+                player["region"],
+            ),
         )
     player["beta_mode"] = True
     print(
@@ -70,7 +83,71 @@ def grant_collectibles(player):
 
 
 def disable_beta(player):
+    if not player.get("beta_mode") and ("beta_mode" not in player or player.get("beta_clean_restore")):
+        print("Beta mode is already off.")
+        return
+    backup = player.get("beta_backup")
+    if isinstance(backup, dict):
+        restored = deepcopy(backup)
+        player.clear()
+        player.update(restored)
+        player["unlocked_regions"] = set(player["unlocked_regions"])
+        for equipped, bag in (("weapon", "weapons"), ("armour", "armours")):
+            if player.get(equipped):
+                player[equipped] = next(
+                    (item for item in player.get(bag, []) if item == player[equipped]),
+                    player[equipped],
+                )
+        print(
+            "Beta mode off. Your character, supplies and discoveries have been restored to before testing. Test items and test progress were discarded."
+        )
+    else:
+        # Old releases did not record the original inventory. Preserve a recovery
+        # copy, then remove catalogued grants; do not guess at story progress.
+        player["beta_legacy_recovery"] = deepcopy(
+            {
+                key: value
+                for key, value in player.items()
+                if key not in ("beta_backup", "beta_legacy_recovery")
+            }
+        )
+        for bag, catalog in (
+            ("weapons", data.WEAPONS),
+            ("armours", data.ARMOURS),
+            ("staffs", data.STAFFS),
+            ("runes", data.RUNES),
+            ("inventory", data.FOOD_ITEMS + data.LOOT_ITEMS + data.SCROLLS),
+        ):
+            names = {item["name"] for item in catalog}
+            names.update(
+                item["name"]
+                for goods in GOODS.values()
+                for goods_bag, item, _ in goods
+                if goods_bag == bag and isinstance(item, dict)
+            )
+            player[bag] = [
+                item for item in player.get(bag, []) if item["name"] not in names
+            ]
+        for bag in (
+            "cores",
+            "woods",
+            "metals",
+            "cloths",
+            "leathers",
+            "ingredients",
+            "potions",
+            "charged_cores",
+            "elemental_cores",
+        ):
+            player[bag] = []
+        if not player.get("weapons"):
+            sword = deepcopy(data.WEAPONS[0])
+            sword["name"] = "Rusty Sword"
+            player["weapons"] = [sword]
+        player["weapon"] = player["weapons"][0]
+        player["armour"] = None
+        print(
+            "Beta mode off. Removed catalogue test supplies from this older beta save. Its exact pre-beta inventory was not recorded; a recovery copy is retained in the exported save under beta_legacy_recovery. Story progress is unchanged."
+        )
     player["beta_mode"] = False
-    print(
-        "Beta mode off. Your items and discovered places are kept. Postgame services now follow normal chapter requirements."
-    )
+    player["beta_clean_restore"] = True

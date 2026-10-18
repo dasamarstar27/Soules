@@ -23,11 +23,15 @@ class OriginalTests(unittest.TestCase):
         game.player = self.before
 
     def run_inputs(self, values, fn, *args):
-        with patch.object(builtins, "input", side_effect=values), patch.object(builtins, "print"):
+        with patch.object(builtins, "input", side_effect=values), patch.object(
+            builtins, "print"
+        ):
             return fn(*args)
 
     def test_all_original_actions_grouped(self):
-        self.assertEqual(sorted(n for g in GROUPS for n, _ in g["options"]), list(range(1, 49)))
+        self.assertEqual(
+            sorted(n for g in GROUPS for n, _ in g["options"]), list(range(1, 50))
+        )
 
     def test_wander_encounters_day_night_and_level_ten(self):
         from copy import deepcopy
@@ -35,7 +39,7 @@ class OriginalTests(unittest.TestCase):
         for count, level in [(0, 1), (7, 1), (0, 10), (7, 11)]:
             self.p["wander_count"] = count
             self.p["level"] = level
-            with patch.object(game.random, "random", return_value=0.99), patch.object(
+            with patch.object(game.random, "random", return_value=0), patch.object(
                 game.random, "randint", return_value=80
             ), patch.object(game, "fight") as fight, patch("builtins.print"):
                 game.explore()
@@ -44,7 +48,7 @@ class OriginalTests(unittest.TestCase):
                 self.assertGreater(enemy["hp"], 0)
 
     def test_merchant_and_quiet_roll_do_not_start_fights(self):
-        for roll in [5, 15]:
+        for roll in [10, 99]:
             with patch.object(game.random, "random", return_value=0.99), patch.object(
                 game.random, "randint", return_value=roll
             ), patch.object(game, "fight") as fight, patch.object(
@@ -54,7 +58,7 @@ class OriginalTests(unittest.TestCase):
             ):
                 game.explore()
                 fight.assert_not_called()
-                self.assertEqual(merchant.call_count, int(roll == 5))
+                self.assertEqual(merchant.call_count, int(roll == 10))
 
     def test_death_ends_run_without_restoring_character(self):
         import original_ui as ui
@@ -119,8 +123,12 @@ class OriginalTests(unittest.TestCase):
             "builtins.input", side_effect=["1", "y", "0"]
         ), patch("builtins.print") as output:
             game.merchant()
-        lines = [" ".join(str(arg) for arg in call.args) for call in output.call_args_list]
-        self.assertTrue(any(f"1. {weapon['name']} — {price} souls" in line for line in lines))
+        lines = [
+            " ".join(str(arg) for arg in call.args) for call in output.call_args_list
+        ]
+        self.assertTrue(
+            any(f"1. {weapon['name']} — {price} souls" in line for line in lines)
+        )
         self.assertEqual(self.p["gold"], 10)
         self.assertEqual(self.p["weapons"][-1]["name"], weapon["name"])
 
@@ -136,12 +144,16 @@ class OriginalTests(unittest.TestCase):
         self.assertEqual(len(self.p["runes"]), len({r["name"] for r in data.RUNES}))
         self.assertEqual(set(self.p["metals"]), set(data.METALS))
         self.assertEqual(self.p["chapter"], 1)
-        self.assertEqual(self.p["unlocked_regions"], set(data.REGIONS + [data.SECRET_REGION]))
+        self.assertEqual(
+            self.p["unlocked_regions"], set(data.REGIONS + [data.SECRET_REGION])
+        )
         self.assertTrue(all(isinstance(x, dict) for x in self.p["inventory"]))
         sizes = {k: len(v) for k, v in self.p.items() if isinstance(v, list)}
         with patch.object(builtins, "print"):
             grant_collectibles(self.p)
-        self.assertEqual(sizes, {k: len(v) for k, v in self.p.items() if isinstance(v, list)})
+        self.assertEqual(
+            sizes, {k: len(v) for k, v in self.p.items() if isinstance(v, list)}
+        )
 
     def test_beta_unlocks_all_structures_and_can_be_disabled(self):
         from beta_testing import disable_beta
@@ -151,13 +163,15 @@ class OriginalTests(unittest.TestCase):
             grant_collectibles(self.p)
         for region, structures in data.REGION_STRUCTURES.items():
             self.assertTrue(
-                {x["name"] for x in structures}.issubset(self.p["discovered_structures"][region])
+                {x["name"] for x in structures}.issubset(
+                    self.p["discovered_structures"][region]
+                )
             )
         for region, village in data.ELEMENTAL_VILLAGES.items():
             self.assertIn(village["name"], self.p["discovered_structures"][region])
         self.assertTrue(available(self.p))
         gold = self.p["gold"]
-        weapons = deepcopy(self.p["weapons"])
+        weapons = deepcopy(self.p.get("beta_backup", self.p)["weapons"])
         with patch("builtins.print"):
             disable_beta(self.p)
         self.assertFalse(available(self.p))
@@ -175,9 +189,7 @@ class OriginalTests(unittest.TestCase):
             session.send("SAMAR", state["prompt_id"])
             state = session.poll(0)
             self.assertFalse(state["snapshot"]["player"]["beta_mode"])
-            self.assertEqual(
-                len(state["snapshot"]["player"]["unlocked_regions"]), len(data.REGIONS) + 1
-            )
+            self.assertEqual(len(state["snapshot"]["player"]["unlocked_regions"]), 1)
         finally:
             session.close()
 
@@ -220,7 +232,9 @@ class OriginalTests(unittest.TestCase):
         self.p["chapter"] = 2
         self.p["gold"] = 1000
         village = data.ELEMENTAL_VILLAGES[self.p["region"]]
-        self.run_inputs(["1", "1", "3", "1", "4", "y", "6"], village_services, game, village)
+        self.run_inputs(
+            ["1", "1", "3", "1", "4", "y", "6"], village_services, game, village
+        )
         self.assertEqual(self.p["elemental_shop_stock"]["nature"][0], 0)
         self.assertIn("Vine Touch", self.p["elemental_arts"])
         self.assertEqual(self.p["elemental_quests"]["nature"], "accepted")

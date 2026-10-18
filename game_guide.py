@@ -21,6 +21,19 @@ SECTIONS = [
         ],
     ),
     (
+        "new-quality-controls",
+        "Potions, quick equipment, raids, companions and tablets",
+        [
+            "Inventory & Equip → Use carried potions drinks a bottle outside combat. Inventory's detailed list also has option 10 for potions. Healing at full health keeps the bottle. Blending two healing potions shows BREW COMPLETE, the new bottle and its healing amount, then waits for Enter before returning to the village.",
+            "The equipment sidebar has a weapon selector and Equip button, plus a potion selector and Drink button. They work at category and outer village menus. Battles and purchases use their own controls. The sidebar keeps its manual scrollbar and never automatically follows updates.",
+            "Food, scrolls and saleable loot are separate inventory groups. Sell ALL loot only sells trinkets; it preserves food and scrolls. Scroll sales have their own action. Buying takeaway food asks for a positive quantity and charges the full total within the shop's stock.",
+            "At local reputation 10, an inn offers one free rest per 20-wander cycle; the quote shows zero cost. Existing reputation food discounts still apply. Village workers now advance one shift per Wander anywhere, and two shifts on paid or reputation-earned inn rest.",
+            "Three companions travel and assist in fights. You can recruit more: extras stay in Old Village. Visit Old Village option 26, or Companion care → sanctuary, to send a party member home and bring another out. Home companions do not lose hunger while you wander or earn combat evolution XP remotely.",
+            "Settlement raids have 3 attackers at levels 1–8, 4 at 9–16 and 5 from 17 onward. Assign each available worker using the visual role cards, or type the displayed numbers. Cards show level, role effects, current assignments and repair costs. All surviving monsters may act each round. The Season One Woods quest has three waves with 2, 3 and 4 monsters; use Change target to select an opponent.",
+            "Tablet mode in the top bar gives touch-friendly buttons, readable selectors and a tablet layout. It enables automatically on detected tablet-size touch devices and can be toggled manually. Colours, saves and text controls still work. An iPad requires an accessible running server; GitHub downloads contain source code.",
+        ],
+    ),
+    (
         "survival",
         "Health, hunger, mana and death",
         [
@@ -78,7 +91,7 @@ SECTIONS = [
             "Elian's fourth conversation choice, Story journal 9 or clan option 8 opens Protect Whispering Woods. Prepare 2 Timber and 1 Stone in Whispering Woods, repel three attacks, then report to Elian in Old Village. Discovered clans may send volunteers to defend, gather, treat or repair; finding rare clans is optional. Clan option 7 opens settlement raid defence and worker assignments. Clan cores and keepers stay home.",
             "Ironpeak Mountains Quarry is home to Bromm's dwarven bulk-metal shop. Buy a positive quantity within its finite stock. Eight metal types are available initially, fourteen at level 10 and twenty at level 20 or in Season Two. Stocks refresh every 20 wanders.",
             "Village option 25 opens regional specialist traders: herbs and woods in Whispering Woods, cloth in Tundra, runes in Crystal Spire, food on Sunken Coast, hides in Infernal Depths and weapon cores in Riftlands. These are different people; only the Ironpeak quarry traders are dwarves. Riftlands shipments have eight of every ordinary core and a 25% chance of one rare charged core. Opening a menu or loading a save never rerolls it.",
-            "Crafting hub C, specialist shop C or Crimson Forge option 5 sacrifices one loose normal rune into one ordinary weapon core. The charging menu lists compatibility limits and only offers compatible carried runes. Hot cores reject water/tide and ice families; Glacier and Ocean reject hot runes; dark cores reject light families and Celestial rejects dark families. Nature rejects death, necrotic and inferno; Blight rejects life and harmony. Phoenix cannot accept Water. Other normal elements remain allowed; normal rune fusion recipes keep their existing rules.",
+            "Crafting hub C, specialist shop C or Crimson Forge option 5 sacrifices one loose normal rune or one matching-energy fusion into one ordinary weapon core. A fusion is accepted only when BOTH original normal components belong to that core’s listed energy family. A fire/water fusion cannot charge a Phoenix Core; two fire-family components can. The fusion is consumed once and its component abilities and synergy remain in the forged weapon. The charging menu lists compatibility limits and only offers compatible carried runes. Hot cores reject water/tide and ice families; Glacier and Ocean reject hot runes; dark cores reject light families and Celestial rejects dark families. Nature rejects death, necrotic and inferno; Blight rejects life and harmony. Phoenix cannot accept Water. Other normal elements remain allowed; normal rune fusion recipes keep their existing rules.",
             "Enter Crimson Forge through Travel → F or discovered Structures in Crimson Depths. Win its three infestation fights, with time to rest between them. Only its reclaimed hearth can spend a charged core plus one metal and one wood on a named elemental weapon. Each hit activates its permanent native core ability and the sacrificed rune ability. Ordinary village core forging stays physical; protected clan cores and broken-core relics cannot be spent. Charged cores appear in Inventory and forge weapons are protected from automatic duplicate sales and salvage.",
         ],
     ),
@@ -125,7 +138,7 @@ SECTIONS = [
         "companions",
         "Companion food, hunger and evolution",
         [
-            "You may recruit up to three companions met while wandering. Open Character → Companions to see their home region, hunger, evolution progress and acceptable foods. Choose Feed, select a companion, then choose a suitable carried food.",
+            "You may recruit up to three travelling companions, with additional companions housed in Old Village met while wandering. Open Character → Companions to see their home region, hunger, evolution progress and acceptable foods. Choose Feed, select a companion, then choose a suitable carried food.",
             "Each companion eats the food types stocked in its home region, even when you travel elsewhere. For example, an Ember Fox eats Ashen Wastes food, such as Ember Bread. Buy takeaway food and carry it; restaurant meals eaten by you cannot be fed later.",
             "Companion hunger starts at 100 and falls by 5 each wander. Feeding consumes one item and restores that food’s listed hunger. Wrong food, cancellation and feeding a full companion keep your item. Below 30 they rest instead of helping in battle and do not earn battle XP. They remain with you and do not die from hunger.",
             "Feeding does not grant evolution XP. Actual help in a won battle earns combat bond XP: at 20 they become an Awakened form (stage 1); at 60 they gain a named final form (stage 2), such as Sunfire Ember Fox. Juvenile battle companions can help with a weak strike; peaceful companions can earn bond by healing you. Final forms have stronger passive battle support. Evolution progress and battle-level XP are separate; peaceful species evolve but remain peaceful.",
@@ -182,7 +195,7 @@ SECTIONS = [
         "appearance",
         "Dictionary, colours, accessibility and devices",
         [
-            "The title menu contains Dictionary, Tutorial, Customise and Saves. Play / Continue opens your adventure. Dictionary explains normal runes, fusion previews, effects, regional ingredients and potion recipes. Wandering, Weather, World events and Loot tabs show encounter probabilities and the things that can happen; wandering estimates reflect your current discoveries.",
+            "The title menu contains Dictionary, Tutorial, Customise and Saves. Play / Continue opens your adventure. Dictionary → All searches the full content reference: every catalogue item, materials, cores and charging limits, equipment stats, regional loot probabilities, creatures, structures, village services, companions, recipes, quests, construction projects and game systems. Filter by category or search any name, region, ability or material. Show next 60 loads more results. The specialist rune, fusion-preview, effect and potion tabs remain available. Wandering, Weather, World events and Loot tabs show encounter probabilities and the things that can happen; wandering estimates reflect your current discoveries.",
             "Automatic scenery changes colour by region and structure. Customise can fix a theme or set your own background and accent colours. A− and A+ change text size; Compact sidebar changes the status layout. The visible story question also describes the answer box for screen readers.",
             "On Windows extract the download and open Play Soules.bat with Python installed. Keep its server window open while playing in your browser. An iPad needs an accessible hosted server; the GitHub repository itself is source code, not a public play server.",
         ],
@@ -195,9 +208,9 @@ SECTIONS.extend(
             "workers",
             "Village workers and defence assignments",
             [
-                "Enter a village and choose Workers & commissions (22), or use its sidebar button. The smith, weaver, enchanter, alchemist and gathering crew exist only where the village has their service. Their level controls completion time; their quality controls equipment strength or potion yield. The displayed fee and your carried materials are spent when you place the order.",
-                "Collect ready orders in the same village. Productive local actions pass one shift; paid inn rest passes two. Merely opening menus or travelling away does not complete work. Paid work shifts are also available. Gatherers make at most two trips per village per 20-wander cycle. Apprentices enable fully paid batch commissions.",
-                "Community activities (23) opens the village addons. During Village Watch defence you can assign available local specialists to defend, gather, repair or treat wounds. Service level affects their contribution; repair teams require Timber. Ordinary benches, notes, tags, village development and the 100 earlier construction projects remain available.",
+                "Enter a village and choose Workers & commissions (22), or use its sidebar button. The smith, weaver, enchanter, alchemist and gathering crew exist only where the village has their service. Weapon commissions always need one metal, one ordinary core and one wood; supply them yourself or pay the displayed extra price for finite village stock. Their level controls completion time; their quality controls equipment strength or potion yield. The displayed fee and your carried materials are spent when you place the order.",
+                "Collect ready orders in the same village. Productive local actions pass one shift; paid inn rest passes two. Each Wander advances all pending village orders by one shift, even while you are away. Opening menus and ordinary travel do not advance work. Paid work shifts are also available. Gatherers make at most two trips per village per 20-wander cycle. Apprentices enable fully paid batch commissions.",
+                "Community activities (23) opens Adventures. Type the number to the LEFT of Village systems (normally 2), then choose the local activity number 1–10. The labels 21–30 are catalogue IDs, not answers. Each row explains its costs and outcome before selection; 0 goes back. Some activity selections immediately spend their listed resources. During Village Watch defence you can assign available local specialists to defend, gather, repair or treat wounds. Service level affects their contribution; repair teams require Timber. Ordinary benches, notes, tags, village development and the 100 earlier construction projects remain available.",
             ],
         ),
         (
@@ -283,6 +296,7 @@ ACTION_HELP = {
     45: "Buy and equip a mount for travel nourishment and escort benefits.",
     46: "Review active status effects and curing information.",
     48: "Open all 100 addons, villager activities, tactical combat, professions, research and the Season Three expedition.",
+    49: "Drink a carried potion outside combat; healing at full health keeps the bottle. The sidebar also offers quick potion and weapon controls.",
     47: "Search discovered villages, save notes and tags, filter bookmarks and revisit.",
 }
 

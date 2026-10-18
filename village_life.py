@@ -333,22 +333,37 @@ def restaurant(game, village, meal=False):
         return
     food = foods[index]
     price = food_price(p, village, food) + (5 if meal else 0)
-    if remaining.get(food["name"], 0) < 1:
+    quantity = 1
+    if not meal:
+        try:
+            quantity = int(
+                input("How many portions? Enter a positive quantity (0 = cancel) > ")
+            )
+        except ValueError:
+            return
+        if quantity <= 0:
+            return
+    if remaining.get(food["name"], 0) < quantity:
         print("Sold out until the next restock.")
         return
-    if p["gold"] < price:
+    if p["gold"] < price * quantity:
         print("Not enough souls.")
         return
-    p["gold"] -= price
-    remaining[food["name"]] -= 1
+    p["gold"] -= price * quantity
+    remaining[food["name"]] -= quantity
     if meal:
         q = service_quality(p, village, "restaurant")
         p["hunger"] = min(100, p.get("hunger", 100) + food["hunger"] + (q - 1) * 5)
         p["hp"] = min(p["max_hp"], p["hp"] + q * 5)
         print("You enjoy a freshly cooked meal.")
     else:
-        p["inventory"].append(deepcopy(food))
-        print("Food packed for your journey.")
+        p["inventory"].extend(deepcopy(food) for _ in range(quantity))
+        print(
+            str(quantity)
+            + " portions packed for your journey; paid "
+            + str(price * quantity)
+            + " souls."
+        )
 
 
 def harvest(game, village):
@@ -428,7 +443,7 @@ def visit(game, struct, region):
             if info["note"]:
                 print("Your note: " + info["note"])
             print(
-                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor\n19. Material stock (metals / wood / building supplies)\n20. Community projects\n21. Village development history\n22. Village workers / commissions\n23. Community activities / addons\n24. Blend / fortify potions\n25. Regional specialist traders"
+                "1. Buy food to take away\n2. Trading post\n3. Eat carried food\n4. Inn (local price / quality shown in sidebar)\n5. Local errand\n6. Brew potions\n7. Leave\n8. Crafting benches\n9. Blacksmith\n10. Harvest farm\n11. Save village / edit note\n12. Edit village tags\n13. Restaurant meal\n14. Talk to the keeper\n15. Ask for a rumour\n16. Side quest board\n17. Upgrade village buildings\n18. Speak to your mentor\n19. Material stock (metals / wood / building supplies)\n20. Community projects\n21. Village development history\n22. Village workers / commissions\n23. Community activities / addons\n24. Blend / fortify potions\n25. Regional specialist traders\n26. Old Village companion sanctuary"
             )
             before_activity = (
                 game.player["gold"],
@@ -454,6 +469,10 @@ def visit(game, struct, region):
                 restaurant(game, v)
             elif c == "13":
                 restaurant(game, v, meal=True)
+            elif c == "26":
+                from player_qol import sanctuary
+
+                sanctuary(game)
             elif c == "25":
                 from regional_sellers import menu
 
@@ -507,7 +526,13 @@ def visit(game, struct, region):
                 if not has_service(game, "inn"):
                     continue
                 q = service_quality(game.player, v, "inn")
-                cost = 40 + q * 10
+                cost = (
+                    0
+                    if state(game.player, v).get("reputation", 0) >= 10
+                    and state(game.player, v).get("free_rest_cycle")
+                    != cycle(game.player)
+                    else 40 + q * 10
+                )
                 heal = 20 + q * 10
                 if game.player["gold"] < cost:
                     print("Not enough souls.")
@@ -520,6 +545,11 @@ def visit(game, struct, region):
                 ):
                     continue
                 game.player["gold"] -= cost
+                if cost == 0:
+                    state(game.player, v)["free_rest_cycle"] = cycle(game.player)
+                    print(
+                        "The innkeeper offers a free rest for your reputation (once per 20-wander cycle)."
+                    )
                 game.player["hp"] = min(game.player["max_hp"], game.player["hp"] + heal)
                 from village_jobs import advance
                 from food_addons import decay

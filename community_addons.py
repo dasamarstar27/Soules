@@ -7,6 +7,21 @@ import village_life as villages
 from expansion_state import state, mark, pay, choose
 
 
+# Shown before selecting an activity, so costs and the expected input are clear.
+INSTRUCTIONS = {
+    21: "Storehouse: first use spends 30 souls, 3 Timber and 2 Stone. Choose deposit or withdraw, then a material and positive quantity; capacity 100 materials. Stored supplies stay in this village.",
+    22: "Repair roads: choosing this spends 30 souls, 3 Timber and 3 Stone once for this village. Local worker fees fall 20% and gathering yields +1.",
+    23: "Greenhouse: first use spends 25 souls, 3 Timber and 1 Stone. Choose plant or harvest. Planting uses one carried native ingredient, occupies one of two plots, and returns three after three local work shifts.",
+    24: "Village Watch: choose to donate a spare unbound weapon (permanently consumed; watch rank up to 3), or assign available workers and fight a live raid. Repair teams need 1 Timber; you can be hurt in this fight.",
+    25: "Refugee kitchen: choosing this donates one carried food and grants +1 local reputation. Limit two meals per 20-wander cycle.",
+    26: "Visiting specialist: choose a local service, then pay 60 souls. That service gains +2 effective quality for four local activity shifts.",
+    27: "Festival: choosing this spends one carried food and 20 souls once per 20-wander cycle. Answer the numbered lore question for +10 mana and +1 reputation.",
+    28: "Building vote: choose the service you support and pay 15 souls plus 2 Stone. The vote upgrades the winning service one level, up to 5; your choice has two votes. Once per 20-wander cycle.",
+    29: "Clean water: choosing this spends 20 souls, 2 Timber and 3 Stone once. This village's inn and restaurant gain +1 effective quality.",
+    30: "Restore refuge: first defeat this region's guardian. Choosing this spends 150 souls, 8 Timber, 8 Stone and 3 Iron fittings, creating a revisitable refuge; it does not recreate a lost core.",
+}
+
+
 def project(player, village):
     return state(player)["projects"].setdefault(village["id"], {})
 
@@ -23,13 +38,62 @@ def defence(game, village):
     from village_jobs import workers
 
     available = [w for w in workers(p, village) if w["id"] in village["services"]][:3]
-    for worker in available:
-        index = choose("ASSIGN " + worker["name"], roles)
-        if index is None:
-            return
-        assignments.append(
-            dict(worker=worker["name"], role=roles[index], level=worker["level"])
-        )
+    print(
+        "Assign each worker a role by its number. Defend lowers raider attack by worker level; repair also lowers it but the team spends 1 Timber. Treat heals 3 HP per level before battle. Gather brings native ingredients after victory. This starts a live fight; choose 0 during assignment to cancel."
+    )
+    role_labels = [
+        "Defend · reduce raider attack",
+        "Gather · bring ingredients after victory",
+        "Repair · reduce attack; team needs 1 Timber",
+        "Treat · heal before battle",
+    ]
+    previous_panel = ui.assignment
+    try:
+        for worker_index, worker in enumerate(available):
+            level = worker["level"]
+            ui.assignment = dict(
+                village=village["name"],
+                current=worker_index,
+                workers=available,
+                assigned=deepcopy(assignments),
+                threat_count=min(5, 3 + (p["level"] - 1) // 8),
+                roles=[
+                    dict(
+                        name="Defend",
+                        icon="🛡",
+                        detail=f"Reduce each raider's attack by up to {level}.",
+                        answer="1",
+                    ),
+                    dict(
+                        name="Gather",
+                        icon="🌿",
+                        detail=f"Deliver up to {min(6,level)} native ingredients after victory.",
+                        answer="2",
+                    ),
+                    dict(
+                        name="Repair",
+                        icon="🔨",
+                        detail=f"Reduce each raider's attack by up to {level}. Repair team spends 1 Timber total.",
+                        answer="3",
+                    ),
+                    dict(
+                        name="Treat",
+                        icon="💚",
+                        detail=f"Restore up to {level*3} HP before the battle.",
+                        answer="4",
+                    ),
+                ],
+            )
+            index = choose(
+                "ASSIGN " + worker["name"] + " · LEVEL " + str(level), role_labels
+            )
+            if index is None:
+                return
+            assignments.append(
+                dict(worker=worker["name"], role=roles[index], level=level)
+            )
+    finally:
+        ui.assignment = previous_panel
     repair = sum(x["level"] for x in assignments if x["role"] == "repair")
     if repair and not pay(p, materials={"Timber": 1}):
         print("Repair teams need one Timber.")
@@ -40,20 +104,50 @@ def defence(game, village):
     healers = sum(x["level"] for x in assignments if x["role"] == "treat")
     if healers:
         p["hp"] = min(p["max_hp"], p["hp"] + healers * 3)
-    enemy = dict(
-        name=village["name"] + " Siege Raider",
-        hp=45 + p["level"] * 7,
-        atk=max(2, 10 + p["level"] - defenders - repair),
-        **{"def": 2},
-        xp=30,
-        gold=25,
-        intelligent=True
+    enemy_count = min(5, 3 + (p["level"] - 1) // 8)
+    natives = data.NORMAL_MONSTERS.get(
+        village["region"], data.NORMAL_MONSTERS["Whispering Woods"]
+    )
+    base_hp = 45 + p["level"] * 7
+    base_attack = 10 + p["level"]
+    enemies = []
+    for index in range(enemy_count):
+        captain = index == 0
+        enemies.append(
+            dict(
+                name=(
+                    (village["name"] + " Siege Captain")
+                    if captain
+                    else "Rift-touched "
+                    + natives[(cycle + index - 1) % len(natives)]["name"]
+                ),
+                hp=max(
+                    10, int(base_hp * (0.6 if captain else 0.9 / (enemy_count - 1)))
+                ),
+                atk=max(
+                    2,
+                    int(base_attack * (0.55 if captain else 0.65 / (enemy_count - 1)))
+                    - defenders
+                    - repair,
+                ),
+                **{"def": 2 if captain else 1},
+                xp=30 // enemy_count + int(index < 30 % enemy_count),
+                gold=25 // enemy_count + int(index < 25 % enemy_count),
+                intelligent=captain,
+            )
+        )
+    print(
+        f"RAID INCOMING · {enemy_count} monsters: "
+        + ", ".join(enemy["name"] for enemy in enemies)
+    )
+    print(
+        "Defeat the entire raiding party. Attack targets the selected monster; choose Change target to focus another. Every surviving raider can attack each round. Withdraw is available."
     )
     local["defence_assignments"] = assignments
     local["defence_cycle"] = cycle
     from expansion_combat import encounter
 
-    if encounter(game, [enemy], terrain=None):
+    if encounter(game, enemies, terrain=None):
         gatherers = sum(x["level"] for x in assignments if x["role"] == "gather")
         pool = data.REGION_INGREDIENTS.get(village["region"], [])
         if pool:
@@ -80,6 +174,7 @@ def activity(game, feature):
     if not v:
         print("Enter a village first, then choose Community activities.")
         return
+    print(INSTRUCTIONS.get(feature, "Read the numbered options below."))
     local = project(p, v)
     cycle = p.get("wander_count", 0) // 20
     if feature == 21:
@@ -101,7 +196,13 @@ def activity(game, feature):
             return
         name = villages.BUILDING_MATERIALS[material]
         try:
-            amount = int(input("Amount (0 cancel) > "))
+            amount = int(
+                input(
+                    "How many "
+                    + name
+                    + "? Enter a positive whole quantity (0 = cancel) > "
+                )
+            )
         except ValueError:
             return
         if amount <= 0:
@@ -205,7 +306,10 @@ def activity(game, feature):
         mark(p, 25)
         print("A refugee meal served; +1 local reputation.")
     elif feature == 26:
-        service = choose("INVITE A SPECIALIST · 60 SOULS", v["services"])
+        service = choose(
+            "INVITE A SPECIALIST · 60 SOULS",
+            [villages.SERVICE_NAMES.get(key, key) for key in v["services"]],
+        )
         if service is None:
             return
         if local.get("visitor", {}).get("shifts", 0) > 0:
@@ -252,7 +356,10 @@ def activity(game, feature):
         services = [
             key for key in v["services"] if villages.building_level(p, v, key) < 5
         ]
-        index = choose("PUBLIC BUILDING VOTE · 15 SOULS + 2 STONE", services)
+        index = choose(
+            "PUBLIC BUILDING VOTE · 15 SOULS + 2 STONE",
+            [villages.SERVICE_NAMES.get(key, key) for key in services],
+        )
         if index is None:
             return
         if not pay(p, 15, {"Stone": 2}):

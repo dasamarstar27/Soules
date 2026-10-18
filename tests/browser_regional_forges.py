@@ -86,7 +86,7 @@ with sync_playwright() as pw:
             if page.evaluate("packet.prompt") != "Tactical action > ":
                 break
             send(1)
-        assert page.evaluate("packet.prompt") == "Choice > ", page.evaluate(
+        assert page.evaluate("packet.prompt") == "Option number (0 = back) > ", page.evaluate(
             "packet.prompt"
         )
     assert page.evaluate(

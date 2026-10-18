@@ -144,6 +144,7 @@ def original_catalog():
     classes["necromancer"]["skill_desc"] = "Drain 12 HP at level 1, scaling to 35."
     content = catalog()
     from rune_pairs import BASE
+    content["runes"] = list(BASE.values())
 
     content["recipes"] = [
         r
@@ -155,6 +156,8 @@ def original_catalog():
     import data
     from wander_reference import reference
     content['exploration'] = reference()
+    from item_reference import reference as item_reference
+    content['encyclopedia'] = item_reference()
     content['potions'] = [dict(recipe, ingredients=sorted(pair)) for pair, recipe in data.INGREDIENT_COMBOS.items()]
 
     return jsonify(groups=GROUPS, classes=classes, content=content, guide=GUIDE)
@@ -169,8 +172,11 @@ def original_fusion_preview():
     except (KeyError, ValueError):
         return jsonify(error="Choose two normal rune types."), 400
     from effects import EFFECTS
+    from core_charging import compatible
+    import data
 
     return jsonify(
+        compatible_cores=[core for core in data.CORES if compatible(core, result)],
         result=result,
         pair_count=PAIR_COUNT,
         components=[dict(key=key, **EFFECTS[key]) for key in result["components"]],
