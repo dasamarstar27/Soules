@@ -79,7 +79,7 @@ def snapshot():
         ),
         player=clean(_ui.player) if _ui else None,
         enemy=clean(_ui.current_enemy) if _ui else None,
-        objective=__import__("source_story").objective(_ui.player) if _ui else None,
+        objective=(__import__("season_three").objective(_ui.player) if _ui.player.get("chapter",1)>=3 else __import__("source_story").objective(_ui.player)) if _ui else None,
         phase=_phase,
         group=_group,
     )

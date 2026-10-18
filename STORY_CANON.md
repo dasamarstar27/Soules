@@ -32,7 +32,7 @@ Repairing the present damage does not erase or replace the ancient warriors' sac
 
 ## Season Three: the overarching antagonist
 
-Season Three reveals that the same overarching antagonist behind the wider story caused the rift to reopen and the Dreamscape to return. Their identity, motive, connection to the ancient king and relationship with the Season Two villain remain open for development. Do not reveal this cause during Chapter One or replace it with an unrelated accidental reopening.
+Season Three reveals that the same overarching antagonist behind the wider story caused the rift to reopen and the Dreamscape to return. The antagonist wants to destroy the male Creator and steal his Book and Pen of Creation; this objective is revealed only in Season Three. The Creator is capable of both benevolence and cruelty. The antagonist’s personal identity and underlying motive remain undisclosed. The implemented archive connects its instructions to Vael’s sabotage without settling its earlier history. Do not reveal this cause during Chapter One or replace it with an unrelated accidental reopening.
 
 The Creator is not a required boss for either previous ending.
 

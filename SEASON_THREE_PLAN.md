@@ -1,21 +1,16 @@
-# Season Three proposal: Beyond the Broken Bridge
+# Season Three: Beyond the Broken Bridge
 
-This is a proposal, not implemented content. It follows the repaired stabiliser at the end of Season Two.
+Implemented in `season_three.py`, using the shared tactical combat and expansion state. Entry requires the Season Two stabiliser repair, 50 souls, two Timber and two carried foods. This is a text campaign with named expedition areas within the optional Creator’s Realm, rather than additional main-region unlock gates.
 
-Chapter One is the Dreamscape monster invasion. Season Two is the deliberate Core Stabiliser sabotage and broken bridge. Season Three should explore the consequences of briefly opening that bridge instead of repeating either plot.
+1. Travel by a controlled expedition to the Written Shore and meet Sera, an exiled archivist.
+2. Tune two protected broken-core fragments to the ward. The fragments remain in your collection.
+3. Defeat the Margin Warden. Public trust earned through earlier choices can reduce its attack.
+4. Enter the Archive of Beginnings. The same hidden antagonist is connected to the reopened Dreamscape rift and the instructions behind the Season Two sabotage. **Only here** is its objective revealed: destroy the male Creator and seize his Book and Pen of Creation. Its underlying motive and personal identity remain concealed. The Creator is capable of both kindness and cruelty.
+5. Choose the village council, archivists or clan wardens as your alliance. All four keeper testimonies are required; the cores remain in their villages.
+6. Prepare one of two paired-element recipes: Flame + Ice → Dawn-and-Dusk Blade, or Nature + Light → Living Radiance Staff. Each costs two normal runes and 75 souls. Both component abilities work and the inscription is permanent.
+7. Stop the Hidden Hand in the Hall of Creation.
+8. Choose custody: the Creator under witnessed limits, a village council, or a seal maintained by the clans. Sera preserves the records and completes her quest. The optional two-enemy Unwritten Vault opens afterward, with one reward per exploration cycle.
 
-Season Three reveals that the same overarching antagonist behind the wider story deliberately reopened the rift, returning the Dreamscape and its king to the world. The player follows the connection between the ancient seal, the present invasion and the later bridge sabotage. The antagonist's identity and motives remain open for the game's creator to decide. Messages in repaired conduits and disagreements among the surviving villages can lead into this investigation.
+Chapter One still ends at the Dreamscape King after all main regions are unlocked. Season Two still ends at the repaired stabiliser after the five-month rebuilding interlude. Neither requires defeating the Creator. No villain motive has been invented as settled canon.
 
-Possible additions:
-
-- A new frontier beyond the bridge, entered through a controlled expedition rather than another accidental stabiliser failure.
-- Village alliances and dialogue choices that affect who joins the expedition.
-- Paired-element crafting and profession specialties, keeping weapon runes permanent.
-- A shared settlement project and expedition supply planning.
-- Optional endgame dungeons and the overarching antagonist whose actions connect the earlier crises.
-
-The Creator's role and identity are still for the game's creator to decide. Do not make fighting the Creator a requirement for either previous ending.
-
-First milestone: one expedition area, one NPC questline and two paired-element recipes. Test these before expanding into a full campaign. Preserve saves, finite supplies and the text adventure with its live sidebar.
-
-Implemented preparation: ruins across all regions can yield protected tomes and fragments of the eleven destroyed cores. They have no sale or crafting path yet. Season Three should reveal their purpose without requiring players to have guessed which ordinary loot to keep. The four surviving clan cores remain intact.
+Validation: the complete progression, gates, protected fragments/cores, two crafting inputs, battle transitions and ending are exercised in `tests/test_expansion_systems.py`; paired staff permanence has a separate real-effect regression check.

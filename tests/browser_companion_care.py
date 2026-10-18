@@ -14,8 +14,8 @@ with sync_playwright() as p:
     page.goto('http://127.0.0.1:5000')
     page.locator('[data-view="tutorial"]').click()
     page.wait_for_selector('.guide-section')
-    assert page.locator('#guide-actions li').count() == 47
-    for phrase in ['Companion food, hunger and evolution', '100 community projects', '8,778', '20 additional side quests', 'not connected multiplayer']:
+    assert page.locator('#guide-actions li').count() == 48
+    for phrase in ['Companion food, hunger and evolution', '100 community projects', '8,778', '20 additional side quests', 'Shared trades']:
         assert phrase in page.locator('#page-screen').text_content(), phrase
     assert 'DAMAR' not in page.locator('#page-screen').text_content()
     assert 'SAMAR' not in page.locator('#page-screen').text_content()
@@ -55,14 +55,14 @@ with sync_playwright() as p:
     assert page.evaluate('packet.prompt') == 'Companions > '
     assert 'Ember Bread' in page.locator('#terminal').inner_text()
     send('1'); send('1'); send('1')
-    assert page.evaluate('packet.snapshot.player.companions[0].stage') == 1
-    assert page.evaluate('packet.snapshot.player.companions[0].form_name') == 'Awakened Ember Fox'
+    assert page.evaluate('packet.snapshot.player.companions[0].stage') == 0
+    assert page.evaluate('packet.snapshot.player.companions[0].bond_xp') == 0
     assert page.evaluate('packet.snapshot.player.companions[0].hunger') == 20 + food['hunger']
     assert page.evaluate('packet.snapshot.player.inventory.length') == 3
     assert f"Hunger {20 + food['hunger']}/100" in page.locator('#status-sidebar').inner_text()
     send('0')
     save = page.evaluate('safeSave()')
-    save['player']['companions'][0]['xp'] = 5
+    save['player']['companions'][0].update(stage=2,xp=60,bond_xp=60,helped_victories=12)
     save['player']['companions'][0]['hunger'] = 20
     page.evaluate('async save=>{await start({save});}', save)
     page.wait_for_function("packet.snapshot.phase === 'main' && !busy")
@@ -77,5 +77,5 @@ with sync_playwright() as p:
     Path('/tmp/soules-checks').mkdir(exist_ok=True)
     page.screenshot(path='/tmp/soules-checks/companion-care-mobile.png', full_page=True)
     assert not errors, errors
-    print('PASS: large question in story area, comprehensive 47-action tutorial, mode off in category, regional feeding, named evolutions, finite food, sidebar and mobile')
+    print('PASS: large question in story area, comprehensive 48-action tutorial, mode off in category, regional feeding, named evolutions, finite food, sidebar and mobile')
     browser.close()

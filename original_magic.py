@@ -40,7 +40,12 @@ def apply(rune, user, enemy):
     source = proxy(user)
     target = source if enemy is user else proxy(enemy)
     log = []
-    for key in register(rune):
+    components = register(rune)
+    if "region" in user:
+        from magic_addons import record_cast
+
+        record_cast(user, rune, components)
+    for key in components:
         destination = source if effects.EFFECTS[key]["target"] == "self" else target
         owner = user if destination is source else enemy
         owner.setdefault("rune_abilities", {})[key] = dict(
@@ -54,7 +59,9 @@ def apply(rune, user, enemy):
         )
         effects.apply(destination, key, log, source)
         if destination is not source and before > destination["hp"] and multiplier > 1:
-            effects.hurt(destination, (before - destination["hp"]) * (multiplier - 1), log)
+            effects.hurt(
+                destination, (before - destination["hp"]) * (multiplier - 1), log
+            )
     sync(user, source)
     if enemy is not user:
         sync(enemy, target)
@@ -78,18 +85,41 @@ def damage(source, target, amount):
     actor = proxy(source)
     victim = proxy(target)
     ratio = effects.stat(actor, "atk") / max(1, actor.get("atk", 1))
-    return max(1, int(amount * ratio + target.get("def", 0) - effects.stat(victim, "def")))
+    return max(
+        1, int(amount * ratio + target.get("def", 0) - effects.stat(victim, "def"))
+    )
 
 
 def strike(source, target, amount, magical=False):
     actor = proxy(source)
     victim = proxy(target)
     log = []
+    # Ritual swiftness improves evasion only while its encounter counter lasts.
+    from legacy_systems import ritual_bonus
+    import random
+
+    if ritual_bonus(target, "spd") and random.random() < 0.04 * ritual_bonus(
+        target, "spd"
+    ):
+        print("Ritual swiftness carries you clear of the strike.")
+        return 0
+    # Equipment wards and rituals modify the already calculated strike once.
+    armour = target.get("armour") or {}
+    amount = max(1, round(amount * (1 - min(0.4, armour.get("damage_reduction", 0)))))
+    if (target.get("weapon") or {}).get("slow_strikes"):
+        amount = round(amount * 1.12)
+    if magical:
+        amount = max(
+            1, round(amount * (1 - min(0.5, armour.get("element_resistance", 0))))
+        )
+    amount = max(1, amount + ritual_bonus(source, "atk") - ritual_bonus(target, "def"))
     # Original damage calculation already accounts for equipment and defence.
     dealt = effects.hit(actor, victim, amount, log, piercing=True, magical=magical)
     for _ in range(max(0, int(effects.total(actor, "attack_count")) - 1)):
         if victim["hp"] > 0:
-            dealt += effects.hit(actor, victim, amount, log, piercing=True, magical=magical)
+            dealt += effects.hit(
+                actor, victim, amount, log, piercing=True, magical=magical
+            )
     sync(source, actor)
     sync(target, victim)
     emit(log)

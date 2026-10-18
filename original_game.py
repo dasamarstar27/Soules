@@ -165,15 +165,34 @@ def update_companion_evolution():
 
 
 def apply_companion_support(enemy):
-    from companion_care import ready, form_name
+    from companion_care import ready, form_name, normalise
 
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get("systems", {}).get("mode", {}).get("id") == "solo_challenge": return
     for companion in player.get("companions", []):
+        normalise(companion, player['region'])
+        if companion['hunger'] < 30:
+            continue
+        if not companion.get('can_battle'):
+            if player['hp'] < player['max_hp']:
+                player['hp'] = min(player['max_hp'], player['hp']+1+companion.get('stage',0)+int(companion.get('temperament')=='gentle'))
+                companion['helped_this_battle'] = True
+            continue
         if not ready(companion):
+            continue
+        if enemy.get('hp',0)<=0:
+            continue
+        if companion.get('stage',0)>0 and companion.get('element') in ('nature','light') and player['hp']>=player['max_hp']:continue
+        if companion.get('stage',0)>0 and companion.get('element')=='water' and enemy.get('def',0)<=0:continue
+        companion['helped_this_battle'] = True
+        if companion.get('stage',0) == 0:
+            enemy['hp'] -= 1
+            print(companion['name']+' helps with a small strike (1 damage).')
             continue
         enemy.setdefault("status", {})
         enemy.setdefault("active_buffs", {})
         elem = companion["element"]
-        strength = 2 if companion.get("stage", 0) >= 2 else 1
+        strength = (2 if companion.get("stage", 0) >= 2 else 1) + (1 if companion.get("accessory") else 0) + (1 if companion.get("temperament")=="bold" else 0)
         print(f"✨ {form_name(companion)} assists in battle with {elem} power!")
         if elem == "fire":
             enemy["hp"] -= 3 * strength
@@ -193,12 +212,12 @@ def apply_companion_support(enemy):
         elif elem == "void":
             enemy.setdefault("status", {})["void"] = max(enemy["status"].get("void", 0), strength)
         elif elem == "light":
-            player["hp"] = min(player["max_hp"], player["hp"] + 3 * strength)
+            player["hp"] = min(player["max_hp"], player["hp"] + 3 * strength + int(companion.get('temperament')=='gentle'))
         elif elem == "nature":
-            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength)
+            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength + int(companion.get('temperament')=='gentle'))
         elif elem == "soul":
             enemy["hp"] -= 2 * strength
-            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength)
+            player["hp"] = min(player["max_hp"], player["hp"] + 2 * strength + int(companion.get('temperament')=='gentle'))
         elif elem == "arcane":
             enemy["hp"] -= 3 * strength
         elif elem == "crystal":
@@ -918,6 +937,7 @@ def equip_weapon():
 
 
 def gain_xp(x):
+    update_challenge_progress("xp_gain", x)
     player["xp"] += x
     need = player["level"] * 50
 
@@ -934,6 +954,7 @@ def gain_xp(x):
         icon = cls.get("icon", "⭐")
         print(f"{icon} LEVEL UP! You are now level {player['level']}!")
         print(f"   +1 Skill Point (total: {player['skill_points']}) — spend via option 19")
+        update_challenge_progress("level_reach", player["level"])
         _check_achievements()
 
 
@@ -956,6 +977,10 @@ def process_buffs():
 
 
 def blacksmith():
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get('systems',{}).get('mode',{}).get('id')=='budget_run':
+        print('Budget Run blocks purchases. End the mode to use this service.')
+        return
     import sys
     from village_life import require_service, smith
 
@@ -1102,6 +1127,8 @@ def forge_weapon():
     from source_story import rank, craft_xp
 
     crafted["atk"] += rank(player, "smithing") - 1
+    from artisan_addons import apply_traits
+    apply_traits(player, crafted, "smithing")
     player["weapons"].append(crafted)
     craft_xp(player, "smithing")
     # STORE NEW COMBINATION
@@ -1157,6 +1184,11 @@ def use_staff(enemy):
     from original_magic import strike, damage
 
     strike(player, enemy, damage(player, enemy, dmg), magical=True)
+    if staff.get('paired_effects'):
+        for effect in staff['paired_effects']:
+            apply_rune_effect({'name':'Paired channel','effect':effect},player,enemy)
+        print('The paired staff channels its permanent inscription.')
+        return
     bound = staff.pop("rune", None)
     if bound:
         apply_rune_effect(bound, player, enemy)
@@ -1327,6 +1359,8 @@ def merge_runes():
     recipe = None
     player["runes"].pop(second)
     player["runes"].pop(first)
+    from magic_addons import record_fusion
+    record_fusion(player, fusion_rune)
     player["runes"].append(fusion_rune)
 
     print(f"🔮 Created {fusion_rune['name']}!")
@@ -1410,6 +1444,10 @@ def cast_spell():
 
 
 def merchant():
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get('systems',{}).get('mode',{}).get('id')=='budget_run':
+        print('Budget Run blocks purchases. End the mode to use this service.')
+        return
     from copy import deepcopy
 
     region = player["region"]
@@ -1499,9 +1537,12 @@ def _use_class_skill(cls, enemy):
 
 
 def _use_companion_move(companions, enemy):
-    from companion_care import ready
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get('systems',{}).get('mode',{}).get('id')=='solo_challenge':
+        print('Solo mode disables companion battle moves.');return False
+    from companion_care import active_ready
 
-    battle_ready = [c for c in companions if ready(c)]
+    battle_ready = [c for c in companions if active_ready(c)]
     if not battle_ready:
         print("🐾 Companions need stage 1 and at least 30 hunger to use battle moves. Feed them through Character → Companions.")
         return False
@@ -1517,6 +1558,7 @@ def _use_companion_move(companions, enemy):
     if not (0 <= idx < len(battle_ready)):
         return False
     chosen = battle_ready[idx]
+    chosen['helped_this_battle'] = True
     elem = chosen.get("element", "")
     move = COMPANION_MOVES.get(elem, {})
     print(f"\n💫 {chosen.get('form_name', chosen['name'])} uses {move.get('name', '?')}!")
@@ -1761,6 +1803,8 @@ def skill_tree():
 
 
 def fight(enemy, boss=False):
+    from expansion_hooks import scale_enemy
+    enemy = scale_enemy(player, enemy)
     enemy = enemy.copy()
     enemy["boss"] = bool(boss)
     player.pop("_rune_previous", None)
@@ -1793,6 +1837,8 @@ def fight(enemy, boss=False):
         )
     print("⚔", enemy["name"])
 
+    for pet in player.get('companions', []):
+        pet.pop('helped_this_battle', None)
     companion_move_used = False  # reset per fight
     player["resonance_streak"] = player.get("resonance_streak", 0)  # persist across turns
 
@@ -1876,7 +1922,10 @@ def fight(enemy, boss=False):
                     ),
                     None,
                 )
-                if recipe:
+                from food_addons import food_state
+                if pname in food_state(player).get("blends",{}):
+                    _apply_potion_effect("blend",pname)
+                elif recipe:
                     _apply_potion_effect(recipe["effect"], pname)
                 elif pname == "Health Potion":
                     player["hp"] = min(player["max_hp"], player["hp"] + 50)
@@ -1964,6 +2013,8 @@ def fight(enemy, boss=False):
                 lifesteal_pct += 0.20
             if "vampiric_strike" in player.get("skills", []):
                 lifesteal_pct += 0.15
+            from expansion_state import state as expansion_state
+            lifesteal_pct += expansion_state(player).get('systems',{}).get('equipment_collection_bonus',{}).get('lifesteal',0)
             if lifesteal_pct > 0:
                 heal = max(1, int(dmg * lifesteal_pct))
                 player["hp"] = min(player["max_hp"], player["hp"] + heal)
@@ -2111,10 +2162,15 @@ def fight(enemy, boss=False):
             print("✨ Rebirth activated! You return to half health.")
 
     if player["hp"] > 0:
+        from expansion_hooks import finish_battle
+        finish_battle(player, True)
         # ── Feature 2: Bestiary kill tracking ──
         record_kill(enemy["name"])
         # ── Feature 10: Companion XP ──
         award_companion_xp(10 if boss else 5)
+        from companion_care import battle_credit
+
+        battle_credit(player, 10 if boss else 5)
         if enemy.get("_story_boss"):
             from source_story import victory
 
@@ -2164,6 +2220,8 @@ def fight(enemy, boss=False):
                     print(f"🌍 {next_region} has been unlocked!")
                 if player["region"] not in player.setdefault("bosses_defeated", []):
                     player["bosses_defeated"].append(player["region"])
+                update_challenge_progress("boss_kill")
+                update_challenge_progress("region_boss_clear", player["region"])
                 if player["region"] == "The Dreamscape" and all(
                     r in player["unlocked_regions"] for r in REGIONS
                 ):
@@ -2354,6 +2412,10 @@ def _show_achievements():
 def _handle_wander_event(event_id, region):
     """Handle a random wander event."""
     if event_id == "wandering_merchant":
+        from expansion_state import state as expansion_state
+        if expansion_state(player).get('systems',{}).get('mode',{}).get('id')=='budget_run':
+            print('Budget Run: you pass the merchant without buying.')
+            return
         print("\n🛒 The merchant spreads out a small collection of goods.")
         pool = MERCHANT_ITEMS.get(region, [])
         if not pool:
@@ -2509,6 +2571,8 @@ def explore():
     from companion_care import wander as companion_hunger
 
     companion_hunger(player)
+    from expansion_hooks import on_wander
+    on_wander(__import__(__name__))
 
     from source_story import anomaly
 
@@ -2546,6 +2610,10 @@ def explore():
         print(f"🍖 You are STARVING! You take {dmg} damage. Find a village and eat!")
     elif h < 30:
         print(f"🍖 You are hungry ({h}/100). Find a village before you weaken further.")
+
+    from expedition import before_wander
+    if before_wander(__import__(__name__)):
+        return
 
     # ── Structure discovery (12% chance per wander, undiscovered only) ──
     region_structs = REGION_STRUCTURES.get(r, [])
@@ -2682,6 +2750,9 @@ def travel():
         region = ordered[index]
     player["region"] = region
     player["current_location"] = region
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get("systems", {}).get("mount"):
+        player["hunger"] = min(100, player.get("hunger",100)+2)
     print("Travelled to " + region)
     advance_quest("reach_region", region)
     if choice == "f":
@@ -2697,13 +2768,14 @@ _FOOD_BY_NAME = {f["name"]: f for f in FOOD_ITEMS}
 
 def _eat_food():
     """Let the player eat food from inventory to restore hunger."""
-    foods = [i for i in player.get("inventory", []) if i.get("name") in _FOOD_BY_NAME]
+    from food_addons import is_food, catalog
+    foods = [i for i in player.get("inventory", []) if is_food(i) or i.get("name") in _FOOD_BY_NAME]
     if not foods:
         print("  (You have no food in your inventory.)")
         return
     print("\n🍖 Your food:")
     for idx, item in enumerate(foods):
-        fd = _FOOD_BY_NAME[item["name"]]
+        fd = _FOOD_BY_NAME.get(item["name"], catalog(item))
         print(f"  {idx}. {item['name']}  (+{fd['hunger']} hunger)")
     try:
         c = int(input("  Eat which? (-1 to cancel) > "))
@@ -2711,13 +2783,28 @@ def _eat_food():
         return
     if 0 <= c < len(foods):
         chosen = foods[c]
-        fd = _FOOD_BY_NAME[chosen["name"]]
+        fd = _FOOD_BY_NAME.get(chosen["name"], catalog(chosen))
         player["hunger"] = min(100, player.get("hunger", 100) + fd["hunger"])
+        player["hp"] = min(player["max_hp"], player["hp"]+fd.get("also_heal",0))
         player["inventory"].remove(chosen)
         print(f"  You eat the {chosen['name']}. Hunger: {player['hunger']}/100")
 
 
 def _apply_potion_effect(effect, name):
+    from food_addons import toxicity, food_state
+    toxicity(player)
+    if effect=='blend':
+        blend=food_state(player).get('blends',{}).get(name)
+        if blend:
+            amount=max(0,min(120,blend.get('heal',0)))
+            player['hp']=min(player['max_hp'],player['hp']+amount)
+            print(f'The blended potion restores up to {amount} HP.')
+        return
+    if player.get('faction')=='light_clergy' and effect.startswith('heal_') and effect[5:].isdigit():
+        player['hp']=min(player['max_hp'],player['hp']+int(effect[5:])//4)
+    for status in {'Frost Tonic':['freeze'],'Stone Balm':['bleed'],'Dream Tonic':['sleep','fear']}.get(name,[]):
+        player.setdefault('status',{}).pop(status,None)
+        player.setdefault('rune_status',{}).pop(status,None)
     if effect == "heal_20":
         player["hp"] = min(player["max_hp"], player["hp"] + 20)
         print(f"  ✨ +20 HP!")
@@ -2887,7 +2974,8 @@ def _ingredient_brew_menu():
         ing_b = unique_ings[b_idx]
 
     combo_key = frozenset([ing_a, ing_b])
-    result = INGREDIENT_COMBOS.get(combo_key)
+    from food_addons import brew_recipe
+    result = brew_recipe(player, ing_a, ing_b)
 
     # Remove ingredients from player pouch
     try:
@@ -2906,6 +2994,10 @@ def _ingredient_brew_menu():
             ings.append(ing_b)
             print("The skilled lab preserved one ingredient!")
         craft_xp(player, "alchemy")
+        update_challenge_progress("craft_count")
+        from food_addons import food_state
+        discovered = food_state(player).setdefault("discovered", [])
+        if result["name"] not in discovered: discovered.append(result["name"])
         print(f"  ✨ You brew: {result['name']}!")
         print(f"     {result['desc']}")
         use_now = input("  Use now? (y/n) > ").strip().lower()
@@ -3338,7 +3430,7 @@ def visit_shrine(struct):
     if c in ("1", "2", "3", "4") and player["gold"] < cost:
         print(f"  The shrine demands {cost} souls.")
         print("while in the shrine you find a weapon core")
-        loot = random.choice(CORES)
+        loot = random.choice(list(CORES))
         player["cores"].append(loot)
         print(f"It is a {loot} core ")
         return
@@ -3549,7 +3641,7 @@ def visit_camp(struct, region):
         print("  You leave the camp.")
         print("while near the camp you notice a fallen tree")
         print("you harvest wood from the tree")
-        loot = random.choice(WOODS)
+        loot = random.choice(list(WOODS))
         player["woods"].append(loot)
         print(f"You found a {loot} wood")
 
@@ -3888,7 +3980,10 @@ def _give_elemental_core(core_name):
 
 def _fight_elemental_boss(boss_data):
     """Special boss fight that applies elemental status effects every N turns."""
-    boss = boss_data.copy()
+    from expansion_hooks import scale_enemy
+    boss = scale_enemy(player, boss_data.copy())
+    for pet in player.get('companions', []):
+        pet.pop('helped_this_battle', None)
     boss["boss"] = True
     player.pop("_rune_previous", None)
     boss.setdefault("status", {})
@@ -4003,6 +4098,11 @@ def _fight_elemental_boss(boss_data):
 
     if player["hp"] > 0:
         print(f"\n🏆 You defeated {boss['name']}!")
+        from expansion_hooks import finish_battle
+        from companion_care import battle_credit
+        finish_battle(player, True)
+        award_companion_xp(20)
+        battle_credit(player, 10)
         _give_elemental_core(boss["drop"])
         gain_xp(150)
         player["gold"] += 150
@@ -4147,6 +4247,10 @@ def _apply_charged_weapon_effect(enemy):
     """Called after a weapon attack — apply elemental on-hit if weapon is infused."""
     w = player.get("weapon")
     if not w or not w.get("elemental_charged"):
+        return
+    if w.get('paired_effects'):
+        for effect in w['paired_effects'][1:]:
+            apply_rune_effect({'name':'Paired channel','effect':effect},player,enemy)
         return
     eff = w.get("on_hit_effect", "burn")
     icon = _ELEM_ICONS.get(w.get("element", "fire"), "✨")
@@ -4405,6 +4509,7 @@ def advance_world_event():
 
 
 def record_kill(enemy_name):
+    update_challenge_progress("kill_count")
     from source_story import first_victory
 
     first_victory(player)
@@ -4533,65 +4638,11 @@ def get_set_def_bonus():
 
 
 def try_prestige():
-    if player["region"] != "The Dreamscape":
-        return
-    pl = player.get("prestige_level", 0)
-    if pl >= 3:
-        print("\n★★★ MAXIMUM PRESTIGE achieved. Your legend is eternal. ★★★")
-        return
-    print(f"\n{'═' * 46}")
-    print(f"  ✨ PRESTIGE AVAILABLE — Level {pl} → {pl + 1}")
-    print(f"  Reset to Lv.1, keep title & achievements.")
-    print(f"  Gain: all base stats start {(pl + 1) * 10 + 100}% of normal.")
-    print(f"  Type 'prestige' to ascend, anything else to skip.")
-    print(f"{'═' * 46}")
-    c = input("> ").strip().lower()
-    if c != "prestige":
-        print("  You choose to remain — for now.")
-        return
-    new_pl = pl + 1
-    saved_title = player.get("title")
-    saved_ach = list(player.get("achievements", []))
-    saved_cores = list(player.get("forge_cores", []))
-    saved_bosses = list(player.get("bosses_defeated", []))
-    multiplier = 1.0 + new_pl * 0.10
-    player.update(
-        {
-            "hp": int(100 * multiplier),
-            "max_hp": int(100 * multiplier),
-            "atk": int(10 * multiplier),
-            "def": int(5 * multiplier),
-            "speed": 5,
-            "level": 1,
-            "xp": 0,
-            "xp_needed": 100,
-            "gold": 50,
-            "inventory": [],
-            "weapons": [],
-            "armours": [],
-            "runes": [],
-            "staffs": [],
-            "quests": [],
-            "potions": [],
-            "kill_counts": {},
-            "corruption": 0,
-            "resonance_streak": 0,
-            "resonance_ready": False,
-            "active_set": None,
-            "set_crit_counter": 0,
-            "companion_xp": {},
-            "companion_levels": {},
-            "prestige_level": new_pl,
-            "prestige_bonus": new_pl * 10,
-            "title": saved_title,
-            "achievements": saved_ach,
-            "forge_cores": saved_cores,
-            "bosses_defeated": saved_bosses,
-            "unlocked_regions": {list(REGIONS.keys())[0]},
-        }
-    )
-    print(f"\n🏅 PRESTIGE {new_pl} ASCENSION COMPLETE!")
-    print(f"  All base stats are now {int(multiplier * 100)}% of normal. The legend grows.")
+    if player['region']!='The Dreamscape' or player.get('prestige_level',0)>=3:return
+    if input('Begin a fresh prestige journey with stronger starting stats? (prestige/cancel) > ').strip().lower()=='prestige':
+        import sys
+        from legacy_workshops import ascend
+        ascend(sys.modules[__name__])
 
 
 def weapon_fusion():
@@ -4649,7 +4700,7 @@ def award_companion_xp(amount):
     cxp = player.setdefault("companion_xp", {})
     clvl = player.setdefault("companion_levels", {})
     for c in companions:
-        if c.get("hunger", 100) < 30:
+        if c.get("hunger", 100) < 30 or not c.get("helped_this_battle"):
             continue
         name = c["name"]
         cxp[name] = cxp.get(name, 0) + amount
@@ -4769,6 +4820,17 @@ def bind_rune_staff():
 # GAME LOOP
 # =========================
 def perform_original_action(c):
+    from legacy_systems import menu as system_menu
+    legacy = {'29':'cosmetics','30':'guild','31':'events','32':'modes','35':'ngplus','36':'battle_pass','37':'rituals','38':'arena','39':'recipes','40':'market','41':'town','42':'daily','43':'factions','44':'treasure','45':'mounts'}
+    if c in legacy:
+        import sys
+        system_menu(sys.modules[__name__], legacy[c])
+        return True
+    if c == '48':
+        import sys
+        from addons import hub
+        hub(sys.modules[__name__])
+        return True
     if c == "1":
         explore()
     elif c == "2":
@@ -5074,6 +5136,8 @@ def craft_armor():
 
     armor_piece["def"] += (quality("loom") - 1) * 2 + rank(player, "weaving") - 1
     craft_xp(player, "weaving")
+    from artisan_addons import apply_traits
+    apply_traits(player, armor_piece, "weaving")
     player.setdefault("armours", []).append(armor_piece)
     player.setdefault("crafted_armor", []).append(armor_piece)
 
@@ -5129,74 +5193,23 @@ def travel_to_location():
 
 
 def init_daily_challenges():
-    """Initialize or reset daily challenges"""
-    import datetime
-
-    today = datetime.date.today().isoformat()
-
-    if player.get("last_daily_reset") != today:
-        player["last_daily_reset"] = today
-        player["daily_challenges"] = {}
-        for challenge in DAILY_CHALLENGES:
-            player["daily_challenges"][challenge["id"]] = {"progress": 0, "completed": False}
+    from challenge_progress import initialise
+    initialise(player)
 
 
 def init_weekly_challenges():
-    """Initialize or reset weekly challenges"""
-    import datetime
-
-    week_start = (
-        datetime.date.today() - datetime.timedelta(days=datetime.date.today().weekday())
-    ).isoformat()
-
-    if player.get("last_weekly_reset") != week_start:
-        player["last_weekly_reset"] = week_start
-        player["weekly_challenges"] = {}
-        for challenge in WEEKLY_CHALLENGES:
-            player["weekly_challenges"][challenge["id"]] = {"progress": 0, "completed": False}
+    from challenge_progress import initialise
+    initialise(player)
 
 
 def update_challenge_progress(challenge_type, amount=1):
-    """Update challenge progress when actions occur"""
-    init_daily_challenges()
-    init_weekly_challenges()
-
-    # Daily challenges
-    for challenge_id, data in player["daily_challenges"].items():
-        challenge = next((c for c in DAILY_CHALLENGES if c["id"] == challenge_id), None)
-        if not challenge or data["completed"]:
-            continue
-
-        if challenge["type"] == challenge_type:
-            data["progress"] += amount
-            if data["progress"] >= challenge["target"]:
-                data["completed"] = True
-                claim_challenge_reward(challenge, "daily")
-
-    # Weekly challenges
-    for challenge_id, data in player["weekly_challenges"].items():
-        challenge = next((c for c in WEEKLY_CHALLENGES if c["id"] == challenge_id), None)
-        if not challenge or data["completed"]:
-            continue
-
-        if challenge["type"] == challenge_type:
-            data["progress"] += amount
-            if data["progress"] >= challenge["target"]:
-                data["completed"] = True
-                claim_challenge_reward(challenge, "weekly")
+    from challenge_progress import update
+    update(player, challenge_type, amount)
 
 
 def claim_challenge_reward(challenge, period):
-    """Claim reward for completed challenge"""
-    player["gold"] += challenge.get("reward_gold", 0)
-    for material, amount in challenge.get("reward_materials", {}).items():
-        player.setdefault(material, 0)
-        player[material] += amount
-
-    print(f"\n✓ Challenge Complete: {challenge['name']}!")
-    print(f"  Gold: +{challenge.get('reward_gold', 0)}")
-    for material, amount in challenge.get("reward_materials", {}).items():
-        print(f"  {material}: +{amount}")
+    from challenge_progress import reward
+    reward(player,challenge)
 
 
 def view_daily_challenges():
@@ -5236,96 +5249,9 @@ def view_weekly_challenges():
 
 
 def start_boss_rush():
-    """Start a boss rushing arcade mode"""
-    global player
-
-    print("\n=== BOSS RUSHING MODE ===")
-    print("Face waves of bosses for epic rewards!\n")
-
-    print("Select difficulty:")
-    for i, (key, config) in enumerate(BOSS_RUSH_CONFIGURATIONS.items(), 1):
-        print(f"{i}. {config['name']} ({config['bosses_count']} bosses)")
-        print(f"   {config['description']}")
-
-    choice = input("\nSelect difficulty (1-3): ").strip()
-
-    difficulties = list(BOSS_RUSH_CONFIGURATIONS.keys())
-    if choice not in ["1", "2", "3"]:
-        print("Invalid choice.")
-        return
-
-    difficulty_key = difficulties[int(choice) - 1]
-    config = BOSS_RUSH_CONFIGURATIONS[difficulty_key]
-
-    print(f"\nStarting {config['name']}...")
-
-    bosses_defeated = 0
-    gold_earned = 0
-    total_damage_taken = 0
-
-    for i in range(config["bosses_count"]):
-        print(f"\n--- Boss {i + 1}/{config['bosses_count']} ---")
-
-        # Select random boss from all regions
-        all_bosses = []
-        for region_bosses in REGION_BOSSES.values():
-            all_bosses.extend(region_bosses)
-
-        boss = random.choice(all_bosses).copy()
-
-        # Scale boss difficulty
-        boss["hp"] = int(boss["hp"] * config["difficulty_multiplier"])
-        boss["atk"] = int(boss["atk"] * config["difficulty_multiplier"])
-        boss["def"] = int(boss["def"] * config["difficulty_multiplier"])
-
-        print(f"Facing: {boss['name']}")
-        print(f"HP: {boss['hp']} | ATK: {boss['atk']} | DEF: {boss['def']}")
-
-        # Simulate boss fight (simplified)
-        initial_hp = player["hp"]
-        player_atk = player["atk"]
-        damage_per_turn = max(1, player_atk - boss.get("def", 0))
-        turns_to_win = max(1, (boss["hp"] + damage_per_turn - 1) // damage_per_turn)
-
-        boss_damage_per_turn = max(1, boss["atk"] - player.get("def", 0))
-        damage_taken = boss_damage_per_turn * turns_to_win
-
-        if player["hp"] > damage_taken:
-            player["hp"] -= damage_taken
-            total_damage_taken += damage_taken
-            bosses_defeated += 1
-            boss_reward = boss.get("gold_reward", 50) * config["reward_multiplier"]
-            gold_earned += int(boss_reward)
-            player["gold"] += int(boss_reward)
-            print(f"Victory! Took {damage_taken} damage. Earned {int(boss_reward)} gold.")
-        else:
-            print(f"Defeat! Boss defeated you.")
-            break
-
-    print(f"\n=== BOSS RUSH COMPLETE ===")
-    print(f"Bosses Defeated: {bosses_defeated}/{config['bosses_count']}")
-    print(f"Gold Earned: {gold_earned}")
-    print(f"Total Damage Taken: {total_damage_taken}")
-
-    # Update stats
-    player["boss_rush_stats"]["total_runs"] += 1
-    score = bosses_defeated * 100 + int(gold_earned / 10)
-    if difficulty_key == "normal":
-        player["boss_rush_stats"]["best_run_normal"] = max(
-            player["boss_rush_stats"]["best_run_normal"], bosses_defeated
-        )
-    elif difficulty_key == "hard":
-        player["boss_rush_stats"]["best_run_hard"] = max(
-            player["boss_rush_stats"]["best_run_hard"], bosses_defeated
-        )
-    elif difficulty_key == "nightmare":
-        player["boss_rush_stats"]["best_run_nightmare"] = max(
-            player["boss_rush_stats"]["best_run_nightmare"], bosses_defeated
-        )
-
-    player["boss_rush_stats"]["leaderboard_score"] = max(
-        player["boss_rush_stats"]["leaderboard_score"], score
-    )
+    import sys
+    from legacy_workshops import boss_rush
+    boss_rush(sys.modules[__name__])
 
 
 def view_boss_rush_stats():
@@ -5346,47 +5272,16 @@ def view_boss_rush_stats():
 
 
 def view_skill_tree():
-    """Browse and upgrade skill trees"""
-    global player
-
-    print("\n=== SKILL TREES ===")
-    print(f"Skill Points Available: {player.get('skill_points', 0)}\n")
-
-    for tree_key, tree in SKILL_TREES.items():
-        print(f"{tree['icon']} {tree['name']}: {tree['description']}")
-        learned = len(player.get("skill_tree", {}).get(tree_key, {}))
-        print(f"   Skills Learned: {learned}/{len(tree['skills'])}\n")
+    import sys
+    from legacy_workshops import advanced_skills
+    advanced_skills(sys.modules[__name__])
 
 
 def learn_skill(tree_name, skill_name):
-    """Learn a new skill from the tree"""
-    global player
-
-    if player.get("skill_points", 0) < 1:
-        print("Not enough skill points!")
-        return False
-
-    tree = SKILL_TREES.get(tree_name)
-    if not tree or skill_name not in tree["skills"]:
-        print("Skill not found!")
-        return False
-
-    skill = tree["skills"][skill_name]
-    player["skill_tree"][tree_name][skill_name] = True
-    player["skill_points"] -= 1
-
-    # Apply stat bonus
-    stat = skill["stat"]
-    bonus = skill["bonus"]
-    if stat == "all":
-        player["atk"] += bonus
-        player["def"] += bonus
-        player["spd"] += bonus
-    else:
-        player[stat] += bonus
-
-    print(f"Learned {skill_name}! +{bonus} {stat}")
-    return True
+    from legacy_workshops import learn
+    okay,message=learn(player,tree_name,skill_name)
+    print(message)
+    return okay
 
 
 # =========================================================
@@ -5514,8 +5409,12 @@ def view_story():
 
 
 def enchant_equipment():
-    """Enchant gear with permanent bonuses"""
     global player
+    from expansion_state import state as expansion_state
+    if expansion_state(player).get('systems',{}).get('mode',{}).get('id')=='budget_run':
+        print('Budget Run blocks purchases. End the mode to use this service.')
+        return
+    """Enchant gear with permanent bonuses"""
 
     if not player.get("weapons"):
         print("You have no weapons to enchant.")
@@ -6065,6 +5964,8 @@ def craft_staff():
 
     staff["power"] += rank(player, "enchanting") - 1
     craft_xp(player, "enchanting")
+    from artisan_addons import apply_traits
+    apply_traits(player, staff, "enchanting")
     player.setdefault("crafted_staffs", []).append(staff)
     player.setdefault("staffs", []).append(staff)
 

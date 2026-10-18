@@ -1,6 +1,6 @@
-# 100 future Soules addons
+# 100 Soules addons
 
-Design backlog only. None of these 100 proposals is implemented by this document. They preserve the existing chapter endings, hidden villages and permanent weapon runes.
+Implemented catalogue as of 18 October 2026. Open World & Social → Adventures, projects & research. The entries below preserve the design names; the implementation checklist links each group to its code and tests. Related activities share reusable rules and quest stages. The existing chapter endings, rare hidden villages and permanent weapon runes are preserved.
 
 ## Quests and people
 

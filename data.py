@@ -2490,6 +2490,7 @@ FOOD_ITEMS = [
     {"name": "Traveller's Ration", "hunger": 30, "value": 25},
     {"name": "Ember Bread", "hunger": 25, "value": 20},
     {"name": "Frost Berry Jam", "hunger": 20, "value": 15},
+    {"name": "Stormfruit", "hunger": 25, "value": 25},
     {"name": "Warrior's Meal", "hunger": 60, "value": 60},
     {"name": "Soul Feast", "hunger": 100, "value": 120},
     {"name": "Swamp Mushroom", "hunger": 18, "value": 12},

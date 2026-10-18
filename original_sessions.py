@@ -27,9 +27,24 @@ def validate_original_save(value):
     p = value["player"]
     if not isinstance(p.get("name"), str) or not 1 <= len(p["name"]) <= 24:
         raise ValueError("Invalid character name in save.")
-    for key in ("hp", "max_hp", "atk", "def", "speed", "mana", "level", "xp", "gold", "hunger"):
+    for key in (
+        "hp",
+        "max_hp",
+        "atk",
+        "def",
+        "speed",
+        "mana",
+        "level",
+        "xp",
+        "gold",
+        "hunger",
+    ):
         n = p.get(key)
-        if type(n) not in (int, float) or not math.isfinite(n) or not 0 <= n <= 1000000000:
+        if (
+            type(n) not in (int, float)
+            or not math.isfinite(n)
+            or not 0 <= n <= 1000000000
+        ):
             raise ValueError("Invalid character statistics in save.")
     if p["max_hp"] < 1 or p["level"] < 1:
         raise ValueError("Invalid character limits in save.")
@@ -70,7 +85,10 @@ def validate_original_save(value):
             raise ValueError("Invalid effects or structures in save.")
     for key in ("status", "active_buffs", "rune_status"):
         if any(
-            not isinstance(k, str) or type(n) not in (int, float) or not math.isfinite(n) or n < 0
+            not isinstance(k, str)
+            or type(n) not in (int, float)
+            or not math.isfinite(n)
+            or n < 0
             for k, n in p.get(key, {}).items()
         ):
             raise ValueError("Invalid status duration in save.")
@@ -83,17 +101,20 @@ def validate_original_save(value):
     if "beta_mode" in p and type(p["beta_mode"]) is not bool:
         raise ValueError("Invalid testing mode in save.")
     for companion in p.get("companions", []):
-        if "stage" in companion and (type(companion["stage"]) is not int or not 0 <= companion["stage"] <= 2):
+        if "stage" in companion and (
+            type(companion["stage"]) is not int or not 0 <= companion["stage"] <= 2
+        ):
             raise ValueError("Invalid companion evolution stage in save.")
         if "hunger" in companion and (
             type(companion["hunger"]) is not int or not 0 <= companion["hunger"] <= 100
         ):
             raise ValueError("Invalid companion hunger in save.")
         if "home_region" in companion and (
-            not isinstance(companion["home_region"], str) or companion["home_region"] not in regions
+            not isinstance(companion["home_region"], str)
+            or companion["home_region"] not in regions
         ):
             raise ValueError("Invalid companion home region in save.")
-        for key in ("meals_eaten", "xp", "stage"):
+        for key in ("meals_eaten", "xp", "stage", "bond_xp", "helped_victories"):
             if key in companion and (
                 type(companion[key]) is not int or not 0 <= companion[key] <= 1000000000
             ):
@@ -114,7 +135,10 @@ def validate_original_save(value):
                     or record.get("region") not in regions
                 ):
                     raise ValueError("Invalid saved village in save.")
-                if not isinstance(record.get("note", ""), str) or len(record.get("note", "")) > 240:
+                if (
+                    not isinstance(record.get("note", ""), str)
+                    or len(record.get("note", "")) > 240
+                ):
                     raise ValueError("Invalid village note in save.")
                 tags = record.get("tags", [])
                 if (
@@ -135,16 +159,19 @@ def validate_original_save(value):
                     "material_cycle",
                 ):
                     if number in record and (
-                        type(record[number]) is not int or not 0 <= record[number] <= 1000000000
+                        type(record[number]) is not int
+                        or not 0 <= record[number] <= 1000000000
                     ):
                         raise ValueError("Invalid village progress in save.")
                 levels = record.get("levels", {})
                 if not isinstance(levels, dict) or any(
-                    type(level) is not int or not 1 <= level <= 5 for level in levels.values()
+                    type(level) is not int or not 1 <= level <= 5
+                    for level in levels.values()
                 ):
                     raise ValueError("Invalid building levels in save.")
                 projects = record.get("projects", [])
                 from village_projects import BY_ID
+
                 if (
                     not isinstance(projects, list)
                     or len(projects) > 100
@@ -161,19 +188,24 @@ def validate_original_save(value):
                     raise ValueError("Invalid village development history in save.")
                 material_stock = record.get("material_stock", {})
                 if not isinstance(material_stock, dict) or any(
-                    not isinstance(name, str) or type(n) is not int or not 0 <= n <= 10000
+                    not isinstance(name, str)
+                    or type(n) is not int
+                    or not 0 <= n <= 10000
                     for name, n in material_stock.items()
                 ):
                     raise ValueError("Invalid village material stock in save.")
                 food_stock = record.get("food_stock", {})
                 if not isinstance(food_stock, dict) or any(
-                    not isinstance(name, str) or type(count) is not int or not 0 <= count <= 10000
+                    not isinstance(name, str)
+                    or type(count) is not int
+                    or not 0 <= count <= 10000
                     for name, count in food_stock.items()
                 ):
                     raise ValueError("Invalid village stock in save.")
     materials = p.get("building_materials", {})
     if not isinstance(materials, dict) or any(
-        type(count) is not int or not 0 <= count <= 1000000000 for count in materials.values()
+        type(count) is not int or not 0 <= count <= 1000000000
+        for count in materials.values()
     ):
         raise ValueError("Invalid building materials in save.")
     story = p.get("source_story", {})
@@ -183,7 +215,10 @@ def validate_original_save(value):
         if flag in story and type(story[flag]) is not bool:
             raise ValueError("Invalid story flag in save.")
     for field in ("clues", "witnesses", "rumours", "anomaly_wanders"):
-        if not isinstance(story.get(field, []), list) or len(story.get(field, [])) > 10000:
+        if (
+            not isinstance(story.get(field, []), list)
+            or len(story.get(field, [])) > 10000
+        ):
             raise ValueError("Invalid story journal in save.")
     if any(
         not isinstance(clue, dict)
@@ -200,7 +235,8 @@ def validate_original_save(value):
         raise ValueError("Invalid story text in save.")
     xp = story.get("profession_xp", {})
     if not isinstance(xp, dict) or any(
-        type(number) is not int or not 0 <= number <= 1000000000 for number in xp.values()
+        type(number) is not int or not 0 <= number <= 1000000000
+        for number in xp.values()
     ):
         raise ValueError("Invalid profession progress in save.")
     if not isinstance(story.get("dialogue", {}), dict):
@@ -211,7 +247,9 @@ def validate_original_save(value):
     ):
         raise ValueError("Invalid Source fragments in save.")
     for key in ("sidequest_baseline", "months_since_season_one"):
-        if key in story and (type(story[key]) is not int or not 0 <= story[key] <= 1000000000):
+        if key in story and (
+            type(story[key]) is not int or not 0 <= story[key] <= 1000000000
+        ):
             raise ValueError("Invalid season timeline in save.")
     mentor = story.get("mentor_village")
     if mentor is not None and (
@@ -220,19 +258,65 @@ def validate_original_save(value):
     ):
         raise ValueError("Invalid mentor record in save.")
     relics = p.get("protected_relics", [])
-    if not isinstance(relics, list) or len(relics) > 1000 or any(
-        not isinstance(relic, dict)
-        or any(not isinstance(relic.get(key), str) for key in ("id", "name", "kind", "region", "element", "text"))
-        for relic in relics
+    if (
+        not isinstance(relics, list)
+        or len(relics) > 1000
+        or any(
+            not isinstance(relic, dict)
+            or any(
+                not isinstance(relic.get(key), str)
+                for key in ("id", "name", "kind", "region", "element", "text")
+            )
+            for relic in relics
+        )
     ):
         raise ValueError("Invalid protected ancient finds in save.")
     for field in ("work_sites", "ruin_searches"):
         sites = p.get(field, {})
-        if not isinstance(sites, dict) or len(sites) > 500 or any(
-            not isinstance(key, str) or type(value) is not int or value < 0
-            for key, value in sites.items()
+        if (
+            not isinstance(sites, dict)
+            or len(sites) > 500
+            or any(
+                not isinstance(key, str) or type(value) is not int or value < 0
+                for key, value in sites.items()
+            )
         ):
             raise ValueError("Invalid exploration site progress in save.")
+    from challenge_progress import validate as validate_challenges
+
+    validate_challenges(p)
+    from expansion_state import validate as validate_expansion
+
+    validate_expansion(p.get("expansion", {}))
+    for record in p.get("village_records", {}).values():
+        validate_expansion(record, False)
+        jobs = record.get("work_orders", [])
+        if not isinstance(jobs, list) or len(jobs) > 30:
+            raise ValueError("Invalid work-order list.")
+        for job in jobs:
+            if (
+                not isinstance(job, dict)
+                or type(job.get("remaining")) is not int
+                or not 0 <= job["remaining"] <= 100
+                or job.get("destination")
+                not in (
+                    "weapons",
+                    "armours",
+                    "staffs",
+                    "potions",
+                    "ingredients",
+                    "woods",
+                    "metals",
+                    "Timber",
+                    "Stone",
+                )
+                or not isinstance(job.get("worker"), str)
+                or not isinstance(job.get("result"), (str, list, dict))
+            ):
+                raise ValueError("Invalid saved commission.")
+            from village_jobs import validate_job
+
+            validate_job(job, regions)
     # Only character progress is restored. Input prompts and half-completed actions are not replayed.
     cleaned = deepcopy(p)
     for key in list(cleaned):
@@ -321,7 +405,9 @@ class OriginalSession:
     def send(self, text, prompt_id, group=None):
         with self.lock:
             if not self.waiting or self.proc.poll() is not None:
-                raise ValueError("Wait for the next game prompt, or press Play to resume.")
+                raise ValueError(
+                    "Wait for the next game prompt, or press Play to resume."
+                )
             if prompt_id != self.prompt_id:
                 raise ValueError(
                     "The game has moved to another prompt. Please try your choice again."
@@ -332,7 +418,9 @@ class OriginalSession:
                 if group not in BY_ID:
                     raise ValueError("Choose a game category.")
                 if self.snapshot.get("phase") not in ("main", "category"):
-                    raise ValueError("Finish the current prompt or use Back to category first.")
+                    raise ValueError(
+                        "Finish the current prompt or use Back to category first."
+                    )
                 text = "/group:" + group
             if (
                 text == "/back"
@@ -342,7 +430,12 @@ class OriginalSession:
                 raise ValueError(
                     "Use the combat Run option to flee. You cannot leave a guardian battle with Back."
                 )
-            if not isinstance(text, str) or len(text) > 2000 or "\n" in text or "\r" in text:
+            if (
+                not isinstance(text, str)
+                or len(text) > 2000
+                or "\n" in text
+                or "\r" in text
+            ):
                 raise ValueError("Enter one short response at a time.")
             self.waiting = False
             self.ready.clear()

@@ -14,6 +14,7 @@
 </section>
 <section id="page-screen"></section>
 </main><aside id="status-sidebar" aria-label="Live character status"><div class="side-card"><h2>CHARACTER</h2><p>Press Play to begin or continue your journey.</p></div></aside></div>
+<div id="combat-announcer" class="visually-hidden" role="status" aria-live="polite"></div>
 <div id="notice" role="status" aria-live="polite"></div>
 <input type="file" id="import-file" accept="application/json,.json" hidden>
 <dialog id="new-dialog"><form id="new-character"><span class="eyebrow">A SOUL AWAKENS</span><h1>Begin your journey.</h1><p>Use a save slot to keep an existing character before starting another.</p><label>Character name<input name="name" maxlength="24" required value="Wanderer"></label><label>Class<select name="cls" id="class-choice"></select></label><p id="class-description"></p><div class="buttons"><button type="button" id="cancel-new">Cancel</button><button class="primary" type="submit">Begin adventure</button></div></form></dialog>

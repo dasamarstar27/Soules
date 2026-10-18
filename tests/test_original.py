@@ -27,7 +27,7 @@ class OriginalTests(unittest.TestCase):
             return fn(*args)
 
     def test_all_original_actions_grouped(self):
-        self.assertEqual(sorted(n for g in GROUPS for n, _ in g["options"]), list(range(1, 48)))
+        self.assertEqual(sorted(n for g in GROUPS for n, _ in g["options"]), list(range(1, 49)))
 
     def test_wander_encounters_day_night_and_level_ten(self):
         from copy import deepcopy

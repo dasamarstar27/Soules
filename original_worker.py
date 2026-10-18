@@ -15,7 +15,10 @@ wire = sys.stdout
 
 
 def emit(event, **payload):
-    wire.write(json.dumps(dict(event=event, **payload), ensure_ascii=True, allow_nan=False) + "\n")
+    wire.write(
+        json.dumps(dict(event=event, **payload), ensure_ascii=True, allow_nan=False)
+        + "\n"
+    )
     wire.flush()
 
 
@@ -29,7 +32,20 @@ def input_line(prompt=""):
     while True:
         if game.player.get("hp", 1) <= 0:
             raise ui.RunEnded()
-        emit("prompt", prompt=prompt, snapshot=ui.snapshot())
+        from artisan_addons import record_materials
+
+        record_materials(game.player)
+        from legacy_workshops import sync_sets
+
+        sync_sets(game.player)
+        from challenge_progress import observe_inventory
+
+        observe_inventory(game.player)
+        snapshot = ui.snapshot()
+        from expansion_hooks import prompt as record_prompt
+
+        record_prompt(game.player, prompt, snapshot)
+        emit("prompt", prompt=prompt, snapshot=snapshot)
         line = sys.stdin.readline()
         if not line:
             raise EOFError("Browser session closed")
@@ -46,8 +62,11 @@ def input_line(prompt=""):
         return value
 
 
+NEW_PLAYER_TEMPLATE = deepcopy(game.player)
+
+
 def initial_player(config):
-    player = deepcopy(game.player)
+    player = deepcopy(NEW_PLAYER_TEMPLATE)
     player.update(
         name=str(config.get("name", "Wanderer")).strip()[:24] or "Wanderer",
         structures={k: {"level": 1, "xp": 0} for k in STRUCTURES},
@@ -71,7 +90,9 @@ def initial_player(config):
         player.update(deepcopy(config["save"]["player"]))
         player["unlocked_regions"] = set(player["unlocked_regions"])
     else:
-        player.update({"hp": 55, "max_hp": 55, "atk": 5, "def": 1, "speed": 5, "mana": 0})
+        player.update(
+            {"hp": 55, "max_hp": 55, "atk": 5, "def": 1, "speed": 5, "mana": 0}
+        )
         player.pop("source_story", None)
         key = config.get("cls", "warrior")
         player["class_id"] = key
@@ -91,11 +112,16 @@ def initial_player(config):
         for equipped, owned in [("weapon", "weapons"), ("armour", "armours")]:
             item = player.get(equipped)
             if item:
-                player[equipped] = next((v for v in player.get(owned, []) if v == item), item)
+                player[equipped] = next(
+                    (v for v in player.get(owned, []) if v == item), item
+                )
     from companion_care import normalise
 
     for companion in player.get("companions", []):
         normalise(companion, player["region"])
+    from expansion_state import state
+
+    state(player)
     player.pop("password_hash", None)
     return player
 
@@ -137,7 +163,9 @@ def structure_wrappers():
             structure = args[0] if args and isinstance(args[0], dict) else {}
             name = structure.get("name", function.__name__.replace("_", " ").title())
             if kind == "elemental":
-                name = ELEMENTAL_VILLAGES.get(game.player["region"], {}).get("name", name)
+                name = ELEMENTAL_VILLAGES.get(game.player["region"], {}).get(
+                    "name", name
+                )
             if function.__name__ == "visit_elemental_village":
                 from village_life import profile
 
@@ -176,9 +204,13 @@ def main():
         if not config.get("save"):
             ui.init_ui(game.player)
             ui.context("action", "explore")
-            print("You wake beneath the eaves of Old Village. Elian and the village keeper are here; speak to them before heading into the woods.")
+            print(
+                "You wake beneath the eaves of Old Village. Elian and the village keeper are here; speak to them before heading into the woods."
+            )
             try:
-                game.visit_village({"name": "Old Village", "type": "village"}, game.REGIONS[0])
+                game.visit_village(
+                    {"name": "Old Village", "type": "village"}, game.REGIONS[0]
+                )
             except ui.ReturnToMenu:
                 pass
         game.game()

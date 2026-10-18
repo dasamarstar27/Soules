@@ -18,3 +18,7 @@
 @media(max-width:750px){#prompt.story-prompt{padding:11px 15px}}
 
 .guide-contents{display:flex;flex-wrap:wrap;gap:9px 17px;max-width:1000px;margin:24px 0;font-size:12px}.guide-section summary{cursor:pointer;color:var(--text);font:20px Georgia,serif;line-height:1.5}.guide-section p{font-size:13px}.guide-section:target{border-color:var(--accent)}#guide-actions h3{color:var(--accent);font-size:15px;margin-top:24px}#guide-actions li{font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:9px}#guide-actions li b{color:var(--text)}
+
+.rune-seal{width:55px;height:55px;display:block;color:var(--accent);margin-bottom:12px}.portrait[data-skin=dark_knight]{background:#202030;border-color:#9393bf}.portrait[data-skin=celestial_sage]{background:#2f2940;box-shadow:0 0 12px #bca4f0}.portrait[data-skin=void_walker]{background:#160f29;border-color:#955edb}.portrait[data-skin=shadow_assassin]{background:#24202d;border-color:#6b6079}.portrait[data-skin=legendary_hero]{background:#3b2d13;border-color:#e8c465}
+
+.weapon-appearance[data-weapon-skin="flame_edge"]{color:#ffa56b}.weapon-appearance[data-weapon-skin="frost_blade"]{color:#91ddff}.weapon-appearance[data-weapon-skin="eclipse_sword"]{color:#d0a2ff}.weapon-appearance[data-weapon-skin="void_cleaver"]{color:#efa0e6}

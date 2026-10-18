@@ -86,7 +86,8 @@ class CompanionCareTests(TestCase):
         self.assertTrue(okay, message)
         self.assertEqual(self.c['hunger'], min(100, 10+food['hunger']))
         self.assertEqual(len(self.p['inventory']), 1)
-        self.assertEqual(self.c['xp'], 1)
+        self.assertEqual(self.c['xp'], 0)
+        self.assertEqual(self.c['bond_xp'], 0)
         self.assertEqual(self.c['meals_eaten'], 1)
         self.assertEqual(self.p['hunger'], 100)
 
@@ -104,20 +105,28 @@ class CompanionCareTests(TestCase):
         self.assertEqual(self.p['inventory'], [food])
         self.assertEqual(self.c['xp'], 0)
 
-    def test_three_and_six_meals_evolve_with_named_final_form(self):
+    def test_feeding_does_not_evolve_but_combat_support_does(self):
         food = care.foods(self.c)[0]
         self.p['inventory'] = [deepcopy(food) for _ in range(6)]
-        for meal in range(1, 7):
+        for meal in range(6):
             self.c['hunger'] = 20
             self.assertTrue(care.feed(self.p, self.c, 0)[0])
-            self.assertEqual(self.c['stage'], 0 if meal < 3 else 1 if meal < 6 else 2)
-        self.assertEqual(self.c['form_name'], 'Sunfire Ember Fox')
-        self.assertEqual(self.c['xp'], 6)
-        self.assertEqual(self.p['inventory'], [])
+        self.assertEqual(self.c['stage'], 0)
+        self.assertEqual(self.c['bond_xp'], 0)
+        with patch('builtins.print'):
+            for _ in range(4):
+                self.c['helped_this_battle']=True
+                care.battle_credit(self.p,5)
+        self.assertEqual(self.c['stage'],1)
+        with patch('builtins.print'):
+            for _ in range(8):
+                self.c['helped_this_battle']=True
+                care.battle_credit(self.p,5)
+        self.assertEqual(self.c['form_name'],'Sunfire Ember Fox')
 
     def test_peaceful_species_evolve_and_stay_peaceful(self):
         c = deepcopy(data.COMPANIONS['Whispering Woods'][0])
-        c.update(stage=1, xp=6)
+        c.update(stage=1, xp=6, bond_xp=60)
         self.assertTrue(care.evolve(c))
         self.assertIn('Elderwood', c['form_name'])
         self.assertFalse(care.ready(c))
@@ -131,6 +140,7 @@ class CompanionCareTests(TestCase):
         self.assertEqual(enemy, before)
         self.assertEqual(self.p['companion_xp'], {})
         self.c['hunger'] = 30
+        self.c['helped_this_battle'] = True
         self.quiet(game.award_companion_xp, 10)
         self.assertEqual(self.p['companion_xp'][self.c['name']], 10)
 
@@ -232,5 +242,5 @@ class CompanionCareTests(TestCase):
             self.assertNotIn(hidden, text)
         response = app.test_client().get('/api/original/catalog')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json['guide']['actions']), 47)
-        self.assertIn('preview', text.lower())
+        self.assertEqual(len(response.json['guide']['actions']), 48)
+        self.assertIn('shared', text.lower())

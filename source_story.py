@@ -275,7 +275,7 @@ def journal(game):
                     f'{name.title()}: rank {rank(p,name)}/5 · {s["profession_xp"].get(name,0)} successful actions. Five actions per rank.'
                 )
             print(
-                "Higher crafting ranks add small forge/loom/tower bonuses and improve ingredient preservation. Future specialties will branch from these ranks."
+                "Higher ranks improve crafting. Adventures → Artisans provides profession specialties, masterwork trials, tools, patterns and signatures."
             )
         elif c == "3":
             for message in s["rumours"]:
@@ -417,6 +417,7 @@ def sidequest_total(player):
             for record in player.get("village_records", {}).values()
         )
         + sum(value == "complete" for value in player.get("elemental_quests", {}).values())
+        + sum(bool(q.get("complete")) for q in player.get("expansion",{}).get("quests",{}).values())
     )
 
 

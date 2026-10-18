@@ -21,7 +21,7 @@ The Flask development server uses port **5000**. Set `PORT` to choose another po
 
 ## Original text edition
 
-The default page preserves the original 46 actions, grouped into top categories. The first menu shows numbered categories: 1 Explore, 2 Inventory & Equip, and so on. Choose a category to open its secondary numbered action menu; 0 returns to the main category menu. Category tabs also remain available. A live sidebar shows character stats, region, weather, equipment, effects, enemies, companions, progress and six save slots. The title menu contains Dictionary, Tutorial, Customise and Saves, with a separate Play / Continue button.
+The default page preserves the original actions and adds the village directory and Adventures hub (48 actions total), grouped into top categories. The first menu shows numbered categories: 1 Explore, 2 Inventory & Equip, and so on. Choose a category to open its secondary numbered action menu; 0 returns to the main category menu. Category tabs also remain available. A live sidebar shows character stats, region, weather, equipment, effects, enemies, companions, progress and six save slots. The title menu contains Dictionary, Tutorial, Customise and Saves, with a separate Play / Continue button.
 
 Start with only a Rusty Sword. Loose runes are one-use consumables. Binding a rune to a weapon consumes the loose rune and creates a permanent attachment: it cannot be removed, replaced or spent by attacking. Staff charges remain finite.
 
@@ -31,13 +31,13 @@ Automatic colours follow regions and structures; Customise also offers fixed the
 
 Inventory offers sorting by name, attack/power, defence, element or sell value, with an optional secondary sort. Sorting changes the display order. Auto-sell duplicates is off initially; enable it in Inventory or sell duplicates once. It sells identical spare weapons, armour and staffs for souls, keeping an exact variant and protecting equipped or bound/imbued gear. Consumables and crafting materials stay in your bags. The setting and sort preferences persist in saves.
 
-## Season Two and future plans
+## Season Two and Season Three
 
 Unlock all main regions and defeat The Dreaming God in The Dreamscape to complete Chapter 1. The Creator is optional. Chapter 2 opens expanded services in the four existing hidden elemental villages: finite-stock shops, keepers, training, exclusive libraries, side quests and mana-powered elemental arts. Discovery remains rare; discovered villages can be revisited through Structures. See PLANNED_CHAPTER_2.md and SEASON_THREE_PLAN.md.
 
 ## Earlier browser edition
 
-The previous streamlined interface remains available at `/edition`, with its own save format. Its brewing and fusion systems are preserved there; saves do not transfer between editions. The default original edition retains its original crafting rules and ingredient recipes. Some original optional systems remain limited or unfinished; this release does not claim a completed multiplayer or Creator campaign.
+The previous streamlined interface remains available at `/edition`, with its own save format. Its brewing and fusion systems are preserved there; saves do not transfer between editions. The default original edition retains its original crafting rules and ingredient recipes. Optional menus now have playable progression in the default text edition. Community trading, guilds and arena ghosts share one running server; this is not live multiplayer combat or an account-synchronisation service.
 
 ## Validation
 
@@ -89,7 +89,7 @@ The opening scene, early monster evidence, village conversations and sidebar obj
 
 New characters start from 55 HP, 5 attack and 1 defence, with half-sized class starting bonuses and a Rusty Sword. A new Warrior has 70 HP, 7 base attack and 2 defence. Early Ranger and Necromancer damage skills scale with level. Existing saved character stats are preserved.
 
-Five expandable features are active: the story journal, keeper conversations, crafting professions, recorded rumours and postgame Source anomalies. Their follow-up plans are in EXPANDABLE_FEATURES_PLAN.md. Profession ranks come from successful paid/resource-consuming actions, cap at five, and add small forge/loom/tower bonuses or ingredient-preservation chances. Rumours do not automatically discover locations. Anomalies are available every ten postgame wanders; a collected fragment can restore up to 15 HP and 5 mana through the journal.
+Five expandable features are active: the story journal, keeper conversations, crafting professions, recorded rumours and postgame Source anomalies. Their implemented follow-ups are described in EXPANDABLE_FEATURES_PLAN.md. Profession ranks come from successful paid/resource-consuming actions, cap at five, and add small forge/loom/tower bonuses or ingredient-preservation chances. Rumours do not automatically discover locations. Anomalies are available every ten postgame wanders; a collected fragment can restore up to 15 HP and 5 mana through the journal.
 
 The full history is recorded in STORY_CANON.md: the Riftlands once separated the realms; the Dreamscape King corrupted the Sacred Temple's core energy; the elemental civilisations fought until four remained; their warriors sacrificed themselves to stabilise the power and banish him. The current reopening begins Chapter One. Its underlying cause is reserved for the overarching-antagonist reveal in Season Three. The Dreaming God is the existing boss name for the corrupted Dreamscape King.
 
@@ -107,7 +107,7 @@ All 132 distinct normal rune types can be fused in unordered pairs, including tw
 
 Dictionary → Fusions includes a two-rune ability preview. The original combat loop now uses the complete effect registry through original_magic.py, including periodic effects, stat changes, shields, reflection, lifesteal, control effects and expiry. Rage/Berserk gives +50% attack and -30% defence for three turns. Loose runes remain single-use; weapon-bound runes remain permanent.
 
-ADDON_IDEAS_100.md contains exactly 100 future addon designs. None of those proposals has been implemented as part of that planning document.
+ADDON_IDEAS_100.md lists the 100 addon designs now accessible through Adventures. IMPLEMENTATION_CHECKLIST.md records their implementation and checks.
 
 
 ## Village arrivals and development
@@ -124,21 +124,21 @@ Village option **17** spends gathered building materials to upgrade workshops. O
 
 ## Protected ruins and the Riftlands temple
 
-Every region contains ancient civilisation ruins. Searches have a 35% broken-core fragment chance, 25% tome chance and 40% empty result; one search per site per 20-wander cycle, with each kind recoverable once at that site. Finds live in a protected collection: they cannot be sold, salvaged or used for crafting or imbuing. Their later purpose is reserved for Season Three. The four surviving cores remain protected by their clans.
+Every region contains ancient civilisation ruins. Searches have a 35% broken-core fragment chance, 25% tome chance and 40% empty result; one search per site per 20-wander cycle, with each kind recoverable once at that site. Finds live in a protected collection: they cannot be sold, salvaged or used for crafting or imbuing. Season Three uses their preserved memories to tune an expedition ward, without consuming the finds. The four surviving cores remain protected by their clans.
 
 The Riftlands Source Temple sells portable Core Stabilisers for 300 souls and uses core energy to imbue a weapon or staff. A portable stabiliser is consumed. Old physical cores are consumed if used; a clan attunement channels energy while leaving the clan's core at home. Permanent bound runes survive imbuing.
 
-The separate [100-addon design backlog](ADDON_IDEAS_100.md) remains a broader expansion plan; it has not all been implemented by the village construction pack. Season Three's full campaign remains planned.
+The separate [100-addon catalogue](ADDON_IDEAS_100.md) is now accessible through World & Social → Adventures, projects & research. These activities are separate from the earlier 100 construction projects. [Implementation checklist](IMPLEMENTATION_CHECKLIST.md) records the code and validation coverage.
 
 ## Companion care and the complete field guide
 
 Character → Companions now includes feeding and a regional food guide. Companions start at 100 hunger and lose 5 per wander. They eat food types stocked in their home region, even while travelling elsewhere. Feeding consumes one carried item and restores its normal hunger value; full companions, unsuitable food and cancellation keep your supplies. Below 30 hunger they rest from combat and stop earning battle XP, without leaving or dying.
 
-Each successful meal grants one evolution XP. Three meals unlock an Awakened form at stage 1; six unlock an element-themed final form at stage 2, such as Sunfire Ember Fox. Final forms strengthen passive combat support. Peaceful species also evolve and remain peaceful. Battle-level XP remains separate. Old saves gain the correct home region and full hunger on migration; subsequent care progress persists normally. Earth support now provides a temporary defence buff instead of permanently increasing base defence, and crystal companions have a working special move.
+Feeding restores hunger and grants no evolution XP. A companion must actually help win a battle to earn combat bond XP: 20 unlocks an Awakened form, and 60 unlocks an element-themed final form such as Sunfire Ember Fox. Ordinary victories grant 5 bond XP and original guardian victories grant 10. Juvenile battle companions help weakly; peaceful companions can earn credit by healing an injured player. Final forms strengthen passive combat support. Peaceful species also evolve and remain peaceful. Battle-level XP remains separate. Old saves gain the correct home region and full hunger on migration; subsequent care progress persists normally. Earth support now provides a temporary defence buff instead of permanently increasing base defence, and crystal companions have a working special move.
 
 The current question is displayed at full adventure text size in the main story panel, above the action buttons. The answer box describes that question for assistive technology. Attacks and ordinary menus follow automatically near the bottom; very long blocks and reading older entries preserve your position.
 
-Tutorial now covers starting, controls, survival, exploration, combat, equipment, runes and fusions, crafting/professions, alchemy, local economies, construction, companion evolution, ruins, temples, the chapter storyline, side quests, saves, appearance and all 47 original actions. It identifies original preview menus honestly. Secret testing commands are omitted from player-facing help. Turning off testing access works at any pending game prompt and is saved at the next safe checkpoint; an already-open postgame shop also rechecks access before purchase.
+Tutorial now covers starting, controls, survival, exploration, combat, equipment, runes and fusions, crafting/professions, alchemy, local economies, construction, companion evolution, ruins, temples, the chapter storyline, side quests, saves, appearance and all 48 actions plus the expanded systems and their requirements. Secret testing commands are omitted from player-facing help. Turning off testing access works at any pending game prompt and is saved at the next safe checkpoint; an already-open postgame shop also rechecks access before purchase.
 
 Automatic following measures the rendered height of each new response, so wrapped paragraphs on a phone count as long text. It follows ordinary responses and option menus, including attacks and villages. Only very long batches—more than roughly 60 rendered lines or three journal screens, whichever is larger—stay put. It never jumps down while you are reading earlier entries.
 
@@ -146,3 +146,20 @@ Automatic following measures the rendered height of each new response, so wrappe
 Full hunger recovery: starting a wander at 100/100 hunger restores up to 3 HP, capped at maximum health, before the normal hunger drain. It does not trigger from menus, elapsed real time or combat turns and cannot revive a dead character.
 
 Ordinary loot drops, arena prizes, cave caches and dungeon rewards now filter themed trinkets by region. Sea Pearls are native to Sunken Coast; common coins/relics remain global. Previously acquired items are retained. The tagged loot catalogue is the shared source for these original-game loot paths.
+
+
+## Deferred systems release — 18 October 2026
+
+**World & Social → Adventures, projects & research** opens the 100-addon catalogue: twenty side stories, settlement projects, artisan progression, field activities, tactical encounters, rune research, cooking and alchemy, relationships and journal tools. Shared engines support related activities; these are not 100 separate combat engines. The original 100 named construction projects remain available alongside them.
+
+**Village workers (22)** accept supplied materials and a displayed labour fee. Smiths, weavers, enchanters and alchemists require the matching local service. Service level determines completion time and quality determines the result. Paid rest advances two local shifts, productive local actions one; menus and reopening saves never advance work. Gatherers have two trips per village per 20-wander cycle. Apprentice batches pay every item's full cost. **Community activities (23)** includes worker assignments during defence, storage, roads, gardens, visiting specialists, festivals, votes, wells and refuge restoration. **Potion blending (24)** combines ordinary healing bottles or fortifies one with a native ingredient, capped at 120 healing.
+
+**Character → Login streak** now claims one reward per Malaysian calendar date per saved character. A missed date resets the streak. Dictionary → Potions lists the ingredient recipes. Cosmetics, shared-instance guilds, calendar festivals, challenge modes, New Game+, adventure-pass tiers, rituals, NPC/ghost arena, trading, town facilities, faction contracts and vendors, finite treasure maps and mounts have working actions instead of catalogue-only menus.
+
+**Season Three: Beyond the Broken Bridge** begins after the Season Two repair. A supplied expedition visits the Written Shore, Archive of Beginnings and Hall of Creation, with Sera's ward quest, protected fragment research, two permanent paired-element recipes, a confrontation and three custody endings. The optional Unwritten Vault follows. Only this chapter reveals the antagonist's goal to destroy the male Creator and take the Book and Pen of Creation. His underlying motive remains undisclosed; the Creator is capable of kindness and cruelty. The four clan cores stay at home.
+
+Saves adds a five-checkpoint explicit-save timeline, ten local run chronicles and readable character-sheet export. Customise adds shortcut remapping, optional concise screen-reader combat announcements and a separate rune-sound volume, muted initially. Rune cards have 132 distinct seals. Tactical replays, quest routes, map notes, build comparison and optional statistics are in the journal tools. Local browser data and the server community database are separate; export important saves, and back up `instance/community.sqlite3` if moving a shared server.
+
+The gameplay still requires only the dependencies in `requirements.txt`. Daily and weekly challenge counters now advance from real kills, XP, crafting and collection, with unique region clears and usable rewards. Boss Rush runs live tactical fights and saves its records. Adventures → Original workshops & collections also finishes advanced skills, material mastery, equipment collection bonuses, the legendary forge commission, prestige supplies, artifacts and fresh prestige ascension.
+
+No paid service, real-time waiting or account is required. Public hosting has not been deployed. Download the ZIP, extract it, and run **Play Soules.bat** on Windows. Keep using the same browser and launcher address to retain slots.

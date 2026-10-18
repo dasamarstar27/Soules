@@ -152,6 +152,8 @@ def original_catalog():
         and all(name.replace("Fire Rune", "Flame Rune") in BASE for name in r["inputs"])
     ]
     from game_guide import GUIDE
+    import data
+    content['potions'] = [dict(recipe, ingredients=sorted(pair)) for pair, recipe in data.INGREDIENT_COMBOS.items()]
 
     return jsonify(groups=GROUPS, classes=classes, content=content, guide=GUIDE)
 
