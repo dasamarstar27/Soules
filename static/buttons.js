@@ -5,6 +5,9 @@ let buttonQuantity=1,buttonPromptId=null;
 const choiceButtons=rows=>rows.map(([answer,label])=>`<button type="button" data-response="${esc(answer)}" ${busy?'disabled':''}>${esc(label)}</button>`).join('');
 function ownedNames(){const p=packet?.snapshot?.player||{};return [...new Set(['weapons','armours','staffs','runes','inventory','ingredients','potions'].flatMap(key=>(p[key]||[]).map(item=>typeof item==='string'?item:item.name)).filter(Boolean))];}
 function buttonInputChoices(text,prompt){
+ // The active question takes priority over old menu text and item names.
+ const answers=promptAnswerOptions(prompt);
+ if(answers)return answers;
  const context=text.trim().split('\n').slice(-3).join('\n')+'\n'+prompt;
  if(/prestige\/cancel/i.test(prompt))return [['prestige','Begin prestige journey'],['cancel','Cancel']];
  if(/quantity|how many|amount|asking price/i.test(prompt))return 'quantity';

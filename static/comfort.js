@@ -25,19 +25,25 @@ function updateComfortAppearance(){
 }
 
 function recordComfortOutput(lines,nodes=[]){
- const text=lines.join('\n');
- if(!text.trim())return;
- comfortOutput=text;comfortNodes=nodes;
+ const text=lines.join('\n'),prompt=packet?.prompt||'';
+ // A confirmation can arrive without a printed line. Its question is still new.
+ if(!text.trim()&&comfortPrompt===prompt)return;
+ if(text.trim()){comfortOutput=text;comfortNodes=nodes;}
  stopComfortReading();
- const next=comfortOptions(text,packet?.prompt||'');
- comfortChoices=next;
- comfortPrompt=packet?.prompt||'';
+ comfortChoices=comfortOptions(comfortOutput,prompt);
+ comfortPrompt=prompt;
 }
 
-function comfortOptions(text,prompt){
+function promptAnswerOptions(prompt){
  if(/yes\s*\/\s*no/i.test(prompt))return [['yes','Yes'],['no','No']];
  if(/\by\s*\/\s*n\b/i.test(prompt))return [['y','Yes'],['n','No']];
  if(/press enter/i.test(prompt))return [['','Continue']];
+ return null;
+}
+
+function comfortOptions(text,prompt){
+ const answers=promptAnswerOptions(prompt);
+ if(answers)return answers;
  if(/quantity|how many|amount|\bname your|\bweapon name|\bnote\b|\btags?\b|\bsearch\b|filter text/i.test(prompt))return [];
  if(/1 atk/.test(prompt)){
   const rows=[['1','Attack'],['2','Use a scroll'],['3','Use a staff'],['4','Try to run away']];

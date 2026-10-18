@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.5",
+        "15c43e023187a1ac9f87975897155c32fad05c48",
+        "Corner version badge and archived release downloads.",
+    ),
+    (
         "25.4",
         "be274cc4bd01cfa6351ffd1b620d5826a4fe5a4d",
         "Online tablet hosting setup; Easy and Normal difficulty.",
@@ -30,7 +35,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: version corner badge and older release downloads.",
+            notes="Current release: working tablet Yes/No purchase confirmations.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:

@@ -1,6 +1,6 @@
-PLAY SOULES V25.5
+PLAY SOULES V25.6
 
-This download lives in a folder named V25.5. Keep the entire folder together.
+This download lives in a folder named V25.6. Keep the entire folder together.
 Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.

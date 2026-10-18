@@ -1,4 +1,4 @@
-# Soules V25.5 — Echoes of the World Tree
+# Soules V25.6 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -243,3 +243,7 @@ The idea backlog is now [IDEAS.md](IDEAS.md), containing only unresolved work. I
 ### V25.5 · Version corner and older releases
 
 The top corner shows the actual running release. Press it for published V25.4/V25.3/V25.2 downloads, checkpoint export and downgrade instructions. Older links are pinned to their published commits. Downloads do not change the current game or saves. Computer players extract a separate version folder, close their current server and launch the older folder. Hosted/tablet players need the website owner to deploy the chosen release commit through the host dashboard; that restarts the shared service for all players. Keep untouched save backups because older builds may not understand newer items or systems. Only builds with published archives appear; historic V21/V22 packages are not invented.
+
+### V25.6 · Tablet purchase confirmations
+
+Tablet and Easy reading modes now render Yes/No answers directly from the current question, including confirmations that arrive without a new printed story line. A confirmation takes priority over old item lists, quantities and naming text. Short `y/n` questions send `y` or `n`; `yes/no` questions send the full words. Enter-only questions get Continue. No cancels a merchant purchase, and Yes buys the selected item once. Character and NPC names are unchanged in this patch.
