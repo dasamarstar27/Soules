@@ -12,12 +12,12 @@ with sync_playwright() as pw:
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto("http://127.0.0.1:5000")
     page.wait_for_selector(".home-options")
-    assert page.locator("#release-version").inner_text() == "V25.9 ▾"
+    assert page.locator("#release-version").inner_text() == "V25.10 ▾"
     page.locator("#release-version").click()
     assert page.locator("#versions-dialog").is_visible()
-    assert page.locator(".version-download").count() == 8
+    assert page.locator(".version-download").count() == 9
     assert page.locator("#version-export").is_disabled()
-    for old in ("25.8", "25.7", "25.6", "25.5", "25.4", "25.3", "25.2"):
+    for old in ("25.9", "25.8", "25.7", "25.6", "25.5", "25.4", "25.3", "25.2"):
         assert "/releases/Soules-V" + old + ".zip" in page.get_by_role(
             "link", name="Download V" + old, exact=True
         ).get_attribute("href")

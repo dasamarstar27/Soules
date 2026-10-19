@@ -278,7 +278,7 @@ def dwarven_quarry(game, structure):
         index = choose(
             "IRONPEAK QUARRY · THE STONEBEARD MINERS",
             [
-                "Gather 2 Stone (one trip per 20-wander cycle)",
+                "Gather 2 Stone + 1 Titanium (one trip per 20-wander cycle)",
                 "Buy cheap metals from Bromm",
                 "Talk to the dwarven miners",
                 "Ask about the Crimson Forge",
@@ -287,16 +287,10 @@ def dwarven_quarry(game, structure):
         if index is None:
             return
         if index == 0:
-            key = "Ironpeak Mountains::" + structure["name"]
-            cycle = p.get("wander_count", 0) // 20
-            visits = p.setdefault("work_sites", {})
-            if visits.get(key) == cycle:
+            from resource_sites import gather
+
+            if not gather(p, structure, "Ironpeak Mountains"):
                 print("This seam needs the next restock cycle.")
-                continue
-            visits[key] = cycle
-            bag = p.setdefault("building_materials", {})
-            bag["Stone"] = bag.get("Stone", 0) + 2
-            print("The dwarves show you a safe seam. Gathered 2 Stone.")
         elif index == 1:
             dwarven_market(game)
         elif index == 2:

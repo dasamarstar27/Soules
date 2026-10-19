@@ -1,4 +1,4 @@
-# Soules V25.9 — Echoes of the World Tree
+# Soules V25.10 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -12,6 +12,14 @@ A playable, single-player browser edition of the uploaded SoulCrypt/Soules RPG. 
 ## Play on your laptop
 
 With Python 3.11+ installed, Windows users can double-click **Play Soules.bat**; Mac users can use **Play Soules.command**. The launcher prepares the dependencies on first launch and opens the game in a browser. Keep its window open while playing. It uses a stable local port (8765) to preserve browser save slots between launches. See START HERE.txt. An iPad needs a hosted version; this repository has not been deployed to a public website.
+
+## Simple laptop edition
+
+For a smaller game, open **[Play Soules Simple.html](simple/Play%20Soules%20Simple.html)** from the extracted folder, or double-click **Play Soules Simple.bat** on Windows. It opens directly in your browser, works offline and needs no Python. This is a new simplified edition inspired by early Soules, not a restored historical V15 release.
+
+It keeps a character sidebar, dictionary, tutorial, 15 regions, combat, one-time guardians, equipment, four permanent rune bindings, basic forging, a village shop, Easy/Normal, colour choices and three save slots. The full edition keeps all its systems. Saves are separate: use Simple’s Export/Import to move between laptops or versions; export before moving or renaming the HTML file.
+
+Full-game quarries now give **2 Stone + 1 regional metal**; timber yards give **2 Timber + 1 regional wood**. These go into construction supplies and crafting bags respectively. One trip per named site per 20-wander cycle, including Ironpeak’s dwarven quarry.
 
 ## Run
 
@@ -256,6 +264,6 @@ Normal and Easy now share a single-draw encounter system with different weights,
 
 Bandit Camp option 2 now uses the normal XP/level-up function instead of calling a nonexistent function. The duplicate camp definition is removed, ingredient trades show their result, invalid choices reprompt, and rest reports actual capped recovery. Existing camp names and rewards are preserved. The worker menu no longer shadows its selection helper with the displayed option number, fixing placing/collecting orders and hiring gatherers. Sidebar weapon/potion selections survive polling and state refreshes, with unchanged snapshots avoiding unnecessary DOM replacement. See [DEBUG_CHECKS_V25.8.md](DEBUG_CHECKS_V25.8.md) for validation scope and the reusable menu audit.
 
-### V25.9 · Four monster evolution stages
+### V25.10 · Four monster evolution stages
 
 Each of the 30 ordinary species has four named forms at player levels 1, 5, 10 and 15: 120 forms total. HP, ATK and DEF grow within each stage and continue beyond level 15. Existing base names remain at level 1; distinct evolved names return at level 10. At level 10+, existing regional mini-bosses take 25% of the usual two-species/two-mini-boss pool and grow with level. Known-species tracked targets use the same evolution rules. Ordinary evolved attacks now use scaled ATK rather than the old flat 5–15 roll; stronger forms grant higher XP/souls. Easy retains its 25% enemy-health and 40% direct-damage reductions, and the one-roll wander tables are unchanged. Regional/story bosses keep their separate rules. Enemy cards show stage/level/ATK/DEF; **Dictionary → Evolutions** lists every chain. See [ENEMY_EVOLUTION.md](ENEMY_EVOLUTION.md) for sample stats and scaling scope.

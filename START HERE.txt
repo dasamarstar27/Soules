@@ -1,6 +1,6 @@
-PLAY SOULES V25.9
+PLAY SOULES V25.10
 
-This download lives in a folder named V25.9. Keep the entire folder together.
+This download lives in a folder named V25.10. Keep the entire folder together.
 Close any older Soules server window before starting this version.
 
 1. Extract this whole ZIP into a folder. Do not run it from inside the ZIP.
@@ -48,3 +48,9 @@ OLDER VERSIONS
 Click the version badge in the top corner for archived downloads and downgrade
 steps. Back up your saves first. Website players need the host owner to roll
 back the server; downloading a ZIP does not change a hosted game.
+
+SIMPLE LAPTOP EDITION
+For a smaller, offline game without installing Python, double-click
+"Play Soules Simple.bat" or open "simple/Play Soules Simple.html".
+The full game above keeps all its features. Simple has its own saves.
+Export a Simple save before moving the HTML file or updating versions.

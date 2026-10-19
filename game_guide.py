@@ -1,6 +1,10 @@
 """Player-facing guide for the original text edition; no secret commands."""
 
 SECTIONS = [
+    ("resource-sites", "Quarries and timber yards", [
+        "Each quarry trip gives 2 Stone for village building plus 1 regional metal for forging. Each timber-yard trip gives 2 Timber for building plus 1 regional wood for crafting. Ironpeak’s dwarven quarry gives Stone and Titanium; Bromm’s metal shop is separate.",
+        "Supplies are finite: each named site can be worked once per 20-wander cycle. Find more sites or return after the next cycle. Building supplies appear under village construction; metals and woods appear in crafting inventory. Village building menus also let you convert spare crafting materials into building supplies."
+    ]),
     (
         "first-steps",
         "Start here",

@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.9",
+        "3a4dcd952d769a77ecbc4ca1e5f3dddb9e698769",
+        "Four monster forms at levels 1, 5, 10 and 15.",
+    ),
+    (
         "25.8",
         "c766285680e8107dd5c0c50e445a28c6244736db",
         "Camp stories, worker orders and stable sidebar choices.",
@@ -50,7 +55,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: four monster forms at levels 1, 5, 10 and 15.",
+            notes="Current release: regional work-site supplies and a separate offline Simple laptop edition.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:

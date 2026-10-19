@@ -91,6 +91,17 @@ def main():
         f"{build(ROOT,args.output,version,paths)} source files packaged in {args.output} under V{version}/"
     )
 
+    simple_paths = [
+        "VERSION",
+        "Play Soules Simple.bat",
+        "simple/Play Soules Simple.html",
+        "simple/README.txt",
+    ]
+    simple_output = args.output.with_name(f"Soules-Simple-V{version}.zip")
+    print(
+        f"{build(ROOT, simple_output, version, simple_paths)} files packaged in {simple_output}"
+    )
+
 
 if __name__ == "__main__":
     main()

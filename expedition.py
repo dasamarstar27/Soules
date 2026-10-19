@@ -69,25 +69,9 @@ def activity(game, feature):
         if not quota(p, "mining", 3):
             print("The local vein is exhausted this cycle.")
             return
-        index = (data.REGIONS + [data.SECRET_REGION]).index(r)
-        native = {
-            "Whispering Woods": "Iron",
-            "Ashen Wastes": "Iron",
-            "Crimson Depths": "Crimson Steel",
-            "Frostbound Tundra": "Froststeel",
-            "Crystal Spire": "Crystal Alloy",
-            "Sunken Coast": "Iron",
-            "Ironpeak Mountains": "Titanium",
-            "Blight Swamp": "Iron",
-            "Shadow Vale": "Shadow Iron",
-            "Infernal Depths": "Infernium",
-            "Celestial Expanse": "Celestium",
-            "Riftlands": "Riftsteel",
-            "Abyss of Souls": "Soulsteel",
-            "Shattered Wastes": "Void Alloy",
-            "The Dreamscape": "Chronosteel",
-            data.SECRET_REGION: "Creator Alloy",
-        }[r]
+        from resource_sites import REGIONAL_METALS
+
+        native = REGIONAL_METALS[r]
         p.setdefault("metals", []).append(native)
         p.setdefault("building_materials", {})["Stone"] = (
             p.get("building_materials", {}).get("Stone", 0) + 1

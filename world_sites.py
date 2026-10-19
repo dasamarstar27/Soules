@@ -1,6 +1,7 @@
 """Finite construction resource sites and peaceful regional watch posts."""
 
 import original_ui as ui
+from resource_sites import gather, yield_description
 
 
 def visit(game, struct, region):
@@ -44,21 +45,18 @@ def visit(game, struct, region):
 
             dwarven_quarry(game, struct)
             return
-        material = "Stone" if struct["type"] == "quarry" else "Timber"
+        rewards = yield_description(struct["type"], region)
         print(
-            f"1. Work for 2 {material}\n0. Leave\nOne gathering trip per site each 20-wander cycle. No charge; supplies are finite."
+            f"1. Work for {rewards}\n0. Leave\nOne gathering trip per site each 20-wander cycle. No charge; supplies are finite."
         )
-        if input("Work site > ").strip() != "1":
+        if (
+            input(
+                "Choose 1 to gather building and crafting supplies, or 0 to leave > "
+            ).strip()
+            != "1"
+        ):
             return
-        record = game.player.setdefault("work_sites", {})
-        key = region + "::" + struct["name"]
-        cycle = game.player.get("wander_count", 0) // 20
-        if record.get(key) == cycle:
-            print("This site needs time to replenish.")
-            return
-        record[key] = cycle
-        bag = game.player.setdefault("building_materials", {})
-        bag[material] = bag.get(material, 0) + 2
-        print(f"Gathered 2 {material} for village construction.")
+        if not gather(game.player, struct, region):
+            print("This site needs time to replenish. Return next 20-wander cycle.")
     finally:
         ui.location = previous
