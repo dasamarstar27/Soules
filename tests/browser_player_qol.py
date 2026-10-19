@@ -59,8 +59,13 @@ with sync_playwright() as pw:
     action(17)
     send(0)
     page.locator("#sidebar-weapon").select_option("1")
+    page.wait_for_timeout(1500)
+    assert page.locator("#sidebar-weapon").input_value() == "1"
     clicked("#sidebar-equip")
     assert page.evaluate("packet.snapshot.player.weapon.name") == "Sidebar Test Blade"
+    page.locator("#sidebar-potion").select_option("1")
+    page.wait_for_timeout(1500)
+    assert page.locator("#sidebar-potion").input_value() == "1"
     page.locator("#sidebar-potion").select_option("0")
     clicked("#sidebar-drink")
     assert page.evaluate("packet.snapshot.player.hp") == 51

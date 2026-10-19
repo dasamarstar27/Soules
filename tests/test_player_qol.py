@@ -33,9 +33,11 @@ class PlayerQualityTests(TestCase):
             return fn(*args, **kw)
 
     def test_monster_outcome_does_not_also_discover_structure(self):
-        with patch("wander_roll.pick", return_value="monster"), patch.object(game.random, "random", return_value=0), patch.object(
-            game, "fight"
-        ) as fight, patch.object(game, "visit_elemental_village") as clan, patch(
+        with patch("wander_roll.pick", return_value="monster"), patch.object(
+            game.random, "random", return_value=0
+        ), patch.object(game, "fight") as fight, patch.object(
+            game, "visit_elemental_village"
+        ) as clan, patch(
             "builtins.print"
         ):
             game.explore()
@@ -58,8 +60,8 @@ class PlayerQualityTests(TestCase):
         self.assertEqual(self.p["weapons"], original["weapons"])
         self.assertEqual(self.p["gold"], original["gold"])
         self.assertEqual(self.p["unlocked_regions"], original["unlocked_regions"])
-        self.call([],disable_beta,self.p)
-        self.assertEqual(self.p["weapons"],original["weapons"])
+        self.call([], disable_beta, self.p)
+        self.assertEqual(self.p["weapons"], original["weapons"])
         validate_original_save(ui.snapshot())
 
     def test_older_beta_cleanup_preserves_an_exportable_recovery_copy(self):
@@ -70,7 +72,9 @@ class PlayerQualityTests(TestCase):
         self.call([], grant_collectibles, self.p)
         self.assertNotIn("beta_backup", self.p)
         before = deepcopy(self.p["weapons"])
-        self.p["beta_mode"] = False  # old release already switched off but kept all grants
+        self.p["beta_mode"] = (
+            False  # old release already switched off but kept all grants
+        )
         self.call([], disable_beta, self.p)
         self.assertEqual(self.p["beta_legacy_recovery"]["weapons"], before)
         self.assertEqual([w["name"] for w in self.p["weapons"]], ["Rusty Sword"])
@@ -144,9 +148,11 @@ class PlayerQualityTests(TestCase):
         v = villages.profile("Crimson Depths", "Smiths' Quarter")
         local = jobs.record(self.p, v)
         local["work_orders"] = [dict(remaining=3)]
-        with patch("wander_roll.pick", return_value="peaceful"), patch.object(game.random, "random", return_value=0.99), patch.object(
-            game.random, "randint", return_value=99
-        ), patch("builtins.print"):
+        with patch("wander_roll.pick", return_value="peaceful"), patch.object(
+            game.random, "random", return_value=0.99
+        ), patch.object(game.random, "randint", return_value=99), patch(
+            "builtins.print"
+        ):
             game.explore()
         self.assertEqual(local["work_orders"][0]["remaining"], 2)
 
@@ -177,3 +183,18 @@ class PlayerQualityTests(TestCase):
         self.assertEqual(len(battle.call_args.args[1]), 3)
         self.assertTrue(observed[0]["roles"])
         self.assertIsNone(ui.assignment)
+
+    def test_worker_menu_can_place_and_collect_commission_and_hire_gatherers(self):
+        village = villages.profile("Crimson Depths", "Smiths' Quarter")
+        self.call(["1", "2", "1", "1", "1", "y", "0"], jobs.menu, game, village)
+        orders = jobs.record(self.p, village)["work_orders"]
+        self.assertEqual(len(orders), 1)
+        self.assertEqual(orders[0]["materials"], ["Iron", "Molten Core", "Oak"])
+        orders[0]["remaining"] = 0
+        before = len(self.p["weapons"])
+        self.call(["6", "1", "0"], jobs.menu, game, village)
+        self.assertEqual(len(self.p["weapons"]), before + 1)
+        self.assertEqual(orders, [])
+        self.call(["5", "1", "y", "0"], jobs.menu, game, village)
+        self.assertEqual(len(orders), 1)
+        self.assertEqual(orders[0]["kind"], "gather")

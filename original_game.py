@@ -3303,17 +3303,21 @@ def visit_camp(struct, region):
     print("A rough camp of travellers huddles around a fire. They're cautious but friendly.\n")
     print("1. Rest by the fire  (free rest: +25 HP + +20 hunger)")
     print("2. Trade stories  (may learn a tip — small XP gain)")
-    print("3. Buy/trade ingredients  (if you have any)")
+    print("3. Trade one ingredient  (15–40 souls; requires an ingredient)")
     print("4. Move on")
-    c = input("> ").strip()
+    while True:
+        c = input("Camp > ").strip()
+        if c in ("1", "2", "3", "4"):
+            break
+        print("Choose 1 Rest, 2 Trade stories, 3 Trade one ingredient, or 4 Move on.")
     if c == "1":
-        heal = min(25, player["max_hp"] - player["hp"])
+        heal = max(0, min(25, player["max_hp"] - player["hp"]))
         player["hp"] += heal
-        player["hunger"] = min(100, player.get("hunger", 100) + 20)
-        print(f"  You rest warmly. +{heal} HP, +20 hunger.")
+        hunger_gain = max(0, min(20, 100 - player.get("hunger", 100)))
+        player["hunger"] = player.get("hunger", 100) + hunger_gain
+        print(f"  You rest warmly. +{heal} HP, +{hunger_gain} hunger.")
     elif c == "2":
         xp = random.randint(20, 50)
-        player["xp"] = player.get("xp", 0) + xp
         tips = [
             '"Watch out — at night the monsters hit harder."',
             '"Ingredients can be mixed at village workbenches."',
@@ -3324,7 +3328,7 @@ def visit_camp(struct, region):
         print(f"\n  A grizzled wanderer shares their experience.")
         print(f"  {random.choice(tips)}")
         print(f"  +{xp} XP from the conversation.")
-        check_level_up()
+        gain_xp(xp)
     elif c == "3":
         ings = player.get("ingredients", [])
         if not ings:
@@ -3335,6 +3339,12 @@ def visit_camp(struct, region):
         gold = random.randint(15, 40)
         player["gold"] += gold
         print(f"  You trade [{trade_ing}] for {gold} souls.")
+
+    elif c == "4":
+        print("  You leave the camp. Nearby, you gather wood from a fallen tree.")
+        loot = random.choice(list(WOODS))
+        player.setdefault("woods", []).append(loot)
+        print(f"  You found {loot}.")
 
 
 def visit_village(struct, region):
@@ -3541,53 +3551,6 @@ def visit_dungeon(struct, region):
     else:
         print("You found nothing else")
 
-
-def visit_camp(struct, region):
-    advance_quest("explore_structure", region)
-    print(f"\n⛺═══════════════════════════════⛺")
-    print(f"     {struct['name'].upper()}")
-    print(f"⛺═══════════════════════════════⛺")
-    print("A rough camp of travellers huddles around a fire. They're cautious but friendly.\n")
-    print("1. Rest by the fire  (free rest: +25 HP + +20 hunger)")
-    print("2. Trade stories  (may learn a tip — small XP gain)")
-    print("3. Buy/trade ingredients  (if you have any)")
-    print("4. Move on")
-    c = input("> ").strip()
-    if c == "1":
-        heal = min(25, player["max_hp"] - player["hp"])
-        player["hp"] += heal
-        player["hunger"] = min(100, player.get("hunger", 100) + 20)
-        print(f"  You rest warmly. +{heal} HP, +20 hunger.")
-    elif c == "2":
-        xp = random.randint(20, 50)
-        player["xp"] = player.get("xp", 0) + xp
-        tips = [
-            '"Watch out — at night the monsters hit harder."',
-            '"Ingredients can be mixed at village workbenches."',
-            '"Dungeons have three floors now. The third guardian is deadly."',
-            '"Libraries hold permanent stat boosts — seek them out."',
-            '"The arena rewards great courage with greater gold."',
-        ]
-        print(f"\n  A grizzled wanderer shares their experience.")
-        print(f"  {random.choice(tips)}")
-        print(f"  +{xp} XP from the conversation.")
-        check_level_up()
-    elif c == "3":
-        ings = player.get("ingredients", [])
-        if not ings:
-            print("  You have no ingredients to offer.")
-            return
-        trade_ing = random.choice(ings)
-        ings.remove(trade_ing)
-        gold = random.randint(15, 40)
-        player["gold"] += gold
-    elif c == "4":
-        print("  You leave the camp.")
-        print("while near the camp you notice a fallen tree")
-        print("you harvest wood from the tree")
-        loot = random.choice(list(WOODS))
-        player["woods"].append(loot)
-        print(f"You found a {loot} wood")
 
 
 def visit_tower(struct, region):

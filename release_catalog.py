@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.7",
+        "d2ad6e4e789c30499eba14c971b7c8dae9c5774d",
+        "One weighted wander outcome with Normal and Easy tables.",
+    ),
+    (
         "25.6",
         "38dfc195f332f927d3cac71bed2690056c453fc9",
         "Working tablet purchase Yes/No confirmations.",
@@ -40,7 +45,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: one weighted main wander roll with Normal/Easy tables.",
+            notes="Current release: camp stories, worker menu and sidebar selection fixes.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:

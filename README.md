@@ -1,4 +1,4 @@
-# Soules V25.7 — Echoes of the World Tree
+# Soules V25.8 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -251,3 +251,7 @@ Tablet and Easy reading modes now render Yes/No answers directly from the curren
 ### V25.7 · One weighted wander outcome
 
 Normal and Easy now share a single-draw encounter system with different weights, as listed above. There is no monster-first check followed by discovery checks. The independent construction-supply roll is removed from automatic wandering; building materials are one of the gathering results. Rare subtypes and event identities are already in the main table, so they do not require another outcome roll. Detail choices such as monster species, item identity, combat rolls, weather updates and player decisions are separate. Existing source-story scenes, companion perks, full-hunger regeneration and work shifts remain; no save conversion is needed.
+
+### V25.8 · Camp and menu debugging
+
+Bandit Camp option 2 now uses the normal XP/level-up function instead of calling a nonexistent function. The duplicate camp definition is removed, ingredient trades show their result, invalid choices reprompt, and rest reports actual capped recovery. Existing camp names and rewards are preserved. The worker menu no longer shadows its selection helper with the displayed option number, fixing placing/collecting orders and hiring gatherers. Sidebar weapon/potion selections survive polling and state refreshes, with unchanged snapshots avoiding unnecessary DOM replacement. See [DEBUG_CHECKS_V25.8.md](DEBUG_CHECKS_V25.8.md) for validation scope and the reusable menu audit.
