@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.8",
+        "c766285680e8107dd5c0c50e445a28c6244736db",
+        "Camp stories, worker orders and stable sidebar choices.",
+    ),
+    (
         "25.7",
         "d2ad6e4e789c30499eba14c971b7c8dae9c5774d",
         "One weighted wander outcome with Normal and Easy tables.",
@@ -45,7 +50,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: camp stories, worker menu and sidebar selection fixes.",
+            notes="Current release: four monster forms at levels 1, 5, 10 and 15.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:

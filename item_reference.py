@@ -319,6 +319,9 @@ def reference():
             description="Ordinary loot rolls choose a category first: trinket 60%, armour 5%, weapon 10%, scroll 15%, rune 7%, staff 3%. Divine Luck changes trinkets to 50% and staffs to 13%. Each eligible item within the selected pool is equally likely. These are per loot roll, not per wander; some victories award more than one roll. Gear tier, catalogue value and random drop chance mean different things. A shop-only item or chosen activity has no invented drop percentage. Generated items, custom weapon names, charged-core/rune combinations and individual village variants follow their recipes and local rules rather than an infinite list of named copies.",
         )
     )
+    from monster_evolution import reference_entries
+
+    entries.extend(reference_entries())
     return dict(
         entries=entries,
         categories=sorted({entry["type"] for entry in entries}),

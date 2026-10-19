@@ -100,7 +100,7 @@ def reference():
         ),
         dict(
             name="Monster level pools",
-            description="Below level 10 the ordinary monster path uses the regional normal pool. From level 10 it selects uniformly from evolved monsters and mini-bosses, falling back to normal monsters if that pool is empty.",
+            description="Each ordinary species has four forms at player levels 1, 5, 10 and 15. HP, ATK and DEF grow within each stage and continue after level 15. Original level-1 names and existing evolved names at level 10 are retained. From level 10, regional mini-bosses occupy 25% of the usual two-species/two-mini-boss pool. Their stats also grow with level. Evolved direct attacks use scaled ATK; player gear does not set enemy strength. See Dictionary → Evolutions for each chain.",
             type="Combat details",
         ),
         dict(
@@ -192,7 +192,7 @@ def reference():
                 name=region,
                 description="Normal monsters: "
                 + (", ".join(normals) or "none")
-                + ". Level 10+ pool: "
+                + ". Existing evolved / mini-boss names: "
                 + (", ".join(advanced) or "normal pool fallback")
                 + ". Ingredients: "
                 + (", ".join(data.REGION_INGREDIENTS.get(region, [])) or "none")

@@ -292,6 +292,8 @@ def before_wander(game):
     tracked = field(p).get("tracked_target")
     if tracked and tracked["region"] == p["region"]:
         field(p).pop("tracked_target")
-        game.fight(deepcopy(tracked["enemy"]))
+        from monster_evolution import tracked as evolve_tracked
+
+        game.fight(evolve_tracked(tracked["enemy"], p["region"], p["level"]))
         return True
     return False

@@ -1850,6 +1850,9 @@ def fight(enemy, boss=False):
             'THE DREAMSCAPE KING · The corrupted ruler returns. "Their sacrifice held me outside this world. Now the rift is open, and your world will dream as I command."'
         )
     print("⚔", enemy["name"])
+    if enemy.get("evolution"):
+        evolution = enemy["evolution"]
+        print(f"Stage {evolution['stage']}/4 · Level {evolution['level']} · HP {enemy['hp']} · ATK {enemy['atk']} · DEF {enemy.get('def',0)}")
 
     for pet in player.get('companions', []):
         pet.pop('helped_this_battle', None)
@@ -2096,11 +2099,8 @@ def fight(enemy, boss=False):
             enemy["active_buffs"].pop("stun", None)
             enemy_dmg = 0
         else:
-            base_enemy_dmg = (
-                random.randint(5, 15)
-                if not enemy.get("_story_boss")
-                else random.randint(max(5, enemy["atk"] // 3), max(10, enemy["atk"] // 2))
-            )
+            from monster_evolution import attack_range
+            base_enemy_dmg = random.randint(*attack_range(enemy))
             armour_def = (
                 player.get("armour", {}) and player["armour"].get("def", 0)
                 if player.get("armour")
@@ -2256,8 +2256,9 @@ def fight(enemy, boss=False):
                     ui.show_boss_drop_popup(item, player["region"])
         else:
             print("yay u won")
-            xp_gain = 20
-            gold_gain = 20
+            rewards = enemy.get("evolution_rewards", {})
+            xp_gain = rewards.get("xp", 20)
+            gold_gain = rewards.get("gold", 20)
             if "soul_harvest" in player.get("skills", []):
                 xp_gain = int(xp_gain * 1.5)
             if "dungeon_delver" in player.get("skills", []):
@@ -2636,11 +2637,8 @@ def explore():
 
 def _wander_monster(r, night):
     from wander_reference import NIGHT_ELITE
-    if player["level"] >= 10:
-        enemy_pool = EVOLVED_MONSTERS.get(r, []) + MINI_BOSSES.get(r, [])
-    else:
-        enemy_pool = NORMAL_MONSTERS.get(r, [])
-    enemy_pool = enemy_pool or NORMAL_MONSTERS.get(r, [])
+    from monster_evolution import pool
+    enemy_pool = pool(r, player["level"])
     if not enemy_pool:
         print("No creatures inhabit this path.")
         return
@@ -2649,6 +2647,7 @@ def _wander_monster(r, night):
     enemy = deepcopy(random.choice(enemy_pool))
     if night:
         enemy["hp"] = int(enemy["hp"] * 1.15)
+        enemy["max_hp"] = enemy["hp"]
         enemy["atk"] = int(enemy["atk"] * 1.15)
         if random.random() < NIGHT_ELITE:
             enemy = make_elite(enemy)
