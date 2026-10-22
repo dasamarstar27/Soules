@@ -212,6 +212,19 @@ def validate_original_save(value):
                     for level in levels.values()
                 ):
                     raise ValueError("Invalid building levels in save.")
+                built = record.get("built_services", [])
+                from village_life import SERVICE_NAMES
+
+                if (
+                    not isinstance(built, list)
+                    or len(built) > len(SERVICE_NAMES)
+                    or any(
+                        not isinstance(key, str) or key not in SERVICE_NAMES
+                        for key in built
+                    )
+                    or len(set(built)) != len(built)
+                ):
+                    raise ValueError("Invalid constructed facilities in save.")
                 projects = record.get("projects", [])
                 from village_projects import BY_ID
 

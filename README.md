@@ -1,4 +1,4 @@
-# Soules V25.11 — Echoes of the World Tree
+# Soules V25.12 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -264,6 +264,10 @@ Normal and Easy now share a single-draw encounter system with different weights,
 
 Bandit Camp option 2 now uses the normal XP/level-up function instead of calling a nonexistent function. The duplicate camp definition is removed, ingredient trades show their result, invalid choices reprompt, and rest reports actual capped recovery. Existing camp names and rewards are preserved. The worker menu no longer shadows its selection helper with the displayed option number, fixing placing/collecting orders and hiring gatherers. Sidebar weapon/potion selections survive polling and state refreshes, with unchanged snapshots avoiding unnecessary DOM replacement. See [DEBUG_CHECKS_V25.8.md](DEBUG_CHECKS_V25.8.md) for validation scope and the reusable menu audit.
 
-### V25.11 · Four monster evolution stages
+### V25.12 · Four monster evolution stages
 
 Each of the 30 ordinary species has four named forms at player levels 1, 5, 10 and 15: 120 forms total. HP, ATK and DEF grow within each stage and continue beyond level 15. Existing base names remain at level 1; distinct evolved names return at level 10. At level 10+, existing regional mini-bosses take 25% of the usual two-species/two-mini-boss pool and grow with level. Known-species tracked targets use the same evolution rules. Ordinary evolved attacks now use scaled ATK rather than the old flat 5–15 roll; stronger forms grant higher XP/souls. Easy retains its 25% enemy-health and 40% direct-damage reductions, and the one-roll wander tables are unchanged. Regional/story bosses keep their separate rules. Enemy cards show stage/level/ATK/DEF; **Dictionary → Evolutions** lists every chain. See [ENEMY_EVOLUTION.md](ENEMY_EVOLUTION.md) for sample stats and scaling scope.
+
+### V25.12 · Build a complete village
+
+Village option **17: Build / upgrade village facilities** lists existing and missing buildings with costs. Build any missing ordinary service for 5 Timber, 4 Stone, 2 Iron fittings and 100 souls; it starts at Level 1. Built services immediately appear in the village menu, sidebar, crafting hub, workers and community-project options. All buildings, including farms, can reach Level 5. Farm quality increases ingredients per harvest; the same 20-wander harvest limit remains, and restaurant capacity updates next restock. Changes belong to that village and survive revisits and save import/export. Ordinary villages still cannot build Source/Imbuing Temples; elemental villages retain their special temples. Simple edition gameplay is unchanged.

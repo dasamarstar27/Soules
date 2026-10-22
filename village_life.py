@@ -130,6 +130,7 @@ def profile(region, name, elemental=False):
         kind=kind,
         elemental=elemental,
     )
+    p["native_services"] = list(p["services"])
     p["stock_variant"] = spec.get("stock_variant", 0)
     p["smith_label"] = ["None", "Apprentice", "Skilled", "Master"][p["smith_tier"]]
     return p
@@ -139,7 +140,22 @@ def state(player, village):
     record = player.setdefault("village_records", {}).setdefault(
         village["id"], {"reputation": 0}
     )
-    record.setdefault("levels", deepcopy(village["starting_levels"]))
+    levels = record.setdefault("levels", deepcopy(village["starting_levels"]))
+    native = village.get("native_services", village["services"])
+    built = [
+        key
+        for key in record.get("built_services", [])
+        if key in SERVICE_NAMES and (key != "temple" or village.get("elemental"))
+    ]
+    village["services"] = list(dict.fromkeys(list(native) + built))
+    for key in built:
+        village["quality"].setdefault(key, 1)
+        village["starting_levels"].setdefault(key, 1)
+        levels.setdefault(key, 1)
+    if "forge" not in native:
+        tier = min(3, levels.get("forge", 1)) if "forge" in built else 0
+        village["smith_tier"] = tier
+        village["smith_label"] = ["None", "Apprentice", "Skilled", "Master"][tier]
     return record
 
 
@@ -438,7 +454,7 @@ def village_options(village):
         (14, "Talk to the keeper", None),
         (15, "Ask for a rumour", None),
         (16, "Side quest board", None),
-        (17, "Upgrade village buildings", services),
+        (17, "Build / upgrade village facilities", None),
         (18, "Speak to your mentor", "old_village"),
         (19, "Material stock (metals / wood / building supplies)", "trade"),
         (20, "Community projects", services),
@@ -675,6 +691,8 @@ def known_villages(player):
         if local.get("restored_refuge"):
             region = vid.split("::")[0]
             result.append(profile(region, local["restored_refuge"]))
+    for village in result:
+        state(player, village)
     return result
 
 
@@ -926,31 +944,98 @@ def gather_building_material(player, rng):
     print(f"Building supply found: 1 {name}.")
 
 
+FACILITY_BUILD_COST = {"Timber": 5, "Stone": 4, "Iron fittings": 2}
+FACILITY_BUILD_GOLD = 100
+
+
+def facility_rows(player, village):
+    state(player, village)
+    return list(village["services"]) + [
+        key
+        for key in SERVICE_NAMES
+        if key not in village["services"]
+        and (key != "temple" or village.get("elemental"))
+    ]
+
+
+def facility_cost(player, village, key):
+    state(player, village)
+    if key not in facility_rows(player, village):
+        raise ValueError("Source temples belong only to elemental villages.")
+    if key not in village["services"]:
+        return dict(FACILITY_BUILD_COST), FACILITY_BUILD_GOLD, 1
+    level = building_level(player, village, key)
+    return (
+        {"Timber": level * 2, "Stone": level * 2, "Iron fittings": level},
+        level * 50,
+        level + 1,
+    )
+
+
+def improve_facility(player, village, key):
+    """Pay once, build or upgrade locally, then refresh services immediately."""
+    record = state(player, village)
+    if key not in facility_rows(player, village):
+        return False, "Source temples can only be built in elemental villages."
+    building = key not in village["services"]
+    if not building and building_level(player, village, key) >= 5:
+        return False, "Already at maximum level."
+    materials, gold, target = facility_cost(player, village, key)
+    bag = player.setdefault("building_materials", {})
+    if player["gold"] < gold or any(
+        bag.get(name, 0) < n for name, n in materials.items()
+    ):
+        return False, "Not enough materials or souls."
+    from expansion_state import pay
+
+    if not pay(player, gold, materials):
+        return False, "Budget Run blocks construction and paid upgrades."
+    if building:
+        record.setdefault("built_services", []).append(key)
+    record["levels"][key] = target
+    state(player, village)
+    verb = "built" if building else "upgraded"
+    return (
+        True,
+        f"{SERVICE_NAMES[key]} {verb} to Level {target}! Available immediately in this village. Shop capacity updates next restock; farms give more ingredients at the next harvest.",
+    )
+
+
 def upgrade_buildings(game, village):
     p = game.player
-    record = state(p, village)
     while True:
+        rows = facility_rows(p, village)
         bag = p.setdefault("building_materials", {})
-        print("\n--- VILLAGE BUILDINGS · " + village["name"] + " ---")
+        print("\n--- BUILD / UPGRADE · " + village["name"] + " ---")
         print(
             "Materials: "
             + ", ".join(f"{name}: {bag.get(name,0)}" for name in BUILDING_MATERIALS)
+            + f" | {p['gold']} souls"
         )
-        for i, key in enumerate(village["services"], 1):
-            level = building_level(p, village, key)
-            print(
-                f"{i}. {SERVICE_NAMES[key]} · Level {level}/5 · "
-                + (
-                    "MAX"
-                    if level >= 5
-                    else f"next level: {level*2} Timber, {level*2} Stone, {level} Iron fittings, {level*50} souls"
+        for i, key in enumerate(rows, 1):
+            exists = key in village["services"]
+            level = building_level(p, village, key) if exists else 0
+            if level >= 5:
+                detail = "MAX"
+            else:
+                cost, gold, target = facility_cost(p, village, key)
+                detail = (
+                    ("Upgrade" if exists else "Build")
+                    + f" to Level {target}: "
+                    + ", ".join(f"{n} {name}" for name, n in cost.items())
+                    + f", {gold} souls"
                 )
+            print(
+                f"{i}. {SERVICE_NAMES[key]} · "
+                + (f"Level {level}/5" if exists else "NOT BUILT")
+                + " · "
+                + detail
             )
         print(
             "W. Convert one carried wood into 2 Timber\nM. Convert one carried metal into 2 Iron fittings\n0. Back"
         )
         print(
-            "Find building supplies while wandering (25% per wander). Upgrades improve this village only; new shop capacity applies at the next restock."
+            "Choose a facility number to build or upgrade it. New facilities start at Level 1; all can reach Level 5. Farms yield more ingredients as quality rises. Quarries and timber yards supply materials; wandering also finds building supplies. Source temples remain exclusive to elemental villages."
         )
         c = input("Building > ").strip().lower()
         if c == "0":
@@ -977,35 +1062,25 @@ def upgrade_buildings(game, village):
         try:
             index = int(c) - 1
         except ValueError:
+            print("Choose a listed facility number, W, M, or 0.")
             continue
-        if not 0 <= index < len(village["services"]):
+        if not 0 <= index < len(rows):
             continue
-        key = village["services"][index]
-        level = building_level(p, village, key)
-        if level >= 5:
+        key = rows[index]
+        exists = key in village["services"]
+        if exists and building_level(p, village, key) >= 5:
             print("Already at maximum level.")
             continue
-        required = {"Timber": level * 2, "Stone": level * 2, "Iron fittings": level}
+        _, _, target = facility_cost(p, village, key)
+        verb = "Upgrade" if exists else "Build"
         if (
-            any(bag.get(name, 0) < count for name, count in required.items())
-            or p["gold"] < level * 50
-        ):
-            print("Not enough materials or souls.")
-            continue
-        if (
-            input(f"Upgrade {SERVICE_NAMES[key]} to Level {level+1}? (y/n) > ")
+            input(f"{verb} {SERVICE_NAMES[key]} to Level {target}? (y/n) > ")
             .strip()
             .lower()
             != "y"
         ):
             continue
-        for name, count in required.items():
-            bag[name] -= count
-        p["gold"] -= level * 50
-        record["levels"][key] = level + 1
-        print(
-            f"{SERVICE_NAMES[key]} upgraded to Level {level+1}! Local service bonuses improve immediately."
-        )
+        print(improve_facility(p, village, key)[1])
 
 
 def register_visit(player, village, rng):
