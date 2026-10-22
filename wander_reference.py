@@ -2,7 +2,7 @@
 
 import data
 
-from wander_roll import CHANCES, TOTAL, ticket_table
+from wander_roll import CHANCES, TOTAL, GATHER_MONSTER_CHANCE, ticket_table
 
 WEATHER_RESELECT = 0.20
 NIGHT_ELITE = 0.05
@@ -15,7 +15,7 @@ def percent(value):
 def probabilities(
     region, undiscovered=True, bounty_available=True, difficulty="normal"
 ):
-    """Actual exclusive ticket ranges, with unavailable structures becoming quiet."""
+    """Primary ticket ranges; exhausted ordinary structures become monsters."""
     outcomes = dict.fromkeys(
         (
             "monster",
@@ -39,11 +39,27 @@ def probabilities(
     return outcomes
 
 
+def encounter_probabilities(
+    region, undiscovered=True, bounty_available=True, difficulty="normal"
+):
+    """Encounter chances after gathering; item finds overlap this second table."""
+    odds = probabilities(region, undiscovered, bounty_available, difficulty)
+    gathered = odds.pop("ingredient") + odds.pop("building_supply")
+    structure_share = (
+        1 - GATHER_MONSTER_CHANCE / 100
+        if undiscovered and data.REGION_STRUCTURES.get(region)
+        else 0
+    )
+    odds["structure"] += gathered * structure_share
+    odds["monster"] += gathered * (1 - structure_share)
+    return odds
+
+
 def reference():
     stages = [
         dict(
             name="How wandering chances work",
-            description="One weighted main roll chooses exactly one outcome. There is no monster-first roll and no chain of discovery rolls. Rare bounties, hidden clans and the six event types already occupy their own ranges in this same roll. Item/species selection, combat, event choices and loot can have their own detail rolls. Weather and survival timers continue independently. Paid tracking replaces the random outcome; scheduled story scenes and companion perks remain explicit bonuses.",
+            description="One weighted main roll chooses the starting outcome. An ingredient or building-supply find now keeps its reward and triggers one follow-up: 70% ordinary monster, 30% undiscovered ordinary structure. If all ordinary structures are known, that follow-up is always a monster. It cannot roll another ingredient, supply, merchant or quiet result. Rare bounties, hidden clans and the six event types already occupy their own ranges in this same roll. Item/species selection, combat, event choices and loot can have their own detail rolls. Weather and survival timers continue independently. Paid tracking replaces the random outcome; scheduled story scenes and companion perks remain explicit bonuses.",
             type="Read first",
         ),
         *[
@@ -53,7 +69,7 @@ def reference():
                     name.replace("_", " ").title() + ": " + str(chance) + "%"
                     for name, chance in chances.items()
                 )
-                + ". Gathering gives one regional ingredient or one building supply, equally likely where ingredients exist. No extra gather roll runs alongside other outcomes.",
+                + ". Gathering gives one regional ingredient or one building supply, equally likely where ingredients exist, then adds a 70% monster / 30% ordinary structure encounter. Normal totals are 65% combat and 16% structures (including clans); Easy totals are 57% and 21%, while ordinary discoveries remain. Both have only 3% base peaceful wandering. Special events can also lead to fights.",
                 type="One main roll",
             )
             for mode, chances in CHANCES.items()
@@ -65,17 +81,17 @@ def reference():
         ),
         dict(
             name="Construction supplies",
-            description="Half the gathering range gives one Timber, Stone or Iron fitting: 10% per Normal wander, 15% per Easy wander. If a region has no ingredients, its entire gathering range gives a building supply. There is no independent supply find on monster or peaceful outcomes.",
+            description="Half the gathering range gives one Timber, Stone or Iron fitting: 10% per Normal wander, 15% per Easy wander. If a region has no ingredients, its entire gathering range gives a building supply. After keeping this supply, roll 70% monster / 30% undiscovered ordinary structure. This does not start a second wander or advance survival/work timers again.",
             type="Gathering outcome",
         ),
         dict(
             name="Regional ingredients",
-            description="Half the gathering range gives one native ingredient: 10% per Normal wander, 15% per Easy wander in regions with ingredients. Gathering does not also trigger a monster, merchant or separate discovery.",
+            description="Half the gathering range gives one native ingredient: 10% per Normal wander, 15% per Easy wander in regions with ingredients. After keeping the ingredient, roll 70% monster / 30% undiscovered ordinary structure. If no ordinary structures remain, fight a monster. You may also receive combat loot after winning that fight.",
             type="Gathering outcome",
         ),
         dict(
             name="Ordinary structures",
-            description="Structures occupy 10% of Normal wanders or 12% on Easy. In a clan region, 1% of this structure range belongs to a hidden-clan visit. One undiscovered ordinary structure is otherwise selected uniformly. If all ordinary sites are known, their range becomes peaceful; it is not rerolled into free loot. Sites remain revisitable through Structures.",
+            description="Structures occupy 10% of Normal wanders or 12% on Easy. In a clan region, 1% of this structure range belongs to a hidden-clan visit. One undiscovered ordinary structure is otherwise selected uniformly. If all ordinary sites are known, their range becomes ordinary monsters. Gathering adds more ordinary discoveries through its 30% follow-up branch, and exhausted follow-up discoveries also become monsters. Sites remain revisitable through Structures.",
             type="Structure outcome",
         ),
         dict(
@@ -85,7 +101,7 @@ def reference():
         ),
         dict(
             name="Bounty target",
-            description="An unclaimed regional bounty occupies 2% of the monster range: 0.9% per full Normal wander, 0.6% on Easy. The rest is ordinary monsters. After claiming it, those tickets become ordinary monsters. Combat totals remain 45% / 30% before special-event fights.",
+            description="An unclaimed regional bounty occupies 2% of the monster range: 1.02% per full Normal wander, 0.72% on Easy. The rest is ordinary monsters. After claiming it, those tickets become ordinary monsters. With ordinary discoveries still available, combat totals including gathering follow-ups are 65% Normal / 57% Easy before special-event fights. Follow-up monsters and exhausted-structure replacements do not add bounty tickets.",
             type="Rare monster subtype",
         ),
         dict(
@@ -165,6 +181,16 @@ def reference():
             difficulty_scenarios={
                 mode: {
                     f"{int(undiscovered)}:{int(available)}": probabilities(
+                        region, undiscovered, available, mode
+                    )
+                    for undiscovered in (False, True)
+                    for available in (False, True)
+                }
+                for mode in CHANCES
+            },
+            encounter_scenarios={
+                mode: {
+                    f"{int(undiscovered)}:{int(available)}": encounter_probabilities(
                         region, undiscovered, available, mode
                     )
                     for undiscovered in (False, True)

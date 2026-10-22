@@ -1,0 +1,9 @@
+# Soules V25.11
+
+Full-game gathering now keeps the native ingredient or building supply and adds exactly one encounter: 70% ordinary monster / 30% undiscovered ordinary structure. If no ordinary structures remain, the follow-up is always a monster. It never rerolls gathering, events, shops or peaceful wandering and does not advance hunger, weather, work or story timers a second time. The item is awarded before the encounter; ordinary death rules still apply.
+
+Base peaceful chance falls from 9% to 3%, with those six percentage points moved to monsters. Starting weights: Normal 51% monster, 20% gather, 10% structure, 10% event, 5% merchant, 1% companion, 3% peaceful. Easy 36/30/12/12/6/1/3. Exhausted ordinary structure tickets now become ordinary monsters instead of peaceful results. Main-roll bounties and hidden-clan chances retain their subtype rules; gathering discoveries are ordinary structures.
+
+With new ordinary structures remaining, combat totals including gathering follow-ups are 65% Normal / 57% Easy, and structures including clan visits are 16% / 21%. Special events may add fights, and an exhausted companion pool may still produce a quiet message. Dictionary shows both the exclusive starting table and overlapping item/encounter rules, calculated from the same weights as gameplay. Tracked encounters still replace random wandering. The Simple edition’s gameplay rules are unchanged.
+
+Validation: 263 unit tests passed, including every primary ticket boundary, all regions/progress states/difficulties, exact 70/30 follow-up boundaries, exhausted discovery fallback, keeping rewards before dispatch, no recursive rolls, and one hunger/work update per actual wander. Browser checks passed for dictionary odds, manual sidebar position, event/weather references, version downloads and original-game menus.

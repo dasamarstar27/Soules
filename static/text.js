@@ -274,5 +274,8 @@ function wanderChanceSummary(reference){
  const labels={structure:'Ordinary structure',elemental_village:'Hidden-clan visit',bounty:'Bounty',ingredient:'Regional ingredient',building_supply:'Building supply',special_event:'Special event',companion:'Companion opportunity',merchant:'Ordinary merchant',peaceful:'Peaceful wandering',monster:'Ordinary monster'};
  const odds=profile.difficulty_scenarios[difficulty][Number(remaining)+':'+Number(bounty)];
  const desc=tracked?'Tracked target: 100%. The weighted random outcome is replaced.':Object.entries(odds).map(([key,value])=>labels[key]+': '+(value*100).toFixed(4).replace(/\.?0+$/,'')+'%').join(' · ');
- return [p?'Your next wander — '+region:'Example wander — '+region,difficulty.toUpperCase()+' · '+desc+' One main roll; listed outcomes are exclusive and sum to 100%. Rare clans and bounties are included, not additional rolls. Estimates assume survival through hunger. Based on your discoveries and bounty record; reopening this tab refreshes the estimate.','Full-wander chances'];
+ const encounters=profile.encounter_scenarios[difficulty][Number(remaining)+':'+Number(bounty)];
+ const totalCombat=encounters.monster+encounters.bounty, totalStructures=encounters.structure+encounters.elemental_village;
+ const follow=tracked?'':` Including gathering follow-ups: combat ${(totalCombat*100).toFixed(2)}%, structures/clans ${(totalStructures*100).toFixed(2)}%. Ingredient/supply finds overlap these encounters: keep the item, then 70% monster / 30% new ordinary structure; always a monster if none remain.`;
+ return [p?'Your next wander — '+region:'Example wander — '+region,difficulty.toUpperCase()+' · '+desc+' These starting outcomes sum to 100%. Rare clans and bounties are included.'+follow+' Estimates assume survival through hunger. Based on your discoveries and bounty record; reopening this tab refreshes the estimate.','Wander chances'];
 }

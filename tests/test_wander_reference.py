@@ -30,9 +30,9 @@ class WanderReferenceTests(TestCase):
         woods = reference.probabilities("Whispering Woods")
         self.assertAlmostEqual(woods["structure"] + woods["elemental_village"], 0.10)
         self.assertAlmostEqual(woods["elemental_village"], 0.001)
-        self.assertAlmostEqual(woods["monster"] + woods["bounty"], 0.45)
+        self.assertAlmostEqual(woods["monster"] + woods["bounty"], 0.51)
         easy = reference.probabilities("Whispering Woods", difficulty="easy")
-        self.assertAlmostEqual(easy["monster"] + easy["bounty"], 0.30)
+        self.assertAlmostEqual(easy["monster"] + easy["bounty"], 0.36)
         self.assertAlmostEqual(easy["ingredient"] + easy["building_supply"], 0.30)
 
     def test_reference_covers_every_weather_world_event_and_special_event(self):

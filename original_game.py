@@ -2876,7 +2876,7 @@ def _ingredient_brew_menu():
     print("🧪═══════════════════════════════🧪")
     ings = player.get("ingredients", [])
     if not ings:
-        print("  You have no ingredients. Wander regions to gather them (8% chance each explore).")
+        print("  You have no ingredients. Wander regions to gather them (10% Normal / 15% Easy, followed by a monster or structure).")
         return
 
     print(f"\n  Your ingredient pouch ({len(ings)} total):")

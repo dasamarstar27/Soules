@@ -1,28 +1,30 @@
-"""One weighted draw selects a wander outcome, including rare discoveries/events."""
+"""Weighted wandering with one guaranteed encounter after gathering."""
 
 from math import lcm
 import data
 
 CHANCES = {
     "normal": dict(
-        monster=45,
+        monster=51,
         gather=20,
         structure=10,
         special_event=10,
         merchant=5,
         companion=1,
-        peaceful=9,
+        peaceful=3,
     ),
     "easy": dict(
-        monster=30,
+        monster=36,
         gather=30,
         structure=12,
         special_event=12,
         merchant=6,
         companion=1,
-        peaceful=9,
+        peaceful=3,
     ),
 }
+GATHER_MONSTER_CHANCE = 70
+
 # Exact integer tickets preserve both event catalogue weights and rare subtypes.
 TOTAL = lcm(10000, 100 * sum(event["weight"] for event in data.WANDER_EVENTS))
 
@@ -59,7 +61,9 @@ def ticket_table(region, undiscovered=True, bounty_available=True, difficulty="n
         for event in data.WANDER_EVENTS
     )
     table.extend((key, counts[key]) for key in ("merchant", "companion"))
-    table.append(("peaceful", counts["peaceful"] + (0 if available else ordinary)))
+    if not available:
+        table[0] = ("monster", table[0][1] + ordinary)
+    table.append(("peaceful", counts["peaceful"]))
     assert sum(count for _, count in table) == TOTAL
     return [(key, count) for key, count in table if count]
 
@@ -84,10 +88,23 @@ def pick(player, rng):
     raise AssertionError("Wander ticket outside table")
 
 
+def gathering_encounter(player, rng):
+    """Never chain another gather: 70% monster, 30% new ordinary structure."""
+    found = player.get("discovered_structures", {}).get(player["region"], [])
+    unknown = any(
+        s["name"] not in found for s in data.REGION_STRUCTURES.get(player["region"], [])
+    )
+    roll = rng.randrange(100)
+    return "monster" if roll < GATHER_MONSTER_CHANCE or not unknown else "structure"
+
+
 def resolve(game):
+    dispatch(game, pick(game.player, game.random))
+
+
+def dispatch(game, outcome):
     p = game.player
     region = p["region"]
-    outcome = pick(p, game.random)
     if outcome == "monster":
         game._wander_monster(region, p.get("is_night", False))
     elif outcome == "bounty":
@@ -103,10 +120,14 @@ def resolve(game):
         ingredient = game.random.choice(data.REGION_INGREDIENTS[region])
         p.setdefault("ingredients", []).append(ingredient)
         print(f"\n🌿 Gathered 1 {ingredient}. Added to your pouch.")
+        print("With the ingredient safely packed, you continue down the trail...")
+        dispatch(game, gathering_encounter(p, game.random))
     elif outcome == "building_supply":
         from village_life import gather_building_material
 
         gather_building_material(p, game.random)
+        print("With the supply safely packed, you continue down the trail...")
+        dispatch(game, gathering_encounter(p, game.random))
     elif outcome == "structure":
         found = p.setdefault("discovered_structures", {}).setdefault(region, [])
         pool = [s for s in data.REGION_STRUCTURES[region] if s["name"] not in found]
