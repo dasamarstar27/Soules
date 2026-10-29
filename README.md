@@ -1,4 +1,4 @@
-# Soules V25.13 — Echoes of the World Tree
+# Soules V25.14 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -277,3 +277,7 @@ Village option **17: Build / upgrade village facilities** lists existing and mis
 The top **Map** button and **Explore → World map** open a graphical route map with current position, locks and beaten guardians. Select a region to see discovered structure markers, visit buttons and saved village notes. Undiscovered structures remain hidden. At a main/category menu, map travel uses the normal unlocked destinations and discovered structure menus. Leave villages, submenus or combat before travelling; map browsing consumes no turns.
 
 Short responses now follow after your next chosen action even after a long passage stopped following. Passive updates preserve earlier reading positions, long text remains still, and the sidebar retains its manual position. Replit-style embeds measure the toolbar’s actual height and avoid focusing the command box with a scroll jump. These changes were tested in a resized iframe; live Replit hosting was not accessible here. Simple edition gameplay is unchanged.
+
+### V25.14 · Compact village sidebar
+
+Village facilities now use short rows with the name and level always visible; expand a row to read its quality and benefits. Food stock, material stock and village progress are collapsed until opened. Open rows stay open through live updates while the village card is present. Reputation, discount, restock/farm status, notes and building supplies remain visible. Quick actions use two columns and include Build / upgrade. Tablet targets stay at least 44 pixels high, and Easy reading keeps its larger text. No gameplay or save changes; Simple gameplay is unchanged.

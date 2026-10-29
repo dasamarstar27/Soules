@@ -147,3 +147,26 @@ body.comfort-mode #versions-dialog p,body.comfort-mode #versions-dialog li { fon
 @media(max-width:600px){.local-map{display:none}.world-map-frame{max-height:350px}}
 
 .map-region-picker{display:block;margin:16px 0}.map-region-picker select{display:block;max-width:100%;min-height:44px;margin-top:6px}
+
+/* Village services stay scannable; expand a row for its benefits or stock. */
+.village-card.side-card{padding:12px}.village-card h3{margin:4px 0 8px}
+.village-badges{display:flex;flex-wrap:wrap;gap:5px;color:var(--muted);font-size:11px}
+.village-badges span{padding:2px 5px;border:1px solid var(--line);border-radius:4px}
+.village-card .village-ready,.village-card .village-supplies{font-size:11px;line-height:1.5;margin:8px 0}
+.village-card .village-services{margin:7px 0}.village-card .village-services li{padding:0;border:0}
+.village-disclosure{border-bottom:1px solid var(--line);min-width:0}
+.village-disclosure summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:30px;padding:5px 0;font-size:11px;line-height:1.4}
+.village-disclosure summary:before{content:'›';color:var(--accent)}.village-disclosure[open]>summary:before{content:'⌄'}
+.village-disclosure summary span{flex:1}.village-disclosure summary b{color:var(--accent);font-size:10px;white-space:nowrap}
+.village-disclosure summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.village-card .village-disclosure small{margin:0 0 8px;padding-left:12px;font-size:11px;line-height:1.5}
+.village-card .village-disclosure p{margin:5px 0 9px}
+.village-stock{width:100%;font-size:11px;border-collapse:collapse;margin:4px 0 9px}
+.village-stock th,.village-stock td{padding:5px 2px;border-bottom:1px solid var(--line);text-align:left;overflow-wrap:anywhere}
+.village-stock th:nth-child(n+2),.village-stock td:nth-child(n+2){text-align:right}
+.village-card .side-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.village-card .side-actions button{font-size:11px;padding:6px 5px;min-width:0}
+.tablet-mode .village-disclosure summary,.comfort-mode .village-disclosure summary{min-height:44px}
+.comfort-mode .village-disclosure summary,.comfort-mode .village-disclosure summary b,.comfort-mode .village-badges,.comfort-mode .village-stock,.comfort-mode .village-card .side-actions button,.comfort-mode .village-card .village-disclosure small{font-size:17px;white-space:normal}
+
+.compact-sidebar .village-card{padding:9px}
