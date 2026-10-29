@@ -2920,9 +2920,14 @@ def _ingredient_brew_menu():
         count = ings.count(ing)
         print(f"    {i}. {ing}  x{count}")
 
-    print("\n  Pick TWO ingredients to mix, or 'c' to cancel.")
+    print("B. Bulk brew and bottle potions\nC. Cancel")
+    print("\n  Pick TWO ingredients for one potion, or choose B for a batch.")
     try:
-        a_in = input("  First ingredient # > ").strip()
+        a_in = input("  First ingredient # (B bulk / C cancel) > ").strip()
+        if a_in.lower() == "b":
+            from bulk_brewing import menu
+            menu(__import__(__name__))
+            return
         if a_in.lower() == "c":
             return
         a_idx = int(a_in)

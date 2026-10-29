@@ -1,4 +1,4 @@
-# Soules V25.15 — Echoes of the World Tree
+# Soules V25.16 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -287,3 +287,9 @@ Village facilities now use short rows with the name and level always visible; ex
 Ordinary single-enemy fights now reveal a planned intention in the text and enemy sidebar before your choice: attack, heavy strike, pounce, guard, recovery, life siphon or a mistake. Creature families use different weights. **10 Guard** reduces incoming attack damage by 65% before other modifiers; **11 Interrupt** spends 3 mana to stop a heavy strike or pounce. Guarding monsters halve direct strikes; recovery replaces an attack and is limited to twice per fight. Invalid/cancelled inputs retain the same intention. Guardians keep their scripted rules; tactical raid encounters retain their existing actions.
 
 The village root now has six short categories and Leave: Food & rest, Shops & crafting, Build & manage, People & quests, Notes & bookmarks, Activities. Select a category to see only its available services. **0** returns to village categories; actions return to their submenu. **7** leaves from the root. Sidebar action shortcuts still work. Old saves and village buildings are preserved. Simple gameplay is unchanged.
+
+### V25.16 · Bulk brewing and a stable sidebar
+
+At **Village → Shops & crafting → Brew potions**, choose **B: Bulk brew and bottle**. Pick two ingredients, select a quantity within your supplies (up to 1,000 per batch), and confirm. Each potion consumes its own pair, rolls the existing lab/rank preservation bonus and awards normal crafting progress; the whole batch is bottled with one summary. Selecting the same ingredient requires two copies per potion. Unknown mixtures stay in single-brew experimentation. Cancellation and invalid quantities spend nothing. Tablet mode uses ingredient buttons, quantity steppers and Yes/No.
+
+The sidebar updates existing cards and controls in place, preserving focused selections, expanded panels and the visible reading anchor as content changes above it. Character health/stats stay first, followed by an active enemy and the local village. Ordinary Whispering Woods villages keep the original dark forest green; the warm brown palette is used for Ashen Wastes. Other structure/elemental colours and your custom theme choice remain available. Simple gameplay is unchanged.

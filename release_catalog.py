@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.15",
+        "29bf1bc710d0933223cad3e6d0b4f5af0e946913",
+        "Reactive monster intentions and short village categories.",
+    ),
+    (
         "25.14",
         "3328a7acc77c22178ce26c4e3c51aba878cd2750",
         "Compact expandable village sidebar.",
@@ -80,7 +85,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: reactive monster intentions and short village category menus.",
+            notes="Current release: bulk potion brewing, stable sidebar updates and restored Woods village colours.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:

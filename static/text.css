@@ -170,3 +170,6 @@ body.comfort-mode #versions-dialog p,body.comfort-mode #versions-dialog li { fon
 .comfort-mode .village-disclosure summary,.comfort-mode .village-disclosure summary b,.comfort-mode .village-badges,.comfort-mode .village-stock,.comfort-mode .village-card .side-actions button,.comfort-mode .village-card .village-disclosure small{font-size:17px;white-space:normal}
 
 .compact-sidebar .village-card{padding:9px}
+
+#status-sidebar,#status-sidebar *{overflow-anchor:none}
+#status-sidebar{scroll-behavior:auto}

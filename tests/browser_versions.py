@@ -12,12 +12,13 @@ with sync_playwright() as pw:
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto("http://127.0.0.1:5000")
     page.wait_for_selector(".home-options")
-    assert page.locator("#release-version").inner_text() == "V25.15 ▾"
+    assert page.locator("#release-version").inner_text() == "V25.16 ▾"
     page.locator("#release-version").click()
     assert page.locator("#versions-dialog").is_visible()
-    assert page.locator(".version-download").count() == 14
+    assert page.locator(".version-download").count() == 15
     assert page.locator("#version-export").is_disabled()
     for old in (
+        "25.15",
         "25.14",
         "25.13",
         "25.12",

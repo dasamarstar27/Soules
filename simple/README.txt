@@ -1,4 +1,4 @@
-SOULES SIMPLE V25.15
+SOULES SIMPLE V25.16
 
 Double-click "Play Soules Simple.html" to play in Edge, Chrome, Firefox or Safari.
 On Windows you can also double-click "Play Soules Simple.bat" in the parent folder.
