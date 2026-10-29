@@ -112,7 +112,10 @@ with sync_playwright() as p:
     scroll_before = page.locator("#terminal").evaluate("e=>e.scrollTop")
     page.evaluate("async()=>{await respond('1');}")
     page.wait_for_function("packet.snapshot.phase === 'category' && !busy")
-    assert abs(page.locator("#terminal").evaluate("e=>e.scrollTop") - scroll_before) < 2
+    # Choosing a new short menu resumes following; passive history stays covered
+    # by browser_journal_scroll.py and browser_embedded_scroll.py.
+    assert page.locator("#terminal").evaluate("e=>e.scrollTop") > scroll_before
+    assert page.locator("#terminal").evaluate("e=>e.scrollHeight-e.scrollTop-e.clientHeight<3")
     page.evaluate("async()=>{await respond('0');}")
     page.wait_for_function("packet.snapshot.phase === 'main' && !busy")
     page.locator("#compact-status").click()

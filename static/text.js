@@ -47,19 +47,19 @@ function canSave(){return Boolean(packet?.snapshot?.player&&packet.waiting&&['ma
 function safeSave(){return canSave()?{format:'soules-original-v1',player:structuredClone(packet.snapshot.player)}:checkpoint;}
 function append(text,cls=''){const line=document.createElement('p');line.textContent=text;line.className=cls;$('#terminal').append(line);while($('#terminal').children.length>650)$('#terminal').firstChild.remove();return line;}
 function journalNearBottom(terminal){return terminal.scrollHeight-terminal.scrollTop-terminal.clientHeight<=32;}
-let journalScrollRevision=0;
+let journalScrollRevision=0, journalReadingRevision=0, hiddenJournalUpdate=null;
 function followShortJournalUpdate(terminal,lines,follow){
  if(!lines.length)return;
  const revision=++journalScrollRevision;
- const potionUpdate=lines.some(line=>/POTION|BREW COMPLETE/.test(line.textContent));
- if((!follow&&!potionUpdate)||terminal.clientHeight<=0)return;
+ if(!follow)return;
+ if(terminal.clientHeight<=0){hiddenJournalUpdate={lines,follow};return;}
  const lineHeight=parseFloat(getComputedStyle(terminal).lineHeight)||26;
  const limit=Math.max(60*(lineHeight+4),terminal.clientHeight*3);
  const height=lines.reduce((total,line)=>{const style=getComputedStyle(line);return total+line.getBoundingClientRect().height+parseFloat(style.marginTop)+parseFloat(style.marginBottom);},0);
  if(height<=limit){
   terminal.scrollTop=terminal.scrollHeight;
-  const followedTop=terminal.scrollTop;
-  requestAnimationFrame(()=>{if(revision===journalScrollRevision&&Math.abs(terminal.scrollTop-followedTop)<2)terminal.scrollTop=terminal.scrollHeight;});
+  const reading=journalReadingRevision;
+  requestAnimationFrame(()=>{if(revision===journalScrollRevision&&reading===journalReadingRevision)terminal.scrollTop=terminal.scrollHeight;});
  }
 }
 function apply(result,followShortUpdates){
@@ -78,26 +78,29 @@ function apply(result,followShortUpdates){
  if(canSave()){checkpoint=safeSave();writeStore(STORE,checkpoint);}
  if(result.snapshot?.player){renderSidebar();theme();}
  renderGameControls();
+ if(view==='map'){const top=$('#page-screen').scrollTop;renderPage();$('#page-screen').scrollTop=top;}
  accessibleCombat();
  followShortJournalUpdate(terminal,added,follow);
 
  if(result.error)notice('The game reported an error: '+result.error+'. Your last saved checkpoint is kept.');
 }
-function show(next){view=next;$('#game-screen').hidden=next!=='play';$('#page-screen').hidden=next==='play';if(next!=='play')renderPage();else {renderGameControls();}renderSidebar();theme();}
+function show(next){view=next;$('#game-screen').hidden=next!=='play';$('#page-screen').hidden=next==='play';if(next!=='play')renderPage();else {renderGameControls();if(hiddenJournalUpdate){const update=hiddenJournalUpdate;hiddenJournalUpdate=null;followShortJournalUpdate($('#terminal'),update.lines,update.follow);}}renderSidebar();theme();}
 async function start(config){
  if(busy)return;if(!config.save&&packet?.snapshot?.player&&packet.snapshot.phase!=='dead')chronicleRun(packet.snapshot.player,'retired');busy=true;epoch++;
- try{const result=await api('start',config);packet=null;cursor=0;$('#terminal').replaceChildren();apply(result);show('play');if(!window.buttonsOnly?.())$('#command').focus();}
+ try{const result=await api('start',config);packet=null;cursor=0;$('#terminal').replaceChildren();apply(result);show('play');if(!window.buttonsOnly?.())$('#command').focus({preventScroll:true});}
  catch(e){notice(e.message);}finally{busy=false;renderGameControls();}
 }
 function play(){if(packet?.alive&&packet?.snapshot?.phase!=='dead'){show('play');return;}if(checkpoint?.player){start({save:checkpoint});return;}$('#new-dialog').showModal();}
 async function respond(text,group){
  if(busy||!packet?.waiting)return;
+ const option=packet.snapshot?.phase==='category'&&packet.snapshot?.group==='explore'?catalog.groups.find(g=>g.id==='explore').options[Number(text)-1]:null;
+ if(!group&&option?.[0]===13){show('map');return;}
  if(window.buttonsOnly?.()&&text.trim().toUpperCase()==='DAMAR')return;
  if(!group&&text&& !['DAMAR','SAMAR'].includes(text.toUpperCase())){if(commandHistory.at(-1)!==text)commandHistory.push(text);commandHistory=commandHistory.slice(-100);historyPosition=commandHistory.length;historyDraft='';}
- const journal=$('#terminal'),follow=journalNearBottom(journal),previousTop=journal.scrollTop;
+ const journal=$('#terminal'),follow=true,previousTop=journal.scrollTop;
  busy=true;epoch++;renderGameControls();
  try{if(!group)append('> '+(text||'(Enter)'),'player-response');const result=await api('input',{text,group,prompt_id:packet.prompt_id,since:cursor});apply(result,follow&&Math.abs(journal.scrollTop-previousTop)<2);}
- catch(e){notice(e.message);}finally{busy=false;renderGameControls();if(view==='play'&&!window.buttonsOnly?.())$('#command').focus();}
+ catch(e){notice(e.message);}finally{busy=false;renderGameControls();if(view==='play'&&!window.buttonsOnly?.())$('#command').focus({preventScroll:true});}
 }
 function renderAssignment(){const host=$('#village-assignment'),plan=packet?.snapshot?.assignment;if(!host)return;host.hidden=!plan;if(!plan){host.replaceChildren();return;}const worker=plan.workers[plan.current],enabled=packet.waiting&&!busy;host.innerHTML=`<div class="assignment-heading"><div><span class="eyebrow">VILLAGE DEFENCE · ${esc(plan.threat_count)} MONSTERS</span><h2>Assign ${esc(worker.name)}</h2><p>Choose a role card. Each villager gets one job; the raid begins after the final assignment.</p></div><button data-response="0" ${!enabled?'disabled':''}>Cancel raid</button></div><div class="assignment-roster">${plan.workers.map((w,i)=>`<span class="assignment-worker ${i===plan.current?'current':''}"><b>${esc(w.name)}</b> · Lv. ${esc(w.level)}<small>${i<plan.current?'✓ '+esc(plan.assigned[i]?.role||'Assigned'):i===plan.current?'Choosing role now':'Awaiting assignment'}</small></span>`).join('')}</div><div class="assignment-roles">${plan.roles.map(role=>`<button data-assign-role="${esc(role.name)}" data-response="${esc(role.answer)}" ${!enabled?'disabled':''}><b>${esc(role.icon)} ${esc(role.name)}</b><small>${esc(role.detail)}</small></button>`).join('')}</div><p class="assignment-note">Repair costs 1 Timber for the whole team. Surviving attackers can each act every round.</p>`;}
 function renderGameControls(){
@@ -161,7 +164,7 @@ function dictionary(){
  return `<span class="eyebrow">THE WORLD, IN WORDS</span><h1>Dictionary</h1><div class="dictionary-tools">${['all','runes','fusions','effects','evolutions','ingredients','potions','wandering','weather','world','loot'].map(tab=>`<button data-dictionary="${tab}" class="${dictionaryTab===tab?'active':''}">${tab[0].toUpperCase()+tab.slice(1)}</button>`).join('')}</div><input id="dictionary-search" type="search" placeholder="Search names, materials, regions, abilities or rarity…" aria-label="Search dictionary" value="${esc(dictionarySearch)}">${dictionaryTab==='all'?`<label class="dictionary-filter">Reference category <select id="dictionary-category"><option value="">Everything</option>${[...(c.encyclopedia?.categories||[]),'Your items'].map(name=>`<option value="${esc(name)}" ${dictionaryCategory===name?'selected':''}>${esc(name)}</option>`).join('')}</select></label>`:''}${dictionaryTab==='fusions'?fusionFinder():''}<p class="section-note">${entries.length} matching entries${entries.length>dictionaryLimit?', showing '+dictionaryLimit:''}. ${dictionaryTab==='all'?'Complete catalogue reference: search everything or choose a category. Drop percentages are conditional on the stated loot roll; crafted and shop-only items have no invented drop rate. Generated custom items follow their recipes. ':''}${['wandering','weather','world','loot'].includes(dictionaryTab)?'Exploration reference: chances are labelled per check, per full wander or per chosen activity. One weighted roll selects the main wander outcome.':'Every listed effect has combat mechanics. Fusions retain component abilities and gain their own synergy. Active effects appear in the sidebar.'}</p><div class="cards">${entries.slice(0,dictionaryLimit).map(([name,desc,type])=>`<article class="page-card">${dictionaryTab==='runes'?runeSeal(name):''}<span class="eyebrow">${esc(type)}</span><h2>${esc(name)}</h2><p>${esc(desc)}</p></article>`).join('')||'<p>No matching entries.</p>'}</div>${entries.length>dictionaryLimit?'<button id="dictionary-more">Show next 60 entries</button>':''}`;
 }
 function saves(){return `<span class="eyebrow">SIX DIFFERENT STORIES</span><h1>Your saved journeys.</h1><p class="intro">Slots keep independent original-game characters in this browser. Save at a category menu, outside a battle or submenu. Loading replaces the current running adventure; other slots stay safe.</p><div class="buttons"><button data-new>New character</button><button data-export>Export checkpoint</button><button data-import>Import save</button>${(packet?.snapshot?.player||checkpoint?.player)?.beta_legacy_recovery?'<button id="export-beta-recovery">Export older testing recovery</button>':''}</div><div class="save-grid">${Array.from({length:6},(_,i)=>slotControls(i)).join('')}</div><p class="section-note">Clearing browser storage removes local slots. Keep exported backups. The earlier browser edition and its saves remain available at <a href="/edition">Earlier edition</a>.</p>`;}
-function renderPage(){if(!catalog)return;$('#page-screen').innerHTML=({home,tutorial,customise,dictionary,saves}[view]||home)()+(view==='customise'?(window.comfortSettings?.()||'')+expandedSettings():view==='saves'?expandedSaveTools():'');}
+function renderPage(){if(!catalog)return;$('#page-screen').innerHTML=({home,tutorial,customise,dictionary,saves,map:()=>window.worldMapPage?.()||'<p>Loading map…</p>'}[view]||home)()+(view==='customise'?(window.comfortSettings?.()||'')+expandedSettings():view==='saves'?expandedSaveTools():'');}
 async function slotAction(button){const list=slots(),index=Number(button.dataset.slot),action=button.dataset.slotAction;
  try{if(action==='save'){if(!canSave())return notice('Return to a category menu before saving.');if(list[index]&&!confirm('Replace this save slot? Other slots stay safe.'))return;const label=window.buttonsOnly?.()?(list[index]?.label||packet.snapshot.player.name):prompt('Name this saved journey:',list[index]?.label||packet.snapshot.player.name);if(label===null)return;list[index]={label:label.trim().slice(0,60)||'My journey',savedAt:new Date().toISOString(),save:safeSave()};if(writeStore(SLOTS,list)){rememberCheckpoint(list[index]);notice('Saved in slot '+(index+1)+'.');}}
  else if(action==='load'){if(!list[index])return;if(packet?.alive&&!confirm('Load this journey? Save your current character in another slot first if you want to keep it.'))return;await start({save:list[index].save});}
@@ -201,7 +204,7 @@ document.addEventListener('input',event=>{const e=event.target;
 });
 document.addEventListener('change',event=>{if(event.target.id==='dictionary-category'){dictionaryCategory=event.target.value;dictionaryLimit=60;renderPage();}if(event.target.id==='theme-mode'){preferences.mode=event.target.value;savePreferences();}});
 setInterval(async()=>{if(view!=='play'||!packet?.alive||busy||pollBusy)return;pollBusy=true;const before=epoch;try{const data=await api('session?since='+cursor);if(before===epoch)apply(data);}catch(e){notice('Connection interrupted. Your saved checkpoint is kept.');}finally{pollBusy=false;}},650);
-api('catalog').then(async c=>{catalog=c;$('#class-choice').innerHTML=Object.entries(c.classes).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join('');const updateClass=()=>{$('#class-description').textContent=c.classes[$('#class-choice').value].desc;};$('#class-choice').value='warrior';$('#class-choice').onchange=updateClass;updateClass();const existing=await api('session');if(existing.snapshot)apply(existing);show('home');}).catch(e=>{$('#page-screen').textContent='Unable to open Soules. '+e.message;});
+api('catalog').then(async c=>{catalog=c;$('#class-choice').innerHTML=Object.entries(c.classes).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join('');const updateClass=()=>{$('#class-description').textContent=c.classes[$('#class-choice').value].desc;};$('#class-choice').value='warrior';$('#class-choice').onchange=updateClass;updateClass();const existing=await api('session');if(existing.snapshot)apply(existing);show(view);}).catch(e=>{$('#page-screen').textContent='Unable to open Soules. '+e.message;});
 theme();
 
 // Local conveniences: these do not spend turns or change game state.
@@ -209,7 +212,7 @@ $('#latest-output').onclick=()=>{$('#terminal').scrollTop=$('#terminal').scrollH
 $('#clear-journal').onclick=()=>{$('#terminal').replaceChildren();notice('Journal display cleared. Your progress and saves are unchanged.');};
 $('#copy-journal').onclick=async()=>{try{await navigator.clipboard.writeText($('#terminal').innerText);notice('Journal copied.');}catch(_){notice('Clipboard unavailable. Select the journal text to copy it.');}};
 $('#compact-status').onclick=()=>{preferences.compact=!preferences.compact;savePreferences();};
-$('#recall-command').onclick=()=>{if(commandHistory.length){$('#command').value=commandHistory.at(-1);$('#command').focus();}};
+$('#recall-command').onclick=()=>{if(commandHistory.length){$('#command').value=commandHistory.at(-1);$('#command').focus({preventScroll:true});}};
 document.addEventListener('keydown',event=>{
  if(window.buttonsOnly?.()||view!=='play'||document.querySelector('dialog[open]')||event.ctrlKey||event.metaKey||event.altKey)return;
  const input=$('#command'),editing=['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName);

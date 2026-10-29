@@ -125,3 +125,25 @@ body.comfort-mode #game-screen { min-height:700px; }
 .version-download { display:inline-flex; min-height:48px; align-items:center; padding:10px 15px; border:1px solid var(--accent); border-radius:6px; }
 body.comfort-mode #versions-dialog p,body.comfort-mode #versions-dialog li { font-size:18px; }
 @media(max-width:1050px){.topbar{height:auto;min-height:66px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}.top-tools{flex-wrap:wrap}}
+
+/* Embedded previews: constrain the journal rather than scrolling the whole app. */
+.layout>main{min-width:0;min-height:0}
+@media(min-width:751px){body:not(.tablet-mode):not(.comfort-mode) .layout{height:calc(100dvh - var(--topbar-height,66px))}}
+#terminal,#status-sidebar{overscroll-behavior:contain}
+.world-map-frame{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:auto}
+.world-map,.local-map{width:100%;height:auto;display:block;min-width:980px}
+.world-map path{fill:none;stroke:var(--line);stroke-width:5;stroke-dasharray:8 7}
+.world-map g,.local-map g{cursor:pointer;outline:none}
+.world-map circle,.local-map circle{fill:var(--raised);stroke:var(--accent);stroke-width:2}
+.world-map text,.local-map text{fill:var(--text);font-size:19px}
+.world-map .map-label,.local-map .map-label{font-size:15px}
+.world-map .locked{opacity:.5}.world-map .current circle{fill:var(--accent)}
+.world-map .current>text:first-of-type{fill:var(--button-text)}
+.world-map .selected circle,.world-map g:focus circle,.local-map g:focus circle{stroke-width:6}
+.local-map{min-width:0}.local-map [aria-disabled=true]{opacity:.6}
+.map-place-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.map-place-list>div{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.map-place-list small{display:block;margin:8px 0}.map-place-list button{width:100%}
+@media(max-width:600px){.local-map{display:none}.world-map-frame{max-height:350px}}
+
+.map-region-picker{display:block;margin:16px 0}.map-region-picker select{display:block;max-width:100%;min-height:44px;margin-top:6px}

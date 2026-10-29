@@ -12,8 +12,8 @@ class VersionedReleaseTests(TestCase):
     def test_release_label_in_browser_and_api(self):
         from app import app
 
-        self.assertEqual(VERSION, "25.12")
-        self.assertEqual(LABEL, "V25.12")
+        self.assertEqual(VERSION, "25.13")
+        self.assertEqual(LABEL, "V25.13")
         client = app.test_client()
         self.assertEqual(client.get("/api/version").json["release"], LABEL)
         self.assertIn("Soules " + LABEL, client.get("/").text)

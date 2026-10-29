@@ -1,6 +1,11 @@
 """Player-facing guide for the original text edition; no secret commands."""
 
 SECTIONS = [
+    ("visual-map", "World and structure map", [
+        "Press Map in the top toolbar or choose Explore → World map. Select a region on the connected route map, then inspect its discovered structure markers and saved village notes. Unknown structures stay hidden. Locked regions can be inspected but cannot be travelled to. A dot marks your current region; a tick marks a defeated guardian.",
+        "At a main/category menu, Travel here moves to an unlocked region. Click a discovered structure marker or its Visit button to travel there and open its normal game menu. Leave your current village, submenu or fight before using map travel. Browsing the map consumes no turns and does not unlock anything.",
+        "Short responses follow after you choose an action, even if a previous long passage stopped scrolling. Long text stays in place; passive polling preserves history you are reading. Latest jumps to the end. The sidebar never follows game output automatically. Embedded previews measure the toolbar height so resizing or wrapped buttons leave room for the journal."
+    ]),
     ("resource-sites", "Quarries and timber yards", [
         "Each quarry trip gives 2 Stone for village building plus 1 regional metal for forging. Each timber-yard trip gives 2 Timber for building plus 1 regional wood for crafting. Ironpeak’s dwarven quarry gives Stone and Titanium; Bromm’s metal shop is separate.",
         "Supplies are finite: each named site can be worked once per 20-wander cycle. Find more sites or return after the next cycle. Building supplies appear under village construction; metals and woods appear in crafting inventory. Village building menus also let you convert spare crafting materials into building supplies."

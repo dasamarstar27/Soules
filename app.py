@@ -178,6 +178,7 @@ def original_catalog():
     import data
     from wander_reference import reference
     content['exploration'] = reference()
+    content['world_map'] = dict(regions=data.REGIONS + [data.SECRET_REGION], structures=data.REGION_STRUCTURES, elemental=data.ELEMENTAL_VILLAGES)
     from item_reference import reference as item_reference
     content['encyclopedia'] = item_reference()
     content['potions'] = [dict(recipe, ingredients=sorted(pair)) for pair, recipe in data.INGREDIENT_COMBOS.items()]

@@ -5,6 +5,11 @@ from release_version import VERSION, LABEL
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/dasamarstar27/Soules"
 ARCHIVED_RELEASES = (
     (
+        "25.12",
+        "3ee073f0ef61aff5b13846551732ab85c3179043",
+        "Construct missing village facilities and upgrade farms.",
+    ),
+    (
         "25.11",
         "68343162296aedeeae8c28398bae3ba2008e5ab3",
         "Gathering adds encounters; fewer peaceful wanders.",
@@ -65,7 +70,7 @@ def available_releases():
             current=True,
             commit=None,
             url=f"{DOWNLOAD_ROOT}/main/releases/Soules-{LABEL}.zip",
-            notes="Current release: construct missing village facilities and upgrade farms and services to Level 5.",
+            notes="Current release: clickable region and structure maps; scrolling fixes for embedded previews.",
         )
     ]
     for version, commit, notes in ARCHIVED_RELEASES:
