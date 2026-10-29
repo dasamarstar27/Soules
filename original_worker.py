@@ -60,23 +60,34 @@ def input_line(prompt=""):
         if value.startswith("/difficulty "):
             from difficulty import validate as validate_difficulty
 
-            safe_menu = ui._phase in ("main", "category") or prompt in (
-                "Village > ", "Elemental village > "
+            safe_menu = (
+                ui._phase in ("main", "category")
+                or prompt in ("Village > ", "Elemental village > ")
+                or prompt.startswith("Village [")
             )
             if safe_menu and not ui.get_ui().current_enemy:
                 try:
-                    game.player["difficulty"] = validate_difficulty(value.split(" ", 1)[1])
-                    print("Difficulty set to " + game.player["difficulty"].title() + ".")
+                    game.player["difficulty"] = validate_difficulty(
+                        value.split(" ", 1)[1]
+                    )
+                    print(
+                        "Difficulty set to " + game.player["difficulty"].title() + "."
+                    )
                 except ValueError as error:
                     print(str(error))
             else:
-                print("Change difficulty at a category or village menu, outside combat and purchases.")
+                print(
+                    "Change difficulty at a category or village menu, outside combat and purchases."
+                )
             continue
         if value.startswith(("/equip ", "/drink ")):
             from player_qol import quick
 
             if ui._phase in ("main", "category") or (
-                prompt in ("Village > ", "Elemental village > ")
+                (
+                    prompt in ("Village > ", "Elemental village > ")
+                    or prompt.startswith("Village [")
+                )
                 and not ui.get_ui().current_enemy
             ):
                 print(quick(game, value))

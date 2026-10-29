@@ -38,7 +38,7 @@ with sync_playwright() as pw:
     def send(value):
         page.wait_for_function("packet.waiting&&!busy")
         prev = page.evaluate("packet.prompt_id")
-        page.evaluate("async value=>await respond(value)", str(value))
+        page.evaluate("async value=>await respond(packet.prompt==='Village > '&&/^[1-6]$/.test(value)?'v:'+value:value)", str(value))
         page.wait_for_function("id=>packet.prompt_id>id&&!busy", arg=prev)
         assert not page.evaluate("packet.error"), page.evaluate("packet.error")
 

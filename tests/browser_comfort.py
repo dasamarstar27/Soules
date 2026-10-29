@@ -55,7 +55,10 @@ with sync_playwright() as pw:
     def send(text):
         page.wait_for_function("packet.waiting&&!busy")
         prev = page.evaluate("packet.prompt_id")
-        page.evaluate("async text=>await respond(text)", str(text))
+        page.evaluate(
+            "async text=>await respond(packet.prompt==='Village > '&&/^[1-6]$/.test(text)?'v:'+text:text)",
+            str(text),
+        )
         page.wait_for_function("id=>packet.prompt_id>id&&!busy", arg=prev)
         assert not page.evaluate("packet.error"), page.evaluate("packet.error")
 
@@ -66,7 +69,8 @@ with sync_playwright() as pw:
         assert not page.evaluate("packet.error"), page.evaluate("packet.error")
 
     assert page.locator("#comfort-choices").is_visible()
-    assert page.locator('#comfort-choices [data-response="10"]').count() == 1
+    assert page.locator('#comfort-choices [data-response="1"]').count() == 1
+    assert page.locator('#comfort-choices [data-response="10"]').count() == 0
     assert page.locator('#comfort-choices [data-response="9"]').count() == 0
     assert (
         page.locator("#comfort-choices button").first.evaluate(
@@ -84,9 +88,11 @@ with sync_playwright() as pw:
     assert page.locator("#word-help-dialog").is_visible()
     assert "HP · Health" in page.locator("#word-help-dialog").inner_text()
     page.locator("#close-word-help").click()
-    choose(22)
+    choose(3)
+    choose(3)
     assert page.locator('#comfort-choices [data-response="1"]').count() == 0
     assert page.locator('#comfort-choices [data-response="4"]').count() == 1
+    choose(0)
     choose(0)
     choose(7)
     saved = page.evaluate("safeSave()")
@@ -103,15 +109,17 @@ with sync_playwright() as pw:
     send(structures)
     choose(0)
     assert page.evaluate("packet.snapshot.village.name") == "Smiths' Quarter"
-    for unavailable in (1, 6, 10, 13, 18, 24, 26):
+    for unavailable in (9, 10, 13, 18, 24, 26):
         assert (
             page.locator(f'#comfort-choices [data-response="{unavailable}"]').count()
             == 0
         ), unavailable
-    assert page.locator('#comfort-choices [data-response="9"]').count() == 1
-    choose(22)
+    assert page.locator('#comfort-choices [data-response="9"]').count() == 0
+    choose(3)
+    choose(3)
     assert page.locator('#comfort-choices [data-response="1"]').count() == 1
     assert page.locator('#comfort-choices [data-response="4"]').count() == 0
+    choose(0)
     choose(0)
     choose(7)
     # Current question and speech controls also handle numeric quantities safely.

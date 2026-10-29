@@ -22,7 +22,10 @@ with sync_playwright() as p:
     def send(text):
         page.wait_for_function("packet.waiting && !busy")
         previous = page.evaluate("packet.prompt_id")
-        page.evaluate("async text=>{await respond(text);}", text)
+        page.evaluate(
+            "async text=>{await respond(packet.prompt==='Village > '&&/^[1-6]$/.test(text)?'v:'+text:text);}",
+            text,
+        )
         page.wait_for_function("previous=>packet.prompt_id>previous", arg=previous)
 
     send("DAMAR")
@@ -67,7 +70,9 @@ with sync_playwright() as p:
     )
     page.wait_for_function("packet.snapshot.phase === 'main'")
     assert (
-        page.evaluate("packet.snapshot.player.saved_villages['Whispering Woods::Old Village'].note")
+        page.evaluate(
+            "packet.snapshot.player.saved_villages['Whispering Woods::Old Village'].note"
+        )
         == "cheap food <farm>"
     )
     page.locator("[data-village-directory]").click()

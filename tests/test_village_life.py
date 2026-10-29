@@ -187,7 +187,7 @@ class VillageLifeTests(unittest.TestCase):
         self.p["gold"] = 100
         self.p["hp"] = 1
         self.inputs(
-            ["4", "y", "7"],
+            ["1", "4", "y", "0", "7"],
             game.visit_village,
             {"name": "Ice Hamlet"},
             "Frostbound Tundra",
@@ -285,7 +285,8 @@ class VillageLifeTests(unittest.TestCase):
         )
         self.assertNotIn("10. Harvest farm", text)
         self.assertNotIn("6. Brew potions", text)
-        self.assertIn("9. Blacksmith", text)
+        self.assertIn("2. Shops & crafting", text)
+        self.assertNotIn("9. Blacksmith", text)
 
     def test_worker_menu_only_lists_existing_specialists(self):
         import village_jobs

@@ -50,7 +50,7 @@ function comfortOptions(text,prompt){
   if(/5 /.test(prompt))rows.push(['5','Use class skill']);
   if(/6 /.test(prompt))rows.push(['6','Companion move']);
   if(/7 /.test(prompt))rows.push(['7','Drink a potion']);
-  rows.push(['8','Use a loose rune'],['9','Elemental art']);return rows;
+  rows.push(['8','Use a loose rune'],['9','Elemental art']);if(/10 Guard/.test(prompt))rows.push(['10','Guard (free)'],['11','Interrupt (3 mana)']);return rows;
  }
  // Discard earlier menus, so a saved journal cannot offer stale choices.
  const headers=[...text.matchAll(/^\s*(?:[-=]{3,}|[^\n]*[─═]{3,})[^\n]*$/gm)];

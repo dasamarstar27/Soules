@@ -1,4 +1,4 @@
-# Soules V25.14 — Echoes of the World Tree
+# Soules V25.15 — Echoes of the World Tree
 
 **Play on a tablet without running a laptop:** deploy the online game once, then send Nanu its website link. [Tablet setup instructions](TABLET%20PLAY.txt).
 
@@ -281,3 +281,9 @@ Short responses now follow after your next chosen action even after a long passa
 ### V25.14 · Compact village sidebar
 
 Village facilities now use short rows with the name and level always visible; expand a row to read its quality and benefits. Food stock, material stock and village progress are collapsed until opened. Open rows stay open through live updates while the village card is present. Reputation, discount, restock/farm status, notes and building supplies remain visible. Quick actions use two columns and include Build / upgrade. Tablet targets stay at least 44 pixels high, and Easy reading keeps its larger text. No gameplay or save changes; Simple gameplay is unchanged.
+
+### V25.15 · Monster intentions and village categories
+
+Ordinary single-enemy fights now reveal a planned intention in the text and enemy sidebar before your choice: attack, heavy strike, pounce, guard, recovery, life siphon or a mistake. Creature families use different weights. **10 Guard** reduces incoming attack damage by 65% before other modifiers; **11 Interrupt** spends 3 mana to stop a heavy strike or pounce. Guarding monsters halve direct strikes; recovery replaces an attack and is limited to twice per fight. Invalid/cancelled inputs retain the same intention. Guardians keep their scripted rules; tactical raid encounters retain their existing actions.
+
+The village root now has six short categories and Leave: Food & rest, Shops & crafting, Build & manage, People & quests, Notes & bookmarks, Activities. Select a category to see only its available services. **0** returns to village categories; actions return to their submenu. **7** leaves from the root. Sidebar action shortcuts still work. Old saves and village buildings are preserved. Simple gameplay is unchanged.

@@ -23,7 +23,10 @@ with sync_playwright() as pw:
                 '#comfort-choices [data-response="' + str(value) + '"]'
             ).click()
         else:
-            page.evaluate("async value=>await respond(value)", str(value))
+            page.evaluate(
+                "async value=>await respond(packet.prompt==='Village > '&&/^[1-6]$/.test(value)?'v:'+value:value)",
+                str(value),
+            )
         page.wait_for_function("old=>packet.prompt_id>old&&!busy", arg=old)
         assert not page.evaluate("packet.error"), page.evaluate("packet.error")
 
@@ -38,7 +41,8 @@ with sync_playwright() as pw:
     page.wait_for_function("packet.prompt==='Directory > '&&!busy")
     send(1)
     assert "forge" not in page.evaluate("packet.snapshot.village.services")
-    send(17, True)
+    send(3, True)
+    send(1, True)
     assert "NOT BUILT" in page.locator("#terminal").inner_text()
     # Existing six services stay first; the new forge is option seven.
     send(7, True)
@@ -56,6 +60,7 @@ with sync_playwright() as pw:
     send(8)
     assert "Forge weapons" in page.locator("#terminal").inner_text()
     send(0)
+    send(0, True)
     send(7)
     # A village opened from the Directory returns there; leave it to checkpoint.
     page.wait_for_function("packet.prompt==='Directory > '&&!busy")

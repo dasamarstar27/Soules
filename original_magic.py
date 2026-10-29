@@ -91,6 +91,8 @@ def damage(source, target, amount):
 
 
 def strike(source, target, amount, magical=False):
+    from monster_behaviour import guard_damage
+    amount = guard_damage(target, amount)
     actor = proxy(source)
     victim = proxy(target)
     log = []

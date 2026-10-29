@@ -1821,6 +1821,9 @@ def fight(enemy, boss=False):
     enemy = scale_enemy(player, enemy)
     enemy = enemy.copy()
     enemy["boss"] = bool(boss)
+    interactive = not boss and not enemy.get("_story_boss")
+    enemy["_behaviour_enabled"] = interactive
+    enemy.pop("intent", None)
     player.pop("_rune_previous", None)
     enemy.pop("_rune_previous", None)
     enemy.setdefault("status", {})
@@ -1883,6 +1886,12 @@ def fight(enemy, boss=False):
         wx = player.get("weather", "Clear")
         wx_data = WEATHER_EFFECTS.get(wx, WEATHER_EFFECTS["Clear"])
 
+        guarding = False
+        if interactive:
+            from monster_behaviour import prepare
+            intent = prepare(enemy, random)
+            print(f"Intent · {intent['name']}: {enemy['name']} {intent['description']}")
+
         # ── Player stun check (set by apply_status for freeze/sleep) ──
         if player["active_buffs"].pop("stun", None):
             print("  🛑 You cannot act this turn!")
@@ -1898,9 +1907,23 @@ def fight(enemy, boss=False):
             )
             night_str = " 🌙" if player.get("is_night") else ""
             print(f"{wx_data['icon']} {wx}{night_str}  |  {player['hp']} vs {enemy['hp']}")
+            reaction_label = " | 10 Guard | 11 Interrupt (3 mana)" if interactive else ""
             c = input(
-                f"1 atk 2 scroll 3 staff 4 run{skill_label}{comp_label}{potion_label} | 8 Rune({len(player.get('runes',[]))}) | 9 Elemental art > "
+                f"1 atk 2 scroll 3 staff 4 run{skill_label}{comp_label}{potion_label} | 8 Rune({len(player.get('runes',[]))}) | 9 Elemental art{reaction_label} > "
             ).strip()
+
+        if interactive and c == "10":
+            guarding = True
+            print("You brace: incoming attack damage is reduced by 65% this round.")
+        elif interactive and c == "11":
+            from monster_behaviour import interrupt
+            ok, message = interrupt(player, enemy)
+            print(message)
+            if not ok:
+                continue
+        elif c not in ("", "1", "2", "3", "4", "5", "6", "7", "8", "9"):
+            print("Choose one of the displayed combat actions.")
+            continue
 
         if c == "9":
             from season_two import use_art
@@ -2107,7 +2130,13 @@ def fight(enemy, boss=False):
                 else 0
             )
             base_enemy_dmg = max(1, base_enemy_dmg - player.get("def", 0) // 3 - armour_def // 4)
+            if interactive:
+                from monster_behaviour import enemy_action
+                base_enemy_dmg = enemy_action(enemy, base_enemy_dmg)
             enemy_dmg = base_enemy_dmg
+            if guarding and enemy_dmg > 0:
+                enemy_dmg = max(1, round(enemy_dmg * .35))
+                print("Your guard absorbs most of the attack.")
             if player["active_buffs"].get("warp"):
                 print("✨ You warp away the attack!")
                 enemy_dmg = 0
@@ -2131,9 +2160,9 @@ def fight(enemy, boss=False):
             if player["active_buffs"].get("stability"):
                 enemy_dmg = max(0, enemy_dmg - 2)
             if enemy["active_buffs"].get("root"):
-                enemy_dmg = max(1, enemy_dmg - 3)
+                enemy_dmg = max(1, enemy_dmg - 3) if enemy_dmg > 0 else 0
             if enemy["active_buffs"].get("slow_time"):
-                enemy_dmg = max(1, enemy_dmg - 3)
+                enemy_dmg = max(1, enemy_dmg - 3) if enemy_dmg > 0 else 0
 
             if player["active_buffs"].get("reflect") and enemy_dmg > 0:
                 print("✨ Reflect sends damage back to the enemy!")
@@ -2160,6 +2189,12 @@ def fight(enemy, boss=False):
             from original_magic import strike, damage as rune_damage
 
             enemy_dmg = strike(enemy, player, rune_damage(enemy, player, enemy_dmg))
+
+        if interactive:
+            from monster_behaviour import after_hit
+            after_hit(enemy, enemy_dmg)
+            enemy.pop("intent", None)
+            enemy.pop("_interrupted", None)
 
         # ── Feature 4: Update Soul Resonance streak ──
         update_resonance(enemy_dmg > 0)

@@ -40,6 +40,7 @@ with sync_playwright() as pw:
         choose(0)
         page.wait_for_function("packet.prompt==='Village > '&&!busy")
         choose(2)
+        choose(1)
         assert page.evaluate("packet.prompt") == "Buy item number > "
         gold = page.evaluate("packet.snapshot.player.gold")
         count = page.evaluate("packet.snapshot.player.weapons.length")

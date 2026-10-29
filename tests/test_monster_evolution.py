@@ -135,7 +135,7 @@ class MonsterEvolutionTests(TestCase):
                 game.random, "random", return_value=0.99
             ), patch.object(
                 game.random, "randint", side_effect=lambda low, high: high
-            ):
+            ), patch.object(game.random, "randrange", return_value=0):
                 with self.assertRaises(StopIteration):
                     game.fight(monster)
             self.assertEqual(game.player["hp"], 180)

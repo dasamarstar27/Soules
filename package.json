@@ -1,6 +1,6 @@
 {
   "name": "soules",
-  "version": "25.14.0",
+  "version": "25.15.0",
   "private": true,
   "description": "Soules browser RPG \u2014 Python/Flask, no Node dependencies",
   "scripts": {

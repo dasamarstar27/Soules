@@ -503,6 +503,7 @@ def visit(game, struct, region):
     found = game.player.setdefault("discovered_structures", {}).setdefault(region, [])
     if v["name"] not in found:
         found.append(v["name"])
+    selected_menu = None
     try:
         while True:
             info = snapshot(game.player, v)
@@ -524,15 +525,13 @@ def visit(game, struct, region):
             )
             if info["note"]:
                 print("Your note: " + info["note"])
-            print("Choose a listed number. Only facilities available in this village are shown.")
-            for number, label in village_options(v):
-                print(f"{number}. {label}")
+            from village_menus import choose
+            c, selected_menu = choose(v, selected_menu)
             before_activity = (
                 game.player["gold"],
                 len(game.player.get("ingredients", [])),
                 len(game.player.get("inventory", [])),
             )
-            c = input("Village > ").strip().lower()
             if c == "7":
                 return
             from expansion_state import state as expansion_state
